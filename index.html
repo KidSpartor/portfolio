@@ -30,6 +30,15 @@
       --coral-soft: #f8dfda;
       --shadow: 0 24px 70px rgba(36, 31, 24, .11);
       --radius: 8px;
+      --weather-hue: 214;
+      --weather-sat: 68%;
+      --weather-light: 46%;
+      --weather-alpha: .14;
+      --time-angle: 180deg;
+      --sun-x: 72%;
+      --sun-y: 24%;
+      --wind-scale: 1;
+      --tempo: 12s;
       --font-sans: "Inter", "Noto Sans SC", system-ui, sans-serif;
       --font-serif: "Instrument Serif", Georgia, serif;
       --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -83,7 +92,8 @@
       z-index: -2;
       pointer-events: none;
       background:
-        linear-gradient(115deg, rgba(36, 87, 214, .1), transparent 28%),
+        radial-gradient(circle at var(--sun-x) var(--sun-y), hsla(var(--weather-hue), var(--weather-sat), 72%, .34), transparent 18%),
+        linear-gradient(var(--time-angle), hsla(var(--weather-hue), var(--weather-sat), var(--weather-light), var(--weather-alpha)), transparent 34%),
         linear-gradient(245deg, rgba(18, 107, 85, .09), transparent 30%),
         linear-gradient(0deg, rgba(167, 93, 0, .08), transparent 45%);
     }
@@ -115,6 +125,18 @@
     :focus-visible {
       outline: 3px solid color-mix(in srgb, var(--blue) 70%, white);
       outline-offset: 3px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .shell {
@@ -273,8 +295,21 @@
       inset: 0;
       pointer-events: none;
       background:
-        radial-gradient(circle at 80% 18%, color-mix(in srgb, var(--blue) 20%, transparent), transparent 28%),
+        radial-gradient(circle at var(--sun-x) var(--sun-y), hsla(var(--weather-hue), var(--weather-sat), 72%, .3), transparent 25%),
         linear-gradient(160deg, transparent 0 58%, color-mix(in srgb, var(--green) 10%, transparent) 58% 100%);
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: calc(.18 + (var(--wind-scale) * .04));
+      background-image:
+        repeating-linear-gradient(100deg, transparent 0 18px, hsla(var(--weather-hue), var(--weather-sat), 42%, .18) 19px, transparent 20px),
+        radial-gradient(circle at 12% 88%, color-mix(in srgb, var(--coral) 18%, transparent), transparent 24%);
+      transform: translateX(calc(var(--wind-scale) * -4px));
+      animation: atmosphere var(--tempo) linear infinite;
     }
 
     .hero-copy,
@@ -352,9 +387,89 @@
       font-weight: 700;
     }
 
+    .ambient-row {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(230px, .42fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .ambient-card {
+      min-height: 116px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--paper) 62%, transparent);
+    }
+
+    .ambient-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .ambient-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .mood-lanes {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 4px;
+      margin-top: 18px;
+    }
+
+    .mood-lanes span {
+      height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: hsl(calc(var(--weather-hue) + (var(--i) * 9)) var(--weather-sat) calc(38% + (var(--i) * 2%)));
+      opacity: calc(.24 + (var(--i) * .045));
+      transform: scaleY(calc(.52 + (var(--wind-scale) * .08) + (var(--i) * .025)));
+      transform-origin: bottom;
+    }
+
+    .micro-orbit {
+      position: relative;
+      min-height: 100%;
+      overflow: hidden;
+    }
+
+    .micro-orbit::before,
+    .micro-orbit::after {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border: 1px solid color-mix(in srgb, var(--ink) 24%, transparent);
+      border-radius: 50%;
+      rotate: var(--time-angle);
+    }
+
+    .micro-orbit::after {
+      inset: 32px;
+      border-color: hsla(var(--weather-hue), var(--weather-sat), var(--weather-light), .48);
+      animation: spin calc(var(--tempo) * 1.8) linear infinite;
+    }
+
+    .micro-orbit .hand {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 38%;
+      height: 2px;
+      background: var(--ink);
+      transform-origin: left center;
+      transform: rotate(var(--time-angle));
+    }
+
     .live-panel {
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: auto auto auto;
       min-height: 620px;
       overflow: hidden;
     }
@@ -384,22 +499,81 @@
     }
 
     .live-clock {
-      padding: 24px 18px 16px;
+      padding: 18px 18px 12px;
     }
 
     .time {
-      font-family: var(--font-mono);
-      font-size: clamp(56px, 9vw, 98px);
-      font-weight: 600;
-      line-height: .95;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0;
+      position: relative;
+      min-height: 238px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background:
+        conic-gradient(from var(--time-angle), hsla(var(--weather-hue), var(--weather-sat), var(--weather-light), .38), transparent 34%, color-mix(in srgb, var(--green) 22%, transparent), transparent 78%),
+        radial-gradient(circle at var(--sun-x) var(--sun-y), hsla(var(--weather-hue), var(--weather-sat), 70%, .38), transparent 18%),
+        var(--paper);
+      color: transparent;
+      font-size: 0;
     }
 
     .date-line {
       margin-top: 10px;
       color: var(--muted);
       font-size: 15px;
+      font-weight: 700;
+    }
+
+    .time::before,
+    .time::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .time::before {
+      width: min(70%, 250px);
+      aspect-ratio: 1;
+      border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+      box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--paper-strong) 60%, transparent),
+        0 0 0 22px color-mix(in srgb, var(--paper-strong) 24%, transparent);
+    }
+
+    .time::after {
+      width: 18px;
+      height: 18px;
+      background: var(--ink);
+      transform:
+        rotate(var(--time-angle))
+        translateX(min(100px, 28vw));
+      box-shadow: 0 0 0 10px hsla(var(--weather-hue), var(--weather-sat), var(--weather-light), .2);
+    }
+
+    .time-mark {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 44%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--ink), transparent);
+      transform-origin: left center;
+      transform: rotate(var(--time-angle));
+    }
+
+    .time-caption {
+      position: relative;
+      z-index: 1;
+      align-self: end;
+      margin: auto 0 18px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--ink);
+      background: color-mix(in srgb, var(--paper-strong) 78%, transparent);
+      font-family: var(--font-mono);
+      font-size: 11px;
       font-weight: 700;
     }
 
@@ -451,6 +625,32 @@
       font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
+    }
+
+    .climate-mark {
+      position: relative;
+      min-height: 104px;
+      overflow: hidden;
+    }
+
+    .climate-mark::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, hsla(var(--weather-hue), var(--weather-sat), var(--weather-light), .8), transparent);
+      transform: scaleX(calc(.35 + var(--wind-scale) * .08));
+      transform-origin: left center;
+    }
+
+    .climate-mark::after {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--paper-strong) 52%, transparent);
+      animation: breathe var(--tempo) ease-in-out infinite;
     }
 
     section {
@@ -786,6 +986,196 @@
       font-size: 14px;
     }
 
+    .atlas {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(320px, 1.1fr);
+      gap: 18px;
+    }
+
+    .atlas-stage {
+      position: relative;
+      min-height: 520px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        radial-gradient(circle at var(--sun-x) var(--sun-y), hsla(var(--weather-hue), var(--weather-sat), 72%, .4), transparent 19%),
+        conic-gradient(from var(--time-angle), color-mix(in srgb, var(--blue) 20%, transparent), transparent, color-mix(in srgb, var(--green) 18%, transparent), transparent),
+        var(--paper-strong);
+      box-shadow: var(--shadow);
+    }
+
+    .atlas-stage canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .atlas-label {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      z-index: 1;
+    }
+
+    .atlas-copy {
+      display: grid;
+      gap: 18px;
+    }
+
+    .prompt-box {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--paper-strong) 88%, transparent);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .prompt-row {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 14px;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .prompt-row:last-child {
+      border-bottom: 0;
+    }
+
+    .prompt-row button {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      cursor: pointer;
+    }
+
+    .prompt-row strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .prompt-row span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .library-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .library-card {
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--paper-strong) 88%, transparent);
+      box-shadow: var(--shadow);
+    }
+
+    .library-card .number {
+      color: var(--blue);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .library-card h3 {
+      margin: 0 0 12px;
+      font-family: var(--font-serif);
+      font-size: 34px;
+      font-weight: 400;
+      line-height: .98;
+    }
+
+    .library-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .visitor-pad {
+      display: grid;
+      grid-template-columns: minmax(0, .65fr) minmax(280px, .35fr);
+      gap: 18px;
+    }
+
+    .transmission {
+      min-height: 300px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: color-mix(in srgb, var(--paper-strong) 88%, transparent);
+      box-shadow: var(--shadow);
+    }
+
+    .transmission textarea {
+      width: 100%;
+      min-height: 160px;
+      resize: vertical;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--ink);
+      background: var(--paper);
+      font: 500 16px/1.5 var(--font-sans);
+    }
+
+    .transmission-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .transmission-actions button {
+      min-height: 44px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: var(--paper);
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .receipt {
+      min-height: 300px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--paper) 78%, transparent), transparent),
+        color-mix(in srgb, var(--paper-strong) 88%, transparent);
+      box-shadow: var(--shadow);
+    }
+
+    .receipt-code {
+      margin-top: 18px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
     .contact {
       display: grid;
       grid-template-columns: minmax(0, .75fr) minmax(280px, .25fr);
@@ -876,11 +1266,22 @@
       to { rotate: 360deg; }
     }
 
+    @keyframes atmosphere {
+      to { background-position: 180px 0, 0 0; }
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(.92); opacity: .72; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+
     @media (max-width: 1120px) {
       .hero,
       .about-grid,
       .contact,
-      .section-head {
+      .section-head,
+      .atlas,
+      .visitor-pad {
         grid-template-columns: 1fr;
       }
 
@@ -896,6 +1297,10 @@
 
       .lab-grid {
         grid-template-columns: repeat(2, 1fr);
+      }
+
+      .library-grid {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -940,7 +1345,8 @@
       .hero-footer,
       .weather,
       .project.wide,
-      .lab-grid {
+      .lab-grid,
+      .ambient-row {
         grid-template-columns: 1fr;
       }
 
@@ -986,6 +1392,8 @@
         <a href="#work">Work</a>
         <a href="#about">About</a>
         <a href="#lab">Lab</a>
+        <a href="#atlas">Atlas</a>
+        <a href="#signals">Signals</a>
         <a href="#contact">Contact</a>
       </nav>
       <div class="top-actions">
@@ -1025,6 +1433,18 @@
               <span>current local weather</span>
             </div>
           </div>
+          <div class="ambient-row" aria-label="Ambient site conditions">
+            <div class="ambient-card">
+              <strong>Weather as material</strong>
+              <p id="ambientSentence">The page is waiting for the sky before choosing its tempo.</p>
+              <div class="mood-lanes" aria-hidden="true">
+                <span style="--i:1"></span><span style="--i:2"></span><span style="--i:3"></span><span style="--i:4"></span><span style="--i:5"></span><span style="--i:6"></span><span style="--i:7"></span><span style="--i:8"></span><span style="--i:9"></span><span style="--i:10"></span><span style="--i:11"></span><span style="--i:12"></span>
+              </div>
+            </div>
+            <div class="ambient-card micro-orbit" aria-hidden="true">
+              <span class="hand"></span>
+            </div>
+          </div>
         </div>
 
         <aside class="live-panel reveal" aria-label="Live personal dashboard">
@@ -1033,7 +1453,10 @@
             <span class="tag" id="weatherPlace">Paris fallback</span>
           </div>
           <div class="live-clock">
-            <div class="time" id="clock">--:--</div>
+            <div class="time" id="clock" aria-label="Current Paris time">
+              <span class="time-mark" aria-hidden="true"></span>
+              <span class="time-caption" id="timeCaption">temporal orbit loading</span>
+            </div>
             <div class="date-line" id="dateLine">loading today</div>
           </div>
           <div class="signal-art" aria-label="Animated signal artwork">
@@ -1055,6 +1478,11 @@
             <div class="weather-cell">
               <b id="updatedAt">live</b>
               <span>last refresh</span>
+            </div>
+            <div class="weather-cell climate-mark" aria-hidden="true"></div>
+            <div class="weather-cell">
+              <b id="moodWord">Tuning</b>
+              <span>ambient mood</span>
             </div>
           </div>
         </aside>
@@ -1208,6 +1636,109 @@
         </div>
       </section>
 
+      <section id="atlas" aria-labelledby="atlas-title">
+        <div class="section-head reveal">
+          <div>
+            <div class="section-kicker">Live atlas</div>
+            <h2 id="atlas-title">The website now has weather inside its bones.</h2>
+          </div>
+          <p>The canvas does not label the forecast. It translates it into drift, density, hue, and orbit speed, like a small instrument panel pretending to be a poster.</p>
+        </div>
+
+        <div class="atlas">
+          <div class="atlas-stage reveal" aria-label="Generative weather and time atlas">
+            <canvas id="weatherCanvas"></canvas>
+            <div class="atlas-label">
+              <span class="tag" id="atlasCondition">condition loading</span>
+              <span class="tag" id="atlasTempo">tempo loading</span>
+              <span class="tag" id="atlasLight">light loading</span>
+            </div>
+          </div>
+          <div class="atlas-copy">
+            <div class="prompt-box reveal">
+              <div class="prompt-row">
+                <button type="button" class="promptButton" data-prompt="Build a small interface that changes behavior based on the visitor's local weather." aria-label="Copy prompt one"><i data-lucide="copy"></i></button>
+                <div>
+                  <strong>Weather becomes behavior.</strong>
+                  <span>Clear days loosen spacing, rain tightens the grid, wind increases motion amplitude, and night cools the canvas.</span>
+                </div>
+              </div>
+              <div class="prompt-row">
+                <button type="button" class="promptButton" data-prompt="Design a portfolio where time is shown as an orbital system instead of a digital clock." aria-label="Copy prompt two"><i data-lucide="copy"></i></button>
+                <div>
+                  <strong>Time becomes geometry.</strong>
+                  <span>The visible clock is an orbit; the exact time still exists in aria labels and small captions for accessibility.</span>
+                </div>
+              </div>
+              <div class="prompt-row">
+                <button type="button" class="promptButton" data-prompt="Turn a personal website into a living notebook with reusable ambient modules." aria-label="Copy prompt three"><i data-lucide="copy"></i></button>
+                <div>
+                  <strong>Portfolio becomes an instrument.</strong>
+                  <span>Each section is a small module that can graduate into a blog, public lab, project case study, or dashboard.</span>
+                </div>
+              </div>
+            </div>
+            <div class="panel reveal">
+              <h3>Borrowed Lessons</h3>
+              <p>I pulled from interactive galleries, real-time generative poster projects, and living portfolio references: keep the first screen useful, let motion explain state, and never make the visitor decode a clever thing before they can navigate.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="signals" aria-labelledby="signals-title">
+        <div class="section-head reveal">
+          <div>
+            <div class="section-kicker">Signals</div>
+            <h2 id="signals-title">More content, but less brochure.</h2>
+          </div>
+          <p>These are not finished case studies. They are hooks: compact, specific, and expandable into richer pages later.</p>
+        </div>
+
+        <div class="library-grid">
+          <article class="library-card reveal">
+            <span class="number">FIELD 01</span>
+            <div>
+              <h3>Interface field notes</h3>
+              <p>Short observations on why a control feels calm, why a dashboard gets scanned, and when animation stops being useful.</p>
+            </div>
+            <span class="tag">Design notes</span>
+          </article>
+          <article class="library-card reveal">
+            <span class="number">FIELD 02</span>
+            <div>
+              <h3>Prototype cabinet</h3>
+              <p>Small apps that do one odd thing well: lyric sync, simulation toys, ambient monitors, game rule sandboxes.</p>
+            </div>
+            <span class="tag">Experiments</span>
+          </article>
+          <article class="library-card reveal">
+            <span class="number">FIELD 03</span>
+            <div>
+              <h3>Reading weather</h3>
+              <p>A future essay series where a web page treats environment as input, not decoration: time, place, season, speed, battery, attention.</p>
+            </div>
+            <span class="tag">Research</span>
+          </article>
+        </div>
+
+        <div class="visitor-pad" style="margin-top:18px">
+          <div class="transmission reveal">
+            <h3>Leave a tiny brief</h3>
+            <textarea id="briefInput" aria-label="Tiny project brief" placeholder="Write a project idea, a weird interface wish, or a sentence this site should remember locally."></textarea>
+            <div class="transmission-actions">
+              <button type="button" id="saveBrief">Save locally</button>
+              <button type="button" id="clearBrief">Clear</button>
+            </div>
+          </div>
+          <div class="receipt reveal">
+            <h3>Local receipt</h3>
+            <p>The note never leaves your browser. It becomes a little checksum, because even a contact form can have personality.</p>
+            <div class="receipt-code" id="briefReceipt">No local brief saved yet.</div>
+          </div>
+        </div>
+      </section>
+
       <section id="contact" class="contact" aria-labelledby="contact-title">
         <div class="contact-main reveal">
           <div>
@@ -1283,17 +1814,43 @@
     window.addEventListener("load", refreshIcons);
 
     const clock = document.getElementById("clock");
+    const timeCaption = document.getElementById("timeCaption");
     const dateLine = document.getElementById("dateLine");
     const footerStamp = document.getElementById("footerStamp");
     const nowText = document.getElementById("nowText");
+    const climate = {
+      temp: 12,
+      wind: 8,
+      code: 2,
+      label: "Partly cloudy",
+      place: "Paris fallback"
+    };
 
     function tick() {
       const now = new Date();
-      clock.textContent = new Intl.DateTimeFormat("en-GB", {
+      const parisTime = new Intl.DateTimeFormat("en-GB", {
         hour: "2-digit",
         minute: "2-digit",
         timeZone: "Europe/Paris"
       }).format(now);
+      const parisParts = new Intl.DateTimeFormat("en-GB", {
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: false,
+        timeZone: "Europe/Paris"
+      }).formatToParts(now);
+      const getPart = type => Number(parisParts.find(part => part.type === type)?.value || 0);
+      const secondsOfDay = (getPart("hour") * 3600) + (getPart("minute") * 60) + getPart("second");
+      const dayProgress = secondsOfDay / 86400;
+      const angle = Math.round(dayProgress * 360);
+      const sunX = 12 + Math.sin(dayProgress * Math.PI) * 76;
+      const sunY = 78 - Math.sin(dayProgress * Math.PI) * 58;
+      root.style.setProperty("--time-angle", `${angle}deg`);
+      root.style.setProperty("--sun-x", `${sunX.toFixed(1)}%`);
+      root.style.setProperty("--sun-y", `${sunY.toFixed(1)}%`);
+      clock.setAttribute("aria-label", `Current Paris time is ${parisTime}`);
+      timeCaption.textContent = dayProgress < .25 ? "deep night orbit" : dayProgress < .5 ? "morning climb" : dayProgress < .75 ? "afternoon field" : "evening descent";
       dateLine.textContent = new Intl.DateTimeFormat("en-US", {
         weekday: "long",
         month: "long",
@@ -1302,7 +1859,7 @@
         timeZone: "Europe/Paris"
       }).format(now);
       footerStamp.textContent = `Updated ${now.getFullYear()}`;
-      nowText.textContent = `It is ${clock.textContent} in Paris. The site is running as a static page with live client-side data.`;
+      nowText.textContent = `The time is rendered as an orbit first and text second: ${parisTime} in Paris, with the current sky shaping the page color and motion.`;
     }
 
     tick();
@@ -1320,6 +1877,39 @@
       [81, "Showers"], [82, "Heavy showers"], [95, "Thunder"], [96, "Storm hail"], [99, "Storm hail"]
     ]);
 
+    function climatePalette(code, temp, wind) {
+      const rainy = [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(code);
+      const snowy = [71, 73, 75].includes(code);
+      const foggy = [45, 48].includes(code);
+      const clear = [0, 1].includes(code);
+      let hue = clear ? 38 : rainy ? 210 : snowy ? 188 : foggy ? 170 : 214;
+      if (temp >= 24) hue = 18;
+      if (temp <= 3) hue = 198;
+      return {
+        hue,
+        sat: clear ? "74%" : rainy ? "58%" : "48%",
+        light: clear ? "52%" : rainy ? "43%" : "48%",
+        alpha: rainy ? ".22" : clear ? ".18" : ".14",
+        tempo: `${Math.max(5, 18 - Math.min(wind, 24) * .45).toFixed(1)}s`,
+        mood: clear ? "Open" : rainy ? "Concentrated" : snowy ? "Quiet" : foggy ? "Soft" : "Balanced"
+      };
+    }
+
+    function applyClimate() {
+      const palette = climatePalette(climate.code, climate.temp, climate.wind);
+      root.style.setProperty("--weather-hue", palette.hue);
+      root.style.setProperty("--weather-sat", palette.sat);
+      root.style.setProperty("--weather-light", palette.light);
+      root.style.setProperty("--weather-alpha", palette.alpha);
+      root.style.setProperty("--wind-scale", Math.max(.4, Math.min(2.4, climate.wind / 8)).toFixed(2));
+      root.style.setProperty("--tempo", palette.tempo);
+      document.getElementById("moodWord").textContent = palette.mood;
+      document.getElementById("ambientSentence").textContent = `${climate.label} is tuning the page: hue ${palette.hue}, wind tempo ${palette.tempo}, temperature ${Math.round(climate.temp)} degrees.`;
+      document.getElementById("atlasCondition").textContent = climate.label;
+      document.getElementById("atlasTempo").textContent = `tempo ${palette.tempo}`;
+      document.getElementById("atlasLight").textContent = `${Math.round(climate.temp)}° / ${Math.round(climate.wind)} kmh`;
+    }
+
     async function loadWeather(latitude = 48.8566, longitude = 2.3522, label = "Paris fallback") {
       const url = new URL("https://api.open-meteo.com/v1/forecast");
       url.search = new URLSearchParams({
@@ -1333,19 +1923,28 @@
         const data = await response.json();
         const current = data.current;
         const temp = Math.round(current.temperature_2m);
+        climate.temp = current.temperature_2m;
+        climate.wind = current.wind_speed_10m;
+        climate.code = current.weather_code;
+        climate.label = weatherCodes.get(current.weather_code) || "Weather";
+        climate.place = label;
         document.getElementById("localTemp").textContent = `${temp}°`;
-        document.getElementById("weatherSummary").textContent = weatherCodes.get(current.weather_code) || "Weather";
+        document.getElementById("weatherSummary").textContent = climate.label;
         document.getElementById("windSpeed").textContent = `${Math.round(current.wind_speed_10m)} km/h`;
         document.getElementById("weatherPlace").textContent = label;
         document.getElementById("updatedAt").textContent = new Intl.DateTimeFormat("en-GB", {
           hour: "2-digit",
           minute: "2-digit"
         }).format(new Date());
+        applyClimate();
       } catch (error) {
         document.getElementById("weatherSummary").textContent = "Unavailable";
         document.getElementById("windSpeed").textContent = "retry";
+        applyClimate();
       }
     }
+
+    applyClimate();
 
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -1451,6 +2050,127 @@
     }
 
     initSignalCanvas();
+
+    function initWeatherCanvas() {
+      const canvas = document.getElementById("weatherCanvas");
+      if (!canvas) return;
+      const context = canvas.getContext("2d");
+      const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+      let width = 0;
+      let height = 0;
+      let particles = [];
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        width = Math.max(1, Math.floor(rect.width * ratio));
+        height = Math.max(1, Math.floor(rect.height * ratio));
+        canvas.width = width;
+        canvas.height = height;
+        particles = Array.from({ length: 96 }, (_, index) => ({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          r: 1 + Math.random() * 3,
+          phase: Math.random() * Math.PI * 2,
+          lane: index % 8
+        }));
+      }
+
+      function draw(time = 0) {
+        context.clearRect(0, 0, width, height);
+        const hue = getComputedStyle(root).getPropertyValue("--weather-hue").trim() || "214";
+        const speed = media.matches ? 0 : time / 1000;
+        const wind = Math.max(.4, Math.min(2.5, climate.wind / 8));
+        const rainy = [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(climate.code);
+        const clear = [0, 1].includes(climate.code);
+
+        context.lineWidth = rainy ? 1.4 : 1;
+        particles.forEach((particle, index) => {
+          const drift = speed * 28 * wind;
+          const x = (particle.x + drift * (particle.lane + 1) * .12) % width;
+          const wave = Math.sin(speed + particle.phase + particle.lane) * height * .035;
+          const y = (particle.y + wave + (rainy ? drift * .9 : 0)) % height;
+          context.beginPath();
+          if (rainy) {
+            context.moveTo(x, y);
+            context.lineTo(x + 12 * wind, y + 28);
+            context.strokeStyle = `hsla(${hue}, 70%, 55%, .34)`;
+            context.stroke();
+          } else {
+            context.arc(x, y, clear ? particle.r * 1.35 : particle.r, 0, Math.PI * 2);
+            context.fillStyle = `hsla(${hue}, 74%, ${clear ? 48 : 42}%, ${clear ? .32 : .2})`;
+            context.fill();
+          }
+
+          if (index % 9 === 0) {
+            context.beginPath();
+            context.arc(x, y, 42 + Math.sin(speed + particle.phase) * 8, 0, Math.PI * 2);
+            context.strokeStyle = `hsla(${hue}, 60%, 45%, .08)`;
+            context.stroke();
+          }
+        });
+
+        if (!media.matches) requestAnimationFrame(draw);
+      }
+
+      resize();
+      draw();
+      window.addEventListener("resize", resize);
+    }
+
+    initWeatherCanvas();
+
+    document.querySelectorAll(".promptButton").forEach(button => {
+      button.addEventListener("click", async () => {
+        const text = button.dataset.prompt;
+        try {
+          await navigator.clipboard.writeText(text);
+          button.innerHTML = '<i data-lucide="check"></i>';
+          refreshIcons();
+          setTimeout(() => {
+            button.innerHTML = '<i data-lucide="copy"></i>';
+            refreshIcons();
+          }, 1200);
+        } catch (error) {
+          button.title = text;
+        }
+      });
+    });
+
+    const briefInput = document.getElementById("briefInput");
+    const briefReceipt = document.getElementById("briefReceipt");
+    const savedBrief = localStorage.getItem("tinyBrief") || "";
+
+    function checksum(text) {
+      let hash = 2166136261;
+      for (let index = 0; index < text.length; index++) {
+        hash ^= text.charCodeAt(index);
+        hash = Math.imul(hash, 16777619);
+      }
+      return (hash >>> 0).toString(16).toUpperCase().padStart(8, "0");
+    }
+
+    function renderBrief(text) {
+      if (!text.trim()) {
+        briefReceipt.textContent = "No local brief saved yet.";
+        return;
+      }
+      briefReceipt.textContent = `LOCAL-${checksum(text)} / ${text.length} chars / ${new Date().toLocaleDateString()}`;
+    }
+
+    briefInput.value = savedBrief;
+    renderBrief(savedBrief);
+
+    document.getElementById("saveBrief").addEventListener("click", () => {
+      localStorage.setItem("tinyBrief", briefInput.value);
+      renderBrief(briefInput.value);
+    });
+
+    document.getElementById("clearBrief").addEventListener("click", () => {
+      briefInput.value = "";
+      localStorage.removeItem("tinyBrief");
+      renderBrief("");
+    });
   </script>
 </body>
 </html>
