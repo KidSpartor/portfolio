@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Tianyi Ma builds thoughtful software, interactive tools, and small systems with live data and a strong sense of craft.">
-  <meta name="theme-color" content="#f7f4ee">
-  <title>Tianyi Ma | Personal Operating Room</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%23171412'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Georgia,serif' font-size='34' fill='%23f7f4ee'%3ET%3C/text%3E%3C/svg%3E">
+  <meta name="description" content="Tianyi Ma's personal site: software, systems, notes, experiments, and taste.">
+  <meta name="theme-color" content="#f6f1e8">
+  <title>Tianyi Ma | Studio Index</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%23171412'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Georgia,serif' font-size='34' fill='%23f6f1e8'%3ET%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -14,31 +14,26 @@
   <style>
     :root {
       color-scheme: light;
-      --ink: #171412;
-      --muted: #645f57;
-      --soft: #8f887e;
-      --paper: #f7f4ee;
-      --paper-strong: #fffaf1;
-      --line: #d9d0c4;
+      --ink: #181411;
+      --muted: #625c52;
+      --faint: #938a7e;
+      --paper: #f6f1e8;
+      --paper-strong: #fffaf0;
+      --line: #d8cfc1;
       --blue: #2457d6;
-      --blue-soft: #e8eefc;
       --green: #126b55;
-      --green-soft: #e3f2ec;
       --amber: #a75d00;
-      --amber-soft: #f7ebd5;
       --coral: #c63f32;
-      --coral-soft: #f8dfda;
-      --shadow: 0 24px 70px rgba(36, 31, 24, .11);
+      --accent-h: 214;
+      --accent-s: 66%;
+      --accent-l: 48%;
+      --grain-angle: 135deg;
+      --field-x: 76%;
+      --field-y: 22%;
+      --pace: 13s;
+      --density: .5;
       --radius: 8px;
-      --weather-hue: 214;
-      --weather-sat: 68%;
-      --weather-light: 46%;
-      --weather-alpha: .14;
-      --time-angle: 180deg;
-      --sun-x: 72%;
-      --sun-y: 24%;
-      --wind-scale: 1;
-      --tempo: 12s;
+      --shadow: 0 24px 70px rgba(36, 31, 24, .1);
       --font-sans: "Inter", "Noto Sans SC", system-ui, sans-serif;
       --font-serif: "Instrument Serif", Georgia, serif;
       --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -46,20 +41,16 @@
 
     [data-theme="night"] {
       color-scheme: dark;
-      --ink: #f7f4ee;
-      --muted: #b9b0a4;
-      --soft: #847b70;
+      --ink: #f7f0e5;
+      --muted: #bab0a4;
+      --faint: #81776b;
       --paper: #11100e;
       --paper-strong: #1b1916;
       --line: #39342e;
       --blue: #8fb0ff;
-      --blue-soft: #172443;
       --green: #8adfc4;
-      --green-soft: #133429;
       --amber: #f1bd73;
-      --amber-soft: #3d2b14;
       --coral: #ff9c8f;
-      --coral-soft: #3f1f1a;
       --shadow: 0 24px 70px rgba(0, 0, 0, .34);
     }
 
@@ -75,52 +66,42 @@
       min-width: 320px;
       color: var(--ink);
       background:
-        linear-gradient(90deg, color-mix(in srgb, var(--line) 36%, transparent) 1px, transparent 1px),
-        linear-gradient(color-mix(in srgb, var(--line) 30%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--line) 34%, transparent) 1px, transparent 1px),
+        linear-gradient(color-mix(in srgb, var(--line) 28%, transparent) 1px, transparent 1px),
         var(--paper);
       background-size: 64px 64px;
       font-family: var(--font-sans);
       line-height: 1.55;
       letter-spacing: 0;
-      transition: color .25s ease, background-color .25s ease;
     }
 
     body::before {
       content: "";
       position: fixed;
       inset: 0;
-      z-index: -2;
+      z-index: -3;
       pointer-events: none;
       background:
-        radial-gradient(circle at var(--sun-x) var(--sun-y), hsla(var(--weather-hue), var(--weather-sat), 72%, .34), transparent 18%),
-        linear-gradient(var(--time-angle), hsla(var(--weather-hue), var(--weather-sat), var(--weather-light), var(--weather-alpha)), transparent 34%),
-        linear-gradient(245deg, rgba(18, 107, 85, .09), transparent 30%),
-        linear-gradient(0deg, rgba(167, 93, 0, .08), transparent 45%);
+        radial-gradient(circle at var(--field-x) var(--field-y), hsla(var(--accent-h), var(--accent-s), 72%, .32), transparent 19%),
+        linear-gradient(var(--grain-angle), hsla(var(--accent-h), var(--accent-s), var(--accent-l), .13), transparent 36%),
+        linear-gradient(245deg, color-mix(in srgb, var(--green) 10%, transparent), transparent 30%),
+        linear-gradient(0deg, color-mix(in srgb, var(--amber) 8%, transparent), transparent 48%);
+      transition: background .4s ease;
     }
 
     body::after {
       content: "";
       position: fixed;
       inset: 0;
-      z-index: -1;
+      z-index: -2;
       pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.22' filter='url(%23n)'/%3E%3C/svg%3E");
       opacity: .08;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.22' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    button, a, input {
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    button {
-      font: inherit;
-      color: inherit;
-    }
+    a { color: inherit; text-decoration: none; }
+    button { border: 0; font: inherit; color: inherit; }
+    button, a, textarea { -webkit-tap-highlight-color: transparent; }
 
     :focus-visible {
       outline: 3px solid color-mix(in srgb, var(--blue) 70%, white);
@@ -137,6 +118,22 @@
       clip: rect(0, 0, 0, 0);
       white-space: nowrap;
       border: 0;
+    }
+
+    #ambientCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: calc(.18 + var(--density) * .18);
+      mix-blend-mode: multiply;
+    }
+
+    [data-theme="night"] #ambientCanvas {
+      mix-blend-mode: screen;
+      opacity: calc(.12 + var(--density) * .12);
     }
 
     .shell {
@@ -181,11 +178,6 @@
       font-family: var(--font-serif);
       font-size: 21px;
       font-weight: 400;
-    }
-
-    .brand span:last-child {
-      font-size: 14px;
-      letter-spacing: 0;
     }
 
     .nav {
@@ -237,18 +229,6 @@
       transition: transform .2s ease, border-color .2s ease, background .2s ease;
     }
 
-    .icon-btn:hover,
-    .small-action:hover {
-      transform: translateY(-1px);
-      border-color: color-mix(in srgb, var(--ink) 35%, var(--line));
-    }
-
-    .icon-btn svg,
-    .small-action svg {
-      width: 18px;
-      height: 18px;
-    }
-
     .small-action {
       gap: 8px;
       padding: 0 13px;
@@ -259,20 +239,34 @@
       font-weight: 800;
     }
 
+    .icon-btn:hover,
+    .small-action:hover {
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--ink) 35%, var(--line));
+    }
+
+    .icon-btn svg,
+    .small-action svg,
+    .mini-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
     .hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1.08fr) minmax(340px, .92fr);
-      gap: 18px;
       min-height: calc(100vh - 106px);
-      padding: 18px 0 28px;
+      display: grid;
+      grid-template-columns: minmax(0, .68fr) minmax(330px, .32fr);
+      gap: 18px;
+      padding: 18px 0 34px;
     }
 
     .hero-main,
-    .live-panel,
+    .hero-side,
     .panel,
-    .project,
-    .note,
-    .lab-item {
+    .artifact,
+    .note-card,
+    .desk-card,
+    .contact-main {
       border: 1px solid var(--line);
       border-radius: var(--radius);
       background: color-mix(in srgb, var(--paper-strong) 88%, transparent);
@@ -282,8 +276,8 @@
     .hero-main {
       position: relative;
       overflow: hidden;
+      min-height: 650px;
       display: flex;
-      min-height: 620px;
       flex-direction: column;
       justify-content: space-between;
       padding: clamp(28px, 5vw, 64px);
@@ -295,25 +289,14 @@
       inset: 0;
       pointer-events: none;
       background:
-        radial-gradient(circle at var(--sun-x) var(--sun-y), hsla(var(--weather-hue), var(--weather-sat), 72%, .3), transparent 25%),
-        linear-gradient(160deg, transparent 0 58%, color-mix(in srgb, var(--green) 10%, transparent) 58% 100%);
-    }
-
-    .hero-main::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: calc(.18 + (var(--wind-scale) * .04));
-      background-image:
-        repeating-linear-gradient(100deg, transparent 0 18px, hsla(var(--weather-hue), var(--weather-sat), 42%, .18) 19px, transparent 20px),
-        radial-gradient(circle at 12% 88%, color-mix(in srgb, var(--coral) 18%, transparent), transparent 24%);
-      transform: translateX(calc(var(--wind-scale) * -4px));
-      animation: atmosphere var(--tempo) linear infinite;
+        repeating-linear-gradient(100deg, transparent 0 18px, hsla(var(--accent-h), var(--accent-s), 42%, .1) 19px, transparent 20px),
+        linear-gradient(160deg, transparent 0 56%, color-mix(in srgb, var(--green) 10%, transparent) 56% 100%);
+      opacity: calc(.22 + var(--density) * .18);
+      animation: fieldDrift var(--pace) linear infinite;
     }
 
     .hero-copy,
-    .hero-footer {
+    .hero-foot {
       position: relative;
       z-index: 1;
     }
@@ -327,45 +310,45 @@
       color: var(--muted);
       font-family: var(--font-mono);
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
     }
 
-    .status-dot {
+    .pulse {
       width: 9px;
       height: 9px;
       border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 0 6px color-mix(in srgb, var(--green) 18%, transparent);
+      background: hsl(var(--accent-h) var(--accent-s) var(--accent-l));
+      box-shadow: 0 0 0 6px hsla(var(--accent-h), var(--accent-s), var(--accent-l), .18);
     }
 
     h1 {
-      max-width: 920px;
+      max-width: 900px;
       margin: 0;
       font-family: var(--font-serif);
-      font-size: clamp(58px, 10vw, 146px);
+      font-size: clamp(62px, 11vw, 154px);
       font-weight: 400;
       line-height: .84;
       letter-spacing: 0;
     }
 
     .hero-copy p {
-      max-width: 680px;
-      margin: 30px 0 0;
+      max-width: 730px;
+      margin: 32px 0 0;
       color: var(--muted);
       font-size: clamp(18px, 2vw, 24px);
       line-height: 1.45;
     }
 
-    .hero-footer {
+    .hero-foot {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
       margin-top: 56px;
     }
 
-    .metric {
-      min-height: 132px;
+    .statement {
+      min-height: 146px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -375,106 +358,26 @@
       background: color-mix(in srgb, var(--paper) 66%, transparent);
     }
 
-    .metric strong {
-      font-size: clamp(28px, 4vw, 48px);
+    .statement strong {
+      font-size: clamp(24px, 3vw, 34px);
       line-height: 1;
-      font-weight: 800;
+      letter-spacing: 0;
     }
 
-    .metric span {
+    .statement span {
       color: var(--muted);
       font-size: 13px;
       font-weight: 700;
     }
 
-    .ambient-row {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(230px, .42fr);
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .ambient-card {
-      min-height: 116px;
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: color-mix(in srgb, var(--paper) 62%, transparent);
-    }
-
-    .ambient-card strong {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 13px;
-      text-transform: uppercase;
-    }
-
-    .ambient-card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .mood-lanes {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 4px;
-      margin-top: 18px;
-    }
-
-    .mood-lanes span {
-      height: 32px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: hsl(calc(var(--weather-hue) + (var(--i) * 9)) var(--weather-sat) calc(38% + (var(--i) * 2%)));
-      opacity: calc(.24 + (var(--i) * .045));
-      transform: scaleY(calc(.52 + (var(--wind-scale) * .08) + (var(--i) * .025)));
-      transform-origin: bottom;
-    }
-
-    .micro-orbit {
-      position: relative;
-      min-height: 100%;
+    .hero-side {
+      min-height: 650px;
       overflow: hidden;
-    }
-
-    .micro-orbit::before,
-    .micro-orbit::after {
-      content: "";
-      position: absolute;
-      inset: 12px;
-      border: 1px solid color-mix(in srgb, var(--ink) 24%, transparent);
-      border-radius: 50%;
-      rotate: var(--time-angle);
-    }
-
-    .micro-orbit::after {
-      inset: 32px;
-      border-color: hsla(var(--weather-hue), var(--weather-sat), var(--weather-light), .48);
-      animation: spin calc(var(--tempo) * 1.8) linear infinite;
-    }
-
-    .micro-orbit .hand {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 38%;
-      height: 2px;
-      background: var(--ink);
-      transform-origin: left center;
-      transform: rotate(var(--time-angle));
-    }
-
-    .live-panel {
       display: grid;
-      grid-template-rows: auto auto auto;
-      min-height: 620px;
-      overflow: hidden;
+      grid-template-rows: auto 1fr auto;
     }
 
-    .panel-head {
+    .side-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -483,7 +386,7 @@
       border-bottom: 1px solid var(--line);
     }
 
-    .panel-title {
+    .side-title {
       display: flex;
       align-items: center;
       gap: 10px;
@@ -492,165 +395,87 @@
       text-transform: uppercase;
     }
 
-    .panel-title svg {
+    .side-title svg {
       width: 17px;
       height: 17px;
       color: var(--blue);
     }
 
-    .live-clock {
-      padding: 18px 18px 12px;
-    }
-
-    .time {
+    .composition {
       position: relative;
-      min-height: 238px;
-      display: grid;
-      place-items: center;
+      min-height: 380px;
+      margin: 18px;
+      overflow: hidden;
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      overflow: hidden;
       background:
-        conic-gradient(from var(--time-angle), hsla(var(--weather-hue), var(--weather-sat), var(--weather-light), .38), transparent 34%, color-mix(in srgb, var(--green) 22%, transparent), transparent 78%),
-        radial-gradient(circle at var(--sun-x) var(--sun-y), hsla(var(--weather-hue), var(--weather-sat), 70%, .38), transparent 18%),
+        conic-gradient(from var(--grain-angle), hsla(var(--accent-h), var(--accent-s), var(--accent-l), .32), transparent 38%, color-mix(in srgb, var(--green) 18%, transparent), transparent),
+        radial-gradient(circle at var(--field-x) var(--field-y), hsla(var(--accent-h), var(--accent-s), 72%, .28), transparent 18%),
         var(--paper);
-      color: transparent;
-      font-size: 0;
     }
 
-    .date-line {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .time::before,
-    .time::after {
+    .composition::before,
+    .composition::after {
       content: "";
       position: absolute;
       border-radius: 50%;
+      border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+      transform: rotate(var(--grain-angle));
     }
 
-    .time::before {
-      width: min(70%, 250px);
-      aspect-ratio: 1;
-      border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
-      box-shadow:
-        inset 0 0 0 1px color-mix(in srgb, var(--paper-strong) 60%, transparent),
-        0 0 0 22px color-mix(in srgb, var(--paper-strong) 24%, transparent);
+    .composition::before {
+      width: 280px;
+      height: 280px;
+      left: 50%;
+      top: 48%;
+      translate: -50% -50%;
     }
 
-    .time::after {
-      width: 18px;
-      height: 18px;
-      background: var(--ink);
-      transform:
-        rotate(var(--time-angle))
-        translateX(min(100px, 28vw));
-      box-shadow: 0 0 0 10px hsla(var(--weather-hue), var(--weather-sat), var(--weather-light), .2);
+    .composition::after {
+      width: 150px;
+      height: 150px;
+      right: 12%;
+      bottom: 8%;
+      animation: spin calc(var(--pace) * 3) linear infinite;
     }
 
-    .time-mark {
+    .composition-line {
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 44%;
+      width: 42%;
       height: 2px;
       background: linear-gradient(90deg, var(--ink), transparent);
       transform-origin: left center;
-      transform: rotate(var(--time-angle));
+      transform: rotate(var(--grain-angle));
     }
 
-    .time-caption {
-      position: relative;
-      z-index: 1;
-      align-self: end;
-      margin: auto 0 18px;
-      padding: 7px 10px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      color: var(--ink);
-      background: color-mix(in srgb, var(--paper-strong) 78%, transparent);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .signal-art {
-      position: relative;
-      min-height: 210px;
-      margin: 12px 18px 0;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background:
-        linear-gradient(135deg, color-mix(in srgb, var(--blue) 18%, transparent), transparent 42%),
-        linear-gradient(315deg, color-mix(in srgb, var(--green) 20%, transparent), transparent 44%),
-        var(--paper);
-    }
-
-    #signalCanvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    .weather {
+    .side-list {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      padding: 18px;
+      padding: 0 18px 18px;
     }
 
-    .weather-cell {
-      min-height: 104px;
+    .side-list div {
+      min-height: 112px;
       padding: 14px;
       border: 1px solid var(--line);
       border-radius: var(--radius);
       background: color-mix(in srgb, var(--paper) 70%, transparent);
     }
 
-    .weather-cell b {
+    .side-list b {
       display: block;
-      font-size: 26px;
-      line-height: 1.1;
+      margin-bottom: 8px;
+      font-size: 20px;
     }
 
-    .weather-cell span {
+    .side-list span {
       display: block;
-      margin-top: 8px;
       color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    .climate-mark {
-      position: relative;
-      min-height: 104px;
-      overflow: hidden;
-    }
-
-    .climate-mark::before {
-      content: "";
-      position: absolute;
-      inset: 10px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, hsla(var(--weather-hue), var(--weather-sat), var(--weather-light), .8), transparent);
-      transform: scaleX(calc(.35 + var(--wind-scale) * .08));
-      transform-origin: left center;
-    }
-
-    .climate-mark::after {
-      content: "";
-      position: absolute;
-      inset: 18px;
-      border: 1px solid var(--line);
-      border-radius: 50%;
-      background: color-mix(in srgb, var(--paper-strong) 52%, transparent);
-      animation: breathe var(--tempo) ease-in-out infinite;
+      font-size: 13px;
+      font-weight: 600;
     }
 
     section {
@@ -665,198 +490,155 @@
       margin-bottom: 18px;
     }
 
-    .section-kicker {
+    .kicker {
       color: var(--blue);
       font-family: var(--font-mono);
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
       text-transform: uppercase;
     }
 
     h2 {
-      max-width: 920px;
+      max-width: 960px;
       margin: 8px 0 0;
       font-family: var(--font-serif);
-      font-size: clamp(42px, 6vw, 84px);
+      font-size: clamp(42px, 6vw, 86px);
       font-weight: 400;
       line-height: .95;
       letter-spacing: 0;
     }
 
-    .section-head p {
+    .section-head p,
+    .panel p,
+    .artifact p,
+    .note-card p,
+    .desk-card p {
       margin: 0;
       color: var(--muted);
       font-size: 15px;
     }
 
-    .work-grid {
+    .artifact-grid {
       display: grid;
       grid-template-columns: repeat(12, 1fr);
       gap: 18px;
     }
 
-    .project {
+    .artifact {
       position: relative;
       overflow: hidden;
-      min-height: 430px;
+      min-height: 420px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       padding: 20px;
-      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+      transition: transform .25s ease, border-color .25s ease;
     }
 
-    .project:hover {
+    .artifact:hover {
       transform: translateY(-4px);
       border-color: color-mix(in srgb, var(--ink) 32%, var(--line));
     }
 
-    .project.large {
-      grid-column: span 7;
-    }
-
-    .project.medium {
-      grid-column: span 5;
-    }
-
-    .project.wide {
+    .artifact.large { grid-column: span 7; }
+    .artifact.medium { grid-column: span 5; }
+    .artifact.wide {
       grid-column: span 12;
       min-height: 340px;
       display: grid;
-      grid-template-columns: minmax(0, .65fr) minmax(280px, .35fr);
+      grid-template-columns: minmax(0, .62fr) minmax(280px, .38fr);
       gap: 18px;
     }
 
-    .project-media {
-      min-height: 190px;
+    .visual {
+      min-height: 210px;
+      overflow: hidden;
       border: 1px solid var(--line);
       border-radius: var(--radius);
       background: var(--paper);
-      overflow: hidden;
     }
 
-    .orbital {
+    .visual.system {
       position: relative;
-      height: 100%;
-      min-height: 220px;
       background:
-        linear-gradient(135deg, color-mix(in srgb, var(--blue) 16%, transparent), transparent 50%),
+        linear-gradient(135deg, color-mix(in srgb, var(--blue) 17%, transparent), transparent 50%),
         linear-gradient(45deg, color-mix(in srgb, var(--coral) 14%, transparent), transparent 48%),
         var(--paper);
     }
 
-    .orbit-ring,
-    .orbit-core {
+    .node {
       position: absolute;
-      inset: 50% auto auto 50%;
-      translate: -50% -50%;
+      width: 92px;
+      height: 92px;
+      border: 1px solid var(--line);
       border-radius: 50%;
+      background: color-mix(in srgb, var(--paper-strong) 74%, transparent);
     }
 
-    .orbit-ring {
-      width: 230px;
-      height: 230px;
-      border: 1px solid color-mix(in srgb, var(--ink) 24%, transparent);
-      animation: spin 18s linear infinite;
-    }
+    .node:nth-child(1) { left: 12%; top: 16%; }
+    .node:nth-child(2) { right: 16%; top: 22%; width: 130px; height: 130px; }
+    .node:nth-child(3) { left: 38%; bottom: 14%; width: 160px; height: 160px; }
 
-    .orbit-ring:nth-child(2) {
-      width: 148px;
-      height: 148px;
-      animation-duration: 11s;
-      animation-direction: reverse;
-    }
-
-    .orbit-ring::before {
+    .node::after {
       content: "";
       position: absolute;
-      top: -6px;
-      left: 50%;
-      width: 12px;
-      height: 12px;
+      inset: 22px;
       border-radius: 50%;
-      background: var(--blue);
+      background: hsla(var(--accent-h), var(--accent-s), var(--accent-l), .18);
     }
 
-    .orbit-core {
-      width: 72px;
-      height: 72px;
-      border: 1px solid var(--line);
-      background: var(--paper-strong);
-      box-shadow: inset 0 0 0 14px var(--green-soft);
-    }
-
-    .weather-strip {
+    .visual.rhythm {
       display: grid;
-      height: 100%;
-      min-height: 220px;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(9, 1fr);
       align-items: end;
-      gap: 8px;
+      gap: 6px;
       padding: 18px;
       background:
-        linear-gradient(180deg, color-mix(in srgb, var(--amber) 16%, transparent), transparent 58%),
+        linear-gradient(var(--grain-angle), hsla(var(--accent-h), var(--accent-s), var(--accent-l), .18), transparent 60%),
         var(--paper);
     }
 
-    .bar {
-      display: flex;
-      min-height: 60px;
-      align-items: end;
-      justify-content: center;
+    .visual.rhythm span {
+      min-height: 58px;
+      border: 1px solid var(--line);
       border-radius: 999px 999px 6px 6px;
-      background: var(--blue-soft);
-      color: var(--blue);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
+      background: hsla(var(--accent-h), var(--accent-s), var(--accent-l), .2);
+      transform: scaleY(calc(.38 + var(--density) + var(--i) * .035));
+      transform-origin: bottom;
     }
 
-    .bar:nth-child(1) { height: 44%; }
-    .bar:nth-child(2) { height: 68%; background: var(--green-soft); color: var(--green); }
-    .bar:nth-child(3) { height: 82%; background: var(--amber-soft); color: var(--amber); }
-    .bar:nth-child(4) { height: 58%; background: var(--coral-soft); color: var(--coral); }
-    .bar:nth-child(5) { height: 74%; }
-
-    .notebook-media {
-      position: relative;
-      min-height: 248px;
+    .visual.tokens {
       padding: 18px;
       background: var(--paper);
     }
 
-    .paper-line {
-      height: 1px;
-      margin: 22px 0;
-      background: var(--line);
-    }
-
-    .paper-token {
+    .token {
       display: inline-flex;
       min-height: 34px;
       align-items: center;
-      margin: 3px;
+      margin: 4px;
       padding: 0 10px;
       border: 1px solid var(--line);
       border-radius: 999px;
       color: var(--muted);
       background: var(--paper-strong);
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
-    .project h3 {
+    .paper-line {
+      height: 1px;
+      margin: 20px 0;
+      background: var(--line);
+    }
+
+    .artifact h3,
+    .desk-card h3,
+    .note-card h3 {
       margin: 18px 0 8px;
       font-size: clamp(24px, 3vw, 38px);
       line-height: 1.05;
       letter-spacing: 0;
-    }
-
-    .project p {
-      max-width: 620px;
-      margin: 0;
-      color: var(--muted);
-      font-size: 15px;
     }
 
     .tag-row {
@@ -889,29 +671,23 @@
       padding: 22px;
     }
 
-    .panel h3 {
-      margin: 0 0 16px;
-      font-size: 16px;
-      text-transform: uppercase;
-    }
-
     .bio {
       font-family: var(--font-serif);
-      font-size: clamp(30px, 4vw, 54px);
+      font-size: clamp(30px, 4vw, 56px);
       line-height: 1.03;
     }
 
     .bio em {
-      color: var(--blue);
+      color: hsl(var(--accent-h) var(--accent-s) var(--accent-l));
       font-style: italic;
     }
 
-    .timeline {
+    .principles {
       display: grid;
       gap: 10px;
     }
 
-    .note {
+    .note-card {
       display: grid;
       grid-template-columns: 90px 1fr;
       gap: 16px;
@@ -919,261 +695,71 @@
       box-shadow: none;
     }
 
-    .note time {
+    .note-card time,
+    .number {
       color: var(--blue);
       font-family: var(--font-mono);
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
-    .note strong {
+    .note-card strong {
       display: block;
       margin-bottom: 4px;
     }
 
-    .note span {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .lab-grid {
+    .desk-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 18px;
     }
 
-    .lab-item {
-      min-height: 250px;
+    .desk-card {
+      min-height: 272px;
       padding: 18px;
       box-shadow: none;
       transition: transform .25s ease, border-color .25s ease;
     }
 
-    .lab-item:hover {
+    .desk-card:hover {
       transform: translateY(-3px);
       border-color: color-mix(in srgb, var(--ink) 30%, var(--line));
     }
 
-    .lab-item i {
+    .mini-icon {
       display: grid;
       width: 48px;
       height: 48px;
       place-items: center;
-      margin-bottom: 32px;
+      margin-bottom: 34px;
       border-radius: var(--radius);
-      background: var(--blue-soft);
+      background: color-mix(in srgb, var(--blue) 13%, transparent);
       color: var(--blue);
-      font-style: normal;
     }
 
-    .lab-item:nth-child(2) i { background: var(--green-soft); color: var(--green); }
-    .lab-item:nth-child(3) i { background: var(--amber-soft); color: var(--amber); }
-    .lab-item:nth-child(4) i { background: var(--coral-soft); color: var(--coral); }
+    .desk-card:nth-child(2) .mini-icon { background: color-mix(in srgb, var(--green) 13%, transparent); color: var(--green); }
+    .desk-card:nth-child(3) .mini-icon { background: color-mix(in srgb, var(--amber) 16%, transparent); color: var(--amber); }
+    .desk-card:nth-child(4) .mini-icon { background: color-mix(in srgb, var(--coral) 14%, transparent); color: var(--coral); }
 
-    .lab-item svg {
-      width: 22px;
-      height: 22px;
-    }
-
-    .lab-item h3 {
-      margin: 0 0 10px;
-      font-size: 20px;
-    }
-
-    .lab-item p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .atlas {
-      display: grid;
-      grid-template-columns: minmax(0, .9fr) minmax(320px, 1.1fr);
-      gap: 18px;
-    }
-
-    .atlas-stage {
-      position: relative;
-      min-height: 520px;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background:
-        radial-gradient(circle at var(--sun-x) var(--sun-y), hsla(var(--weather-hue), var(--weather-sat), 72%, .4), transparent 19%),
-        conic-gradient(from var(--time-angle), color-mix(in srgb, var(--blue) 20%, transparent), transparent, color-mix(in srgb, var(--green) 18%, transparent), transparent),
-        var(--paper-strong);
-      box-shadow: var(--shadow);
-    }
-
-    .atlas-stage canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    .atlas-label {
-      position: absolute;
-      left: 18px;
-      right: 18px;
-      bottom: 18px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      z-index: 1;
-    }
-
-    .atlas-copy {
-      display: grid;
-      gap: 18px;
-    }
-
-    .prompt-box {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: color-mix(in srgb, var(--paper-strong) 88%, transparent);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .prompt-row {
-      display: grid;
-      grid-template-columns: 52px 1fr;
-      gap: 14px;
-      padding: 18px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .prompt-row:last-child {
-      border-bottom: 0;
-    }
-
-    .prompt-row button {
-      width: 44px;
-      height: 44px;
-      display: grid;
-      place-items: center;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--paper);
-      cursor: pointer;
-    }
-
-    .prompt-row strong {
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .prompt-row span {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .library-grid {
+    .library {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 18px;
     }
 
-    .library-card {
-      min-height: 320px;
+    .library .note-card {
+      min-height: 330px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: color-mix(in srgb, var(--paper-strong) 88%, transparent);
+      grid-template-columns: none;
       box-shadow: var(--shadow);
     }
 
-    .library-card .number {
-      color: var(--blue);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .library-card h3 {
-      margin: 0 0 12px;
+    .library h3 {
       font-family: var(--font-serif);
-      font-size: 34px;
+      font-size: 36px;
       font-weight: 400;
-      line-height: .98;
-    }
-
-    .library-card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .visitor-pad {
-      display: grid;
-      grid-template-columns: minmax(0, .65fr) minmax(280px, .35fr);
-      gap: 18px;
-    }
-
-    .transmission {
-      min-height: 300px;
-      padding: 20px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: color-mix(in srgb, var(--paper-strong) 88%, transparent);
-      box-shadow: var(--shadow);
-    }
-
-    .transmission textarea {
-      width: 100%;
-      min-height: 160px;
-      resize: vertical;
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      color: var(--ink);
-      background: var(--paper);
-      font: 500 16px/1.5 var(--font-sans);
-    }
-
-    .transmission-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .transmission-actions button {
-      min-height: 44px;
-      padding: 0 14px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--ink);
-      color: var(--paper);
-      cursor: pointer;
-      font-weight: 800;
-    }
-
-    .receipt {
-      min-height: 300px;
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background:
-        linear-gradient(180deg, color-mix(in srgb, var(--paper) 78%, transparent), transparent),
-        color-mix(in srgb, var(--paper-strong) 88%, transparent);
-      box-shadow: var(--shadow);
-    }
-
-    .receipt-code {
-      margin-top: 18px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--paper);
-      color: var(--muted);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      overflow-wrap: anywhere;
     }
 
     .contact {
@@ -1189,11 +775,8 @@
       flex-direction: column;
       justify-content: space-between;
       padding: clamp(24px, 5vw, 56px);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
       background: var(--ink);
       color: var(--paper);
-      box-shadow: var(--shadow);
     }
 
     .contact-main h2 {
@@ -1231,11 +814,6 @@
       background: color-mix(in srgb, var(--paper) 14%, transparent);
     }
 
-    .contact-link svg {
-      width: 18px;
-      height: 18px;
-    }
-
     .contact-side {
       display: grid;
       gap: 18px;
@@ -1262,52 +840,43 @@
       transform: translateY(0);
     }
 
-    @keyframes spin {
-      to { rotate: 360deg; }
-    }
-
-    @keyframes atmosphere {
+    @keyframes fieldDrift {
       to { background-position: 180px 0, 0 0; }
     }
 
-    @keyframes breathe {
-      0%, 100% { transform: scale(.92); opacity: .72; }
-      50% { transform: scale(1.05); opacity: 1; }
+    @keyframes spin {
+      to { rotate: 360deg; }
     }
 
     @media (max-width: 1120px) {
       .hero,
       .about-grid,
       .contact,
-      .section-head,
-      .atlas,
-      .visitor-pad {
+      .section-head {
         grid-template-columns: 1fr;
       }
 
       .hero-main,
-      .live-panel {
+      .hero-side {
         min-height: auto;
       }
 
-      .project.large,
-      .project.medium {
+      .artifact.large,
+      .artifact.medium {
         grid-column: span 6;
       }
 
-      .lab-grid {
+      .desk-grid {
         grid-template-columns: repeat(2, 1fr);
       }
 
-      .library-grid {
+      .library {
         grid-template-columns: 1fr;
       }
     }
 
     @media (max-width: 760px) {
-      .shell {
-        padding: 10px;
-      }
+      .shell { padding: 10px; }
 
       .topbar {
         grid-template-columns: 1fr auto;
@@ -1322,16 +891,9 @@
         justify-content: flex-start;
       }
 
-      .brand span:last-child {
-        display: none;
-      }
-
+      .brand span:last-child,
       .small-action span {
         display: none;
-      }
-
-      .hero {
-        min-height: auto;
       }
 
       .hero-main {
@@ -1342,25 +904,24 @@
         font-size: clamp(58px, 17vw, 92px);
       }
 
-      .hero-footer,
-      .weather,
-      .project.wide,
-      .lab-grid,
-      .ambient-row {
+      .hero-foot,
+      .side-list,
+      .artifact.wide,
+      .desk-grid {
         grid-template-columns: 1fr;
       }
 
-      .project.large,
-      .project.medium,
-      .project.wide {
+      .artifact.large,
+      .artifact.medium,
+      .artifact.wide {
         grid-column: span 12;
       }
 
-      .project {
+      .artifact {
         min-height: 360px;
       }
 
-      .note {
+      .note-card {
         grid-template-columns: 1fr;
       }
 
@@ -1382,6 +943,9 @@
   </style>
 </head>
 <body>
+  <canvas id="ambientCanvas" aria-hidden="true"></canvas>
+  <span class="sr-only" id="ambientStatus">The page uses local environmental signals only to tune visual rhythm and color.</span>
+
   <div class="shell">
     <header class="topbar" aria-label="Primary navigation">
       <a class="brand" href="#top" aria-label="Tianyi Ma home">
@@ -1391,9 +955,8 @@
       <nav class="nav" aria-label="Sections">
         <a href="#work">Work</a>
         <a href="#about">About</a>
-        <a href="#lab">Lab</a>
-        <a href="#atlas">Atlas</a>
-        <a href="#signals">Signals</a>
+        <a href="#desk">Desk</a>
+        <a href="#notes">Notes</a>
         <a href="#contact">Contact</a>
       </nav>
       <div class="top-actions">
@@ -1412,77 +975,53 @@
         <div class="hero-main reveal">
           <div class="hero-copy">
             <div class="eyebrow">
-              <span class="status-dot" aria-hidden="true"></span>
-              <span>Paris time, global internet</span>
-              <span id="networkState">checking signal</span>
+              <span class="pulse" aria-hidden="true"></span>
+              <span>Studio index</span>
+              <span>software / systems / taste</span>
             </div>
-            <h1 id="hero-title">Tianyi Ma builds small worlds that work.</h1>
-            <p>Software, interfaces, simulations, and quiet tools for ideas that deserve more than a template. This site is a live surface: weather, time, GitHub traces, and a few experiments update as you visit.</p>
+            <h1 id="hero-title">Tianyi Ma keeps useful things slightly strange.</h1>
+            <p>A personal site for software, instruments, essays, prototypes, and the kind of interface details that make an idea feel alive without announcing the trick.</p>
           </div>
-          <div class="hero-footer" aria-label="Profile metrics">
-            <div class="metric">
-              <strong id="repoCount">--</strong>
-              <span>public GitHub repositories</span>
+          <div class="hero-foot" aria-label="Editorial statements">
+            <div class="statement">
+              <strong>01</strong>
+              <span>Build interfaces that reward repeated use, not just first impressions.</span>
             </div>
-            <div class="metric">
-              <strong>04</strong>
-              <span>active directions: web, games, data, tools</span>
+            <div class="statement">
+              <strong>02</strong>
+              <span>Turn rough ideas into working objects before they become too precious.</span>
             </div>
-            <div class="metric">
-              <strong id="localTemp">--</strong>
-              <span>current local weather</span>
-            </div>
-          </div>
-          <div class="ambient-row" aria-label="Ambient site conditions">
-            <div class="ambient-card">
-              <strong>Weather as material</strong>
-              <p id="ambientSentence">The page is waiting for the sky before choosing its tempo.</p>
-              <div class="mood-lanes" aria-hidden="true">
-                <span style="--i:1"></span><span style="--i:2"></span><span style="--i:3"></span><span style="--i:4"></span><span style="--i:5"></span><span style="--i:6"></span><span style="--i:7"></span><span style="--i:8"></span><span style="--i:9"></span><span style="--i:10"></span><span style="--i:11"></span><span style="--i:12"></span>
-              </div>
-            </div>
-            <div class="ambient-card micro-orbit" aria-hidden="true">
-              <span class="hand"></span>
+            <div class="statement">
+              <strong>03</strong>
+              <span>Let the system show its intelligence through behavior, restraint, and rhythm.</span>
             </div>
           </div>
         </div>
 
-        <aside class="live-panel reveal" aria-label="Live personal dashboard">
-          <div class="panel-head">
-            <div class="panel-title"><i data-lucide="activity"></i> Live Room</div>
-            <span class="tag" id="weatherPlace">Paris fallback</span>
+        <aside class="hero-side reveal" aria-label="Studio composition">
+          <div class="side-head">
+            <div class="side-title"><i data-lucide="scan-line"></i> Working Surface</div>
+            <span class="tag">living layout</span>
           </div>
-          <div class="live-clock">
-            <div class="time" id="clock" aria-label="Current Paris time">
-              <span class="time-mark" aria-hidden="true"></span>
-              <span class="time-caption" id="timeCaption">temporal orbit loading</span>
-            </div>
-            <div class="date-line" id="dateLine">loading today</div>
+          <div class="composition" aria-hidden="true">
+            <span class="composition-line"></span>
           </div>
-          <div class="signal-art" aria-label="Animated signal artwork">
-            <canvas id="signalCanvas"></canvas>
-          </div>
-          <div class="weather" aria-live="polite">
-            <div class="weather-cell">
-              <b id="weatherSummary">--</b>
-              <span>sky</span>
+          <div class="side-list">
+            <div>
+              <b>Prototype</b>
+              <span>Fast sketches that become small tools, games, or personal systems.</span>
             </div>
-            <div class="weather-cell">
-              <b id="windSpeed">--</b>
-              <span>wind</span>
+            <div>
+              <b>Observe</b>
+              <span>Notes on interaction, writing, music, automation, and the shape of attention.</span>
             </div>
-            <div class="weather-cell">
-              <b id="githubFollowers">--</b>
-              <span>GitHub followers</span>
+            <div>
+              <b>Compose</b>
+              <span>Design language as layout, motion, typography, contrast, and silence.</span>
             </div>
-            <div class="weather-cell">
-              <b id="updatedAt">live</b>
-              <span>last refresh</span>
-            </div>
-            <div class="weather-cell climate-mark" aria-hidden="true"></div>
-            <div class="weather-cell">
-              <b id="moodWord">Tuning</b>
-              <span>ambient mood</span>
+            <div>
+              <b>Ship</b>
+              <span>Deployable work with clean edges and enough personality to remember.</span>
             </div>
           </div>
         </aside>
@@ -1491,73 +1030,65 @@
       <section id="work" aria-labelledby="work-title">
         <div class="section-head reveal">
           <div>
-            <div class="section-kicker">Selected work</div>
-            <h2 id="work-title">Not a portfolio grid. A field map.</h2>
+            <div class="kicker">Selected directions</div>
+            <h2 id="work-title">A portfolio can be a cabinet, not a trophy shelf.</h2>
           </div>
-          <p>The content is intentionally broader than old project screenshots: each tile describes a direction this personal site can grow into.</p>
+          <p>The work is organized by what it teaches: systems, instruments, playful models, and public thinking. Each tile can later become a full case study.</p>
         </div>
 
-        <div class="work-grid">
-          <article class="project large reveal">
+        <div class="artifact-grid">
+          <article class="artifact large reveal">
             <div>
-              <div class="project-media orbital" aria-hidden="true">
-                <div class="orbit-ring"></div>
-                <div class="orbit-ring"></div>
-                <div class="orbit-core"></div>
+              <div class="visual system" aria-hidden="true">
+                <span class="node"></span>
+                <span class="node"></span>
+                <span class="node"></span>
               </div>
-              <h3>Personal Operating Room</h3>
-              <p>A command-center style homepage with live data, identity, contact routes, and a visual system strong enough to scale into a blog or project archive.</p>
+              <h3>Personal systems</h3>
+              <p>Dashboards, automations, writing surfaces, and local-first tools that make everyday decisions easier without turning life into a spreadsheet.</p>
             </div>
             <div class="tag-row">
-              <span class="tag">Static HTML</span>
-              <span class="tag">Live APIs</span>
-              <span class="tag">Accessible motion</span>
+              <span class="tag">Local-first</span>
+              <span class="tag">Automation</span>
+              <span class="tag">Workflow design</span>
             </div>
           </article>
 
-          <article class="project medium reveal">
+          <article class="artifact medium reveal">
             <div>
-              <div class="project-media">
-                <div class="weather-strip" aria-hidden="true">
-                  <div class="bar">08</div>
-                  <div class="bar">11</div>
-                  <div class="bar">15</div>
-                  <div class="bar">19</div>
-                  <div class="bar">23</div>
-                </div>
+              <div class="visual rhythm" aria-hidden="true">
+                <span style="--i:.1"></span><span style="--i:.2"></span><span style="--i:.3"></span><span style="--i:.4"></span><span style="--i:.5"></span><span style="--i:.6"></span><span style="--i:.7"></span><span style="--i:.8"></span><span style="--i:.9"></span>
               </div>
-              <h3>Weather-aware micro journal</h3>
-              <p>A future writing mode where location, time, and weather become gentle context for notes, travel logs, and daily research fragments.</p>
+              <h3>Interface instruments</h3>
+              <p>Small apps that feel like objects: a lyric player, a signal monitor, a visual notebook, or a control panel for a messy idea.</p>
             </div>
             <div class="tag-row">
-              <span class="tag">Open-Meteo</span>
-              <span class="tag">Geolocation</span>
-              <span class="tag">Journal UX</span>
+              <span class="tag">React</span>
+              <span class="tag">Electron</span>
+              <span class="tag">Canvas</span>
             </div>
           </article>
 
-          <article class="project wide reveal">
-            <div>
-              <div class="project-media notebook-media" aria-hidden="true">
-                <span class="paper-token">React systems</span>
-                <span class="paper-token">game mechanics</span>
-                <span class="paper-token">music tools</span>
-                <div class="paper-line"></div>
-                <span class="paper-token">design taste</span>
-                <span class="paper-token">local-first data</span>
-                <span class="paper-token">AI workflows</span>
-                <div class="paper-line"></div>
-                <span class="paper-token">deployment</span>
-                <span class="paper-token">automation</span>
-              </div>
+          <article class="artifact wide reveal">
+            <div class="visual tokens" aria-hidden="true">
+              <span class="token">game feel</span>
+              <span class="token">music libraries</span>
+              <span class="token">AI workflows</span>
+              <div class="paper-line"></div>
+              <span class="token">tiny databases</span>
+              <span class="token">simulation toys</span>
+              <span class="token">reading systems</span>
+              <div class="paper-line"></div>
+              <span class="token">public notebooks</span>
+              <span class="token">deployment rituals</span>
             </div>
             <div>
-              <h3>Idea index</h3>
-              <p>A compact public notebook for the themes behind the work: interface craft, fast prototypes, small games, useful dashboards, and the strange joy of getting details right.</p>
+              <h3>Prototype cabinet</h3>
+              <p>A place for half-serious experiments: poker logic, space physics, music metadata, generative posters, prompt tools, and whatever else becomes useful by being made tangible.</p>
               <div class="tag-row">
-                <span class="tag">Notes</span>
-                <span class="tag">Essays</span>
-                <span class="tag">Research snippets</span>
+                <span class="tag">Games</span>
+                <span class="tag">Tools</span>
+                <span class="tag">Experiments</span>
               </div>
             </div>
           </article>
@@ -1567,184 +1098,118 @@
       <section id="about" aria-labelledby="about-title">
         <div class="section-head reveal">
           <div>
-            <div class="section-kicker">About</div>
-            <h2 id="about-title">A builder with a taste for live systems.</h2>
+            <div class="kicker">About</div>
+            <h2 id="about-title">Taste is a technical constraint.</h2>
           </div>
-          <p>This page avoids fake résumé gravity. It gives visitors a fast, memorable read: what Tianyi makes, how he thinks, and where to go next.</p>
+          <p>Good personal software needs engineering judgment, but it also needs a point of view: what to show, what to hide, what to make slower, what to make obvious.</p>
         </div>
 
         <div class="about-grid">
           <div class="panel reveal">
-            <div class="bio">I like software that feels <em>inhabited</em>: fast enough to disappear, visual enough to remember, and honest about what it can do.</div>
+            <div class="bio">I like building things that feel <em>inhabited</em>: clear enough to use, specific enough to belong to someone, and weird enough to keep thinking about.</div>
           </div>
-          <div class="timeline">
-            <div class="note reveal">
+          <div class="principles">
+            <div class="note-card reveal">
               <time>01</time>
               <div>
-                <strong>Build the useful thing first.</strong>
-                <span>Interfaces should start with the actual workflow, not a decorative cover page. The first viewport here already has data, navigation, and identity.</span>
+                <strong>Start with behavior.</strong>
+                <p>A page can look beautiful in a screenshot and still be inert. The better question is what it does when someone returns.</p>
               </div>
             </div>
-            <div class="note reveal">
+            <div class="note-card reveal">
               <time>02</time>
               <div>
-                <strong>Let projects become instruments.</strong>
-                <span>Games, music tools, dashboards, and AI helpers all share the same requirement: they need feedback loops that feel clear and immediate.</span>
+                <strong>Make the invisible legible.</strong>
+                <p>State, rhythm, constraints, and affordances should be felt through the interface before they need to be explained.</p>
               </div>
             </div>
-            <div class="note reveal">
+            <div class="note-card reveal">
               <time>03</time>
               <div>
-                <strong>Keep deployment boring.</strong>
-                <span>The site is one deployable file today, with clean upgrade paths to Vercel, Netlify, GitHub Pages, Astro, or Next.js when the content grows.</span>
+                <strong>Keep the edge human.</strong>
+                <p>Even technical work benefits from texture: good names, calm defaults, forgiving controls, and a little wit.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="lab" aria-labelledby="lab-title">
+      <section id="desk" aria-labelledby="desk-title">
         <div class="section-head reveal">
           <div>
-            <div class="section-kicker">Lab</div>
-            <h2 id="lab-title">Small modules worth stealing from yourself.</h2>
+            <div class="kicker">Desk</div>
+            <h2 id="desk-title">Things worth keeping open.</h2>
           </div>
-          <p>Each module is designed as a reusable piece, so the personal site can become a playground instead of a static brochure.</p>
+          <p>This is the content layer: interests, shelves, and recurring obsessions that can grow into future pages without depending on a résumé format.</p>
         </div>
 
-        <div class="lab-grid">
-          <div class="lab-item reveal">
-            <i><span data-lucide="cloud-sun"></span></i>
-            <h3>Weather skin</h3>
-            <p>Live temperature and sky state from Open-Meteo, using visitor geolocation when available and Paris as a graceful fallback.</p>
-          </div>
-          <div class="lab-item reveal">
-            <i><span data-lucide="radar"></span></i>
-            <h3>Signal canvas</h3>
-            <p>A lightweight canvas visual that reacts to time, theme, and viewport size without blocking the page.</p>
-          </div>
-          <div class="lab-item reveal">
-            <i><span data-lucide="git-branch"></span></i>
-            <h3>GitHub trace</h3>
-            <p>Public profile data is pulled at runtime, making the site feel connected to ongoing work without manual edits.</p>
-          </div>
-          <div class="lab-item reveal">
-            <i><span data-lucide="palette"></span></i>
-            <h3>Theme memory</h3>
-            <p>A restrained light and night palette with local preference storage, visible focus states, and reduced-motion support.</p>
-          </div>
+        <div class="desk-grid">
+          <article class="desk-card reveal">
+            <div class="mini-icon"><i data-lucide="library"></i></div>
+            <h3>Reading shelf</h3>
+            <p>Interface history, systems thinking, game design, human-computer interaction, fiction that understands machines, and essays about attention.</p>
+          </article>
+          <article class="desk-card reveal">
+            <div class="mini-icon"><i data-lucide="music-2"></i></div>
+            <h3>Listening desk</h3>
+            <p>Music tools, metadata, album art, lyrics, and the way personal libraries become emotional infrastructure.</p>
+          </article>
+          <article class="desk-card reveal">
+            <div class="mini-icon"><i data-lucide="gamepad-2"></i></div>
+            <h3>Play lab</h3>
+            <p>Small rule systems: cards, physics, resource loops, NPC behavior, and the satisfying moment when a mechanic starts teaching itself.</p>
+          </article>
+          <article class="desk-card reveal">
+            <div class="mini-icon"><i data-lucide="wrench"></i></div>
+            <h3>Tool room</h3>
+            <p>Scripts, personal dashboards, prompts, deployment notes, and tiny utilities that remove friction from everyday work.</p>
+          </article>
         </div>
       </section>
 
-      <section id="atlas" aria-labelledby="atlas-title">
+      <section id="notes" aria-labelledby="notes-title">
         <div class="section-head reveal">
           <div>
-            <div class="section-kicker">Live atlas</div>
-            <h2 id="atlas-title">The website now has weather inside its bones.</h2>
+            <div class="kicker">Notes</div>
+            <h2 id="notes-title">Drafts for future pages.</h2>
           </div>
-          <p>The canvas does not label the forecast. It translates it into drift, density, hue, and orbit speed, like a small instrument panel pretending to be a poster.</p>
+          <p>These are deliberately written like doors, not summaries. A personal site gets better when it has places to wander.</p>
         </div>
 
-        <div class="atlas">
-          <div class="atlas-stage reveal" aria-label="Generative weather and time atlas">
-            <canvas id="weatherCanvas"></canvas>
-            <div class="atlas-label">
-              <span class="tag" id="atlasCondition">condition loading</span>
-              <span class="tag" id="atlasTempo">tempo loading</span>
-              <span class="tag" id="atlasLight">light loading</span>
-            </div>
-          </div>
-          <div class="atlas-copy">
-            <div class="prompt-box reveal">
-              <div class="prompt-row">
-                <button type="button" class="promptButton" data-prompt="Build a small interface that changes behavior based on the visitor's local weather." aria-label="Copy prompt one"><i data-lucide="copy"></i></button>
-                <div>
-                  <strong>Weather becomes behavior.</strong>
-                  <span>Clear days loosen spacing, rain tightens the grid, wind increases motion amplitude, and night cools the canvas.</span>
-                </div>
-              </div>
-              <div class="prompt-row">
-                <button type="button" class="promptButton" data-prompt="Design a portfolio where time is shown as an orbital system instead of a digital clock." aria-label="Copy prompt two"><i data-lucide="copy"></i></button>
-                <div>
-                  <strong>Time becomes geometry.</strong>
-                  <span>The visible clock is an orbit; the exact time still exists in aria labels and small captions for accessibility.</span>
-                </div>
-              </div>
-              <div class="prompt-row">
-                <button type="button" class="promptButton" data-prompt="Turn a personal website into a living notebook with reusable ambient modules." aria-label="Copy prompt three"><i data-lucide="copy"></i></button>
-                <div>
-                  <strong>Portfolio becomes an instrument.</strong>
-                  <span>Each section is a small module that can graduate into a blog, public lab, project case study, or dashboard.</span>
-                </div>
-              </div>
-            </div>
-            <div class="panel reveal">
-              <h3>Borrowed Lessons</h3>
-              <p>I pulled from interactive galleries, real-time generative poster projects, and living portfolio references: keep the first screen useful, let motion explain state, and never make the visitor decode a clever thing before they can navigate.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="signals" aria-labelledby="signals-title">
-        <div class="section-head reveal">
-          <div>
-            <div class="section-kicker">Signals</div>
-            <h2 id="signals-title">More content, but less brochure.</h2>
-          </div>
-          <p>These are not finished case studies. They are hooks: compact, specific, and expandable into richer pages later.</p>
-        </div>
-
-        <div class="library-grid">
-          <article class="library-card reveal">
-            <span class="number">FIELD 01</span>
+        <div class="library">
+          <article class="note-card reveal">
+            <span class="number">NOTE 01</span>
             <div>
-              <h3>Interface field notes</h3>
-              <p>Short observations on why a control feels calm, why a dashboard gets scanned, and when animation stops being useful.</p>
+              <h3>Interfaces as furniture</h3>
+              <p>Some tools should be impressive once. The best ones become part of the room: sturdy, quiet, close at hand.</p>
             </div>
-            <span class="tag">Design notes</span>
+            <span class="tag">Essay seed</span>
           </article>
-          <article class="library-card reveal">
-            <span class="number">FIELD 02</span>
+          <article class="note-card reveal">
+            <span class="number">NOTE 02</span>
             <div>
-              <h3>Prototype cabinet</h3>
-              <p>Small apps that do one odd thing well: lyric sync, simulation toys, ambient monitors, game rule sandboxes.</p>
+              <h3>Why tiny apps matter</h3>
+              <p>Small software lets you practice judgment quickly: scope, defaults, naming, failure states, and the feeling of the first click.</p>
             </div>
-            <span class="tag">Experiments</span>
+            <span class="tag">Build log</span>
           </article>
-          <article class="library-card reveal">
-            <span class="number">FIELD 03</span>
+          <article class="note-card reveal">
+            <span class="number">NOTE 03</span>
             <div>
-              <h3>Reading weather</h3>
-              <p>A future essay series where a web page treats environment as input, not decoration: time, place, season, speed, battery, attention.</p>
+              <h3>The useful uncanny</h3>
+              <p>There is a sweet spot between utility and strangeness where people remember what they used and want to touch it again.</p>
             </div>
-            <span class="tag">Research</span>
+            <span class="tag">Design note</span>
           </article>
-        </div>
-
-        <div class="visitor-pad" style="margin-top:18px">
-          <div class="transmission reveal">
-            <h3>Leave a tiny brief</h3>
-            <textarea id="briefInput" aria-label="Tiny project brief" placeholder="Write a project idea, a weird interface wish, or a sentence this site should remember locally."></textarea>
-            <div class="transmission-actions">
-              <button type="button" id="saveBrief">Save locally</button>
-              <button type="button" id="clearBrief">Clear</button>
-            </div>
-          </div>
-          <div class="receipt reveal">
-            <h3>Local receipt</h3>
-            <p>The note never leaves your browser. It becomes a little checksum, because even a contact form can have personality.</p>
-            <div class="receipt-code" id="briefReceipt">No local brief saved yet.</div>
-          </div>
         </div>
       </section>
 
       <section id="contact" class="contact" aria-labelledby="contact-title">
         <div class="contact-main reveal">
           <div>
-            <div class="section-kicker">Contact</div>
-            <h2 id="contact-title">Bring a strange idea. I will bring structure.</h2>
-            <p>For collaborations, prototypes, research tools, or a better version of this site, start with the fastest available channel.</p>
+            <div class="kicker">Contact</div>
+            <h2 id="contact-title">Bring a rough idea. I like rough ideas.</h2>
+            <p>For prototypes, experiments, collaboration, or a stronger version of this site, start with the fastest available channel.</p>
           </div>
           <div class="contact-actions">
             <a class="contact-link" href="mailto:KidSpartor@users.noreply.github.com">
@@ -1763,12 +1228,12 @@
         </div>
         <aside class="contact-side">
           <div class="panel reveal">
-            <h3>Now</h3>
-            <p id="nowText">Loading local context.</p>
+            <h3>Format</h3>
+            <p>Static, fast, deployable, and intentionally easy to migrate into Astro or Next.js when the writing archive becomes real.</p>
           </div>
           <div class="panel reveal">
-            <h3>Deploy target</h3>
-            <p>Vercel, Netlify, or GitHub Pages. This version has no build step and can be served from any static host.</p>
+            <h3>Next obvious page</h3>
+            <p>A proper notebook: short posts, prototypes with source links, and a library of interface patterns worth reusing.</p>
           </div>
         </aside>
       </section>
@@ -1776,7 +1241,7 @@
 
     <footer class="footer">
       <span>Designed and built for Tianyi Ma.</span>
-      <span id="footerStamp">Updated 2026</span>
+      <span>Studio index, always in motion.</span>
     </footer>
   </div>
 
@@ -1785,190 +1250,108 @@
     const themeToggle = document.getElementById("themeToggle");
     const savedTheme = localStorage.getItem("theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const ambient = {
+      hue: 214,
+      saturation: "66%",
+      light: "48%",
+      density: .5,
+      pace: 13,
+      angle: 135,
+      fieldX: 76,
+      fieldY: 22
+    };
 
     if (savedTheme === "night" || (!savedTheme && prefersDark)) {
       root.dataset.theme = "night";
     }
 
     function refreshIcons() {
-      if (window.lucide) {
-        window.lucide.createIcons();
-      }
       const icon = root.dataset.theme === "night" ? "sun" : "moon";
       themeToggle.innerHTML = `<i data-lucide="${icon}"></i>`;
-      if (window.lucide) {
-        window.lucide.createIcons();
-      }
+      if (window.lucide) window.lucide.createIcons();
     }
 
     themeToggle.addEventListener("click", () => {
       root.dataset.theme = root.dataset.theme === "night" ? "" : "night";
-      if (root.dataset.theme) {
-        localStorage.setItem("theme", root.dataset.theme);
-      } else {
-        localStorage.removeItem("theme");
-      }
+      if (root.dataset.theme) localStorage.setItem("theme", root.dataset.theme);
+      else localStorage.removeItem("theme");
       refreshIcons();
     });
 
     window.addEventListener("load", refreshIcons);
 
-    const clock = document.getElementById("clock");
-    const timeCaption = document.getElementById("timeCaption");
-    const dateLine = document.getElementById("dateLine");
-    const footerStamp = document.getElementById("footerStamp");
-    const nowText = document.getElementById("nowText");
-    const climate = {
-      temp: 12,
-      wind: 8,
-      code: 2,
-      label: "Partly cloudy",
-      place: "Paris fallback"
-    };
-
-    function tick() {
-      const now = new Date();
-      const parisTime = new Intl.DateTimeFormat("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: "Europe/Paris"
-      }).format(now);
-      const parisParts = new Intl.DateTimeFormat("en-GB", {
+    function tuneFromClock() {
+      const parts = new Intl.DateTimeFormat("en-GB", {
         hour: "numeric",
         minute: "numeric",
         second: "numeric",
         hour12: false,
         timeZone: "Europe/Paris"
-      }).formatToParts(now);
-      const getPart = type => Number(parisParts.find(part => part.type === type)?.value || 0);
-      const secondsOfDay = (getPart("hour") * 3600) + (getPart("minute") * 60) + getPart("second");
-      const dayProgress = secondsOfDay / 86400;
-      const angle = Math.round(dayProgress * 360);
-      const sunX = 12 + Math.sin(dayProgress * Math.PI) * 76;
-      const sunY = 78 - Math.sin(dayProgress * Math.PI) * 58;
-      root.style.setProperty("--time-angle", `${angle}deg`);
-      root.style.setProperty("--sun-x", `${sunX.toFixed(1)}%`);
-      root.style.setProperty("--sun-y", `${sunY.toFixed(1)}%`);
-      clock.setAttribute("aria-label", `Current Paris time is ${parisTime}`);
-      timeCaption.textContent = dayProgress < .25 ? "deep night orbit" : dayProgress < .5 ? "morning climb" : dayProgress < .75 ? "afternoon field" : "evening descent";
-      dateLine.textContent = new Intl.DateTimeFormat("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-        timeZone: "Europe/Paris"
-      }).format(now);
-      footerStamp.textContent = `Updated ${now.getFullYear()}`;
-      nowText.textContent = `The time is rendered as an orbit first and text second: ${parisTime} in Paris, with the current sky shaping the page color and motion.`;
+      }).formatToParts(new Date());
+      const get = type => Number(parts.find(part => part.type === type)?.value || 0);
+      const progress = ((get("hour") * 3600) + (get("minute") * 60) + get("second")) / 86400;
+      ambient.angle = Math.round(progress * 360);
+      ambient.fieldX = 12 + Math.sin(progress * Math.PI) * 76;
+      ambient.fieldY = 78 - Math.sin(progress * Math.PI) * 58;
+      applyAmbient();
     }
 
-    tick();
-    setInterval(tick, 1000);
-
-    document.getElementById("networkState").textContent = navigator.onLine ? "online" : "offline";
-    window.addEventListener("online", () => document.getElementById("networkState").textContent = "online");
-    window.addEventListener("offline", () => document.getElementById("networkState").textContent = "offline");
-
-    const weatherCodes = new Map([
-      [0, "Clear"], [1, "Mostly clear"], [2, "Partly cloudy"], [3, "Cloudy"],
-      [45, "Fog"], [48, "Rime fog"], [51, "Light drizzle"], [53, "Drizzle"],
-      [55, "Heavy drizzle"], [61, "Light rain"], [63, "Rain"], [65, "Heavy rain"],
-      [71, "Light snow"], [73, "Snow"], [75, "Heavy snow"], [80, "Rain showers"],
-      [81, "Showers"], [82, "Heavy showers"], [95, "Thunder"], [96, "Storm hail"], [99, "Storm hail"]
-    ]);
-
-    function climatePalette(code, temp, wind) {
+    function paletteFor(code, temp, wind) {
       const rainy = [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(code);
-      const snowy = [71, 73, 75].includes(code);
-      const foggy = [45, 48].includes(code);
       const clear = [0, 1].includes(code);
-      let hue = clear ? 38 : rainy ? 210 : snowy ? 188 : foggy ? 170 : 214;
+      const foggy = [45, 48].includes(code);
+      let hue = clear ? 38 : rainy ? 210 : foggy ? 168 : 214;
       if (temp >= 24) hue = 18;
       if (temp <= 3) hue = 198;
       return {
         hue,
-        sat: clear ? "74%" : rainy ? "58%" : "48%",
+        saturation: clear ? "74%" : rainy ? "58%" : "52%",
         light: clear ? "52%" : rainy ? "43%" : "48%",
-        alpha: rainy ? ".22" : clear ? ".18" : ".14",
-        tempo: `${Math.max(5, 18 - Math.min(wind, 24) * .45).toFixed(1)}s`,
-        mood: clear ? "Open" : rainy ? "Concentrated" : snowy ? "Quiet" : foggy ? "Soft" : "Balanced"
+        density: Math.max(.22, Math.min(.88, (wind / 22) + (rainy ? .22 : .05))),
+        pace: Math.max(6, 18 - Math.min(wind, 24) * .45)
       };
     }
 
-    function applyClimate() {
-      const palette = climatePalette(climate.code, climate.temp, climate.wind);
-      root.style.setProperty("--weather-hue", palette.hue);
-      root.style.setProperty("--weather-sat", palette.sat);
-      root.style.setProperty("--weather-light", palette.light);
-      root.style.setProperty("--weather-alpha", palette.alpha);
-      root.style.setProperty("--wind-scale", Math.max(.4, Math.min(2.4, climate.wind / 8)).toFixed(2));
-      root.style.setProperty("--tempo", palette.tempo);
-      document.getElementById("moodWord").textContent = palette.mood;
-      document.getElementById("ambientSentence").textContent = `${climate.label} is tuning the page: hue ${palette.hue}, wind tempo ${palette.tempo}, temperature ${Math.round(climate.temp)} degrees.`;
-      document.getElementById("atlasCondition").textContent = climate.label;
-      document.getElementById("atlasTempo").textContent = `tempo ${palette.tempo}`;
-      document.getElementById("atlasLight").textContent = `${Math.round(climate.temp)}° / ${Math.round(climate.wind)} kmh`;
+    function applyAmbient() {
+      root.style.setProperty("--accent-h", ambient.hue);
+      root.style.setProperty("--accent-s", ambient.saturation);
+      root.style.setProperty("--accent-l", ambient.light);
+      root.style.setProperty("--grain-angle", `${ambient.angle}deg`);
+      root.style.setProperty("--field-x", `${ambient.fieldX.toFixed(1)}%`);
+      root.style.setProperty("--field-y", `${ambient.fieldY.toFixed(1)}%`);
+      root.style.setProperty("--density", ambient.density.toFixed(2));
+      root.style.setProperty("--pace", `${ambient.pace.toFixed(1)}s`);
     }
 
-    async function loadWeather(latitude = 48.8566, longitude = 2.3522, label = "Paris fallback") {
-      const url = new URL("https://api.open-meteo.com/v1/forecast");
-      url.search = new URLSearchParams({
-        latitude,
-        longitude,
-        current: "temperature_2m,weather_code,wind_speed_10m",
-        timezone: "auto"
-      });
+    async function tuneFromEnvironment(latitude = 48.8566, longitude = 2.3522) {
+      const url = `https://wttr.in/${latitude.toFixed(4)},${longitude.toFixed(4)}?format=j1`;
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, { cache: "no-store" });
         const data = await response.json();
-        const current = data.current;
-        const temp = Math.round(current.temperature_2m);
-        climate.temp = current.temperature_2m;
-        climate.wind = current.wind_speed_10m;
-        climate.code = current.weather_code;
-        climate.label = weatherCodes.get(current.weather_code) || "Weather";
-        climate.place = label;
-        document.getElementById("localTemp").textContent = `${temp}°`;
-        document.getElementById("weatherSummary").textContent = climate.label;
-        document.getElementById("windSpeed").textContent = `${Math.round(current.wind_speed_10m)} km/h`;
-        document.getElementById("weatherPlace").textContent = label;
-        document.getElementById("updatedAt").textContent = new Intl.DateTimeFormat("en-GB", {
-          hour: "2-digit",
-          minute: "2-digit"
-        }).format(new Date());
-        applyClimate();
+        const current = data.current_condition?.[0] || {};
+        Object.assign(ambient, paletteFor(
+          Number(current.weatherCode || 2),
+          Number(current.temp_C || 12),
+          Number(current.windspeedKmph || 8)
+        ));
       } catch (error) {
-        document.getElementById("weatherSummary").textContent = "Unavailable";
-        document.getElementById("windSpeed").textContent = "retry";
-        applyClimate();
+        Object.assign(ambient, paletteFor(2, 12, 8));
       }
+      applyAmbient();
     }
-
-    applyClimate();
 
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        position => loadWeather(position.coords.latitude, position.coords.longitude, "your location"),
-        () => loadWeather(),
-        { enableHighAccuracy: false, timeout: 3500, maximumAge: 600000 }
+        position => tuneFromEnvironment(position.coords.latitude, position.coords.longitude),
+        () => tuneFromEnvironment(),
+        { enableHighAccuracy: false, timeout: 3000, maximumAge: 600000 }
       );
     } else {
-      loadWeather();
+      tuneFromEnvironment();
     }
 
-    async function loadGithub() {
-      try {
-        const response = await fetch("https://api.github.com/users/KidSpartor");
-        const profile = await response.json();
-        document.getElementById("repoCount").textContent = String(profile.public_repos ?? "--").padStart(2, "0");
-        document.getElementById("githubFollowers").textContent = profile.followers ?? "--";
-      } catch (error) {
-        document.getElementById("repoCount").textContent = "--";
-        document.getElementById("githubFollowers").textContent = "--";
-      }
-    }
-
-    loadGithub();
+    tuneFromClock();
+    setInterval(tuneFromClock, 1000);
 
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -1991,126 +1374,57 @@
     }, { rootMargin: "-35% 0px -55% 0px" });
     sections.forEach(section => sectionObserver.observe(section));
 
-    function initSignalCanvas() {
-      const canvas = document.getElementById("signalCanvas");
+    function initAmbientCanvas() {
+      const canvas = document.getElementById("ambientCanvas");
       const context = canvas.getContext("2d");
-      const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
       let width = 0;
       let height = 0;
-      let points = [];
+      let marks = [];
 
       function resize() {
-        const rect = canvas.getBoundingClientRect();
         const ratio = Math.min(window.devicePixelRatio || 1, 2);
-        width = Math.max(1, Math.floor(rect.width * ratio));
-        height = Math.max(1, Math.floor(rect.height * ratio));
-        canvas.width = width;
-        canvas.height = height;
-        points = Array.from({ length: 26 }, (_, index) => ({
-          x: (index / 25) * width,
-          y: height * (.48 + Math.sin(index) * .12),
-          phase: Math.random() * Math.PI * 2
-        }));
-      }
-
-      function draw(time = 0) {
-        context.clearRect(0, 0, width, height);
-        const isNight = root.dataset.theme === "night";
-        const line = isNight ? "rgba(143,176,255,.85)" : "rgba(36,87,214,.82)";
-        const green = isNight ? "rgba(138,223,196,.75)" : "rgba(18,107,85,.75)";
-
-        context.lineWidth = Math.max(2, width / 360);
-        context.beginPath();
-        points.forEach((point, index) => {
-          const speed = media.matches ? 0 : time / 900;
-          const y = point.y + Math.sin(speed + point.phase) * height * .12;
-          if (index === 0) context.moveTo(point.x, y);
-          else context.lineTo(point.x, y);
-        });
-        context.strokeStyle = line;
-        context.stroke();
-
-        points.forEach((point, index) => {
-          const speed = media.matches ? 0 : time / 900;
-          const y = point.y + Math.sin(speed + point.phase) * height * .12;
-          context.beginPath();
-          context.arc(point.x, y, index % 5 === 0 ? 5 : 3, 0, Math.PI * 2);
-          context.fillStyle = index % 3 === 0 ? green : line;
-          context.fill();
-        });
-
-        if (!media.matches) {
-          requestAnimationFrame(draw);
-        }
-      }
-
-      resize();
-      draw();
-      window.addEventListener("resize", resize);
-    }
-
-    initSignalCanvas();
-
-    function initWeatherCanvas() {
-      const canvas = document.getElementById("weatherCanvas");
-      if (!canvas) return;
-      const context = canvas.getContext("2d");
-      const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-      let width = 0;
-      let height = 0;
-      let particles = [];
-
-      function resize() {
-        const rect = canvas.getBoundingClientRect();
-        const ratio = Math.min(window.devicePixelRatio || 1, 2);
-        width = Math.max(1, Math.floor(rect.width * ratio));
-        height = Math.max(1, Math.floor(rect.height * ratio));
-        canvas.width = width;
-        canvas.height = height;
-        particles = Array.from({ length: 96 }, (_, index) => ({
+        width = canvas.width = Math.floor(window.innerWidth * ratio);
+        height = canvas.height = Math.floor(window.innerHeight * ratio);
+        canvas.style.width = `${window.innerWidth}px`;
+        canvas.style.height = `${window.innerHeight}px`;
+        marks = Array.from({ length: 80 }, (_, index) => ({
           x: Math.random() * width,
           y: Math.random() * height,
-          r: 1 + Math.random() * 3,
+          length: 20 + Math.random() * 90,
           phase: Math.random() * Math.PI * 2,
-          lane: index % 8
+          lane: index % 9
         }));
       }
 
       function draw(time = 0) {
         context.clearRect(0, 0, width, height);
-        const hue = getComputedStyle(root).getPropertyValue("--weather-hue").trim() || "214";
-        const speed = media.matches ? 0 : time / 1000;
-        const wind = Math.max(.4, Math.min(2.5, climate.wind / 8));
-        const rainy = [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(climate.code);
-        const clear = [0, 1].includes(climate.code);
+        const speed = reduced.matches ? 0 : time / 1000;
+        const hue = getComputedStyle(root).getPropertyValue("--accent-h").trim() || "214";
+        const density = Number(getComputedStyle(root).getPropertyValue("--density")) || .5;
+        const angle = (ambient.angle * Math.PI) / 180;
+        context.lineWidth = Math.max(1, width / 1600);
 
-        context.lineWidth = rainy ? 1.4 : 1;
-        particles.forEach((particle, index) => {
-          const drift = speed * 28 * wind;
-          const x = (particle.x + drift * (particle.lane + 1) * .12) % width;
-          const wave = Math.sin(speed + particle.phase + particle.lane) * height * .035;
-          const y = (particle.y + wave + (rainy ? drift * .9 : 0)) % height;
+        marks.forEach((mark, index) => {
+          const drift = speed * (8 + density * 18) * (mark.lane + 1) * .06;
+          const x = (mark.x + Math.cos(angle) * drift * 30) % width;
+          const y = (mark.y + Math.sin(angle) * drift * 30 + Math.sin(speed + mark.phase) * 10) % height;
+          const len = mark.length * (.6 + density);
           context.beginPath();
-          if (rainy) {
-            context.moveTo(x, y);
-            context.lineTo(x + 12 * wind, y + 28);
-            context.strokeStyle = `hsla(${hue}, 70%, 55%, .34)`;
-            context.stroke();
-          } else {
-            context.arc(x, y, clear ? particle.r * 1.35 : particle.r, 0, Math.PI * 2);
-            context.fillStyle = `hsla(${hue}, 74%, ${clear ? 48 : 42}%, ${clear ? .32 : .2})`;
-            context.fill();
-          }
+          context.moveTo(x, y);
+          context.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
+          context.strokeStyle = `hsla(${hue}, 65%, 48%, ${.05 + density * .08})`;
+          context.stroke();
 
-          if (index % 9 === 0) {
+          if (index % 13 === 0) {
             context.beginPath();
-            context.arc(x, y, 42 + Math.sin(speed + particle.phase) * 8, 0, Math.PI * 2);
-            context.strokeStyle = `hsla(${hue}, 60%, 45%, .08)`;
+            context.arc(x, y, 38 + density * 45, 0, Math.PI * 2);
+            context.strokeStyle = `hsla(${hue}, 55%, 45%, ${.025 + density * .025})`;
             context.stroke();
           }
         });
 
-        if (!media.matches) requestAnimationFrame(draw);
+        if (!reduced.matches) requestAnimationFrame(draw);
       }
 
       resize();
@@ -2118,59 +1432,7 @@
       window.addEventListener("resize", resize);
     }
 
-    initWeatherCanvas();
-
-    document.querySelectorAll(".promptButton").forEach(button => {
-      button.addEventListener("click", async () => {
-        const text = button.dataset.prompt;
-        try {
-          await navigator.clipboard.writeText(text);
-          button.innerHTML = '<i data-lucide="check"></i>';
-          refreshIcons();
-          setTimeout(() => {
-            button.innerHTML = '<i data-lucide="copy"></i>';
-            refreshIcons();
-          }, 1200);
-        } catch (error) {
-          button.title = text;
-        }
-      });
-    });
-
-    const briefInput = document.getElementById("briefInput");
-    const briefReceipt = document.getElementById("briefReceipt");
-    const savedBrief = localStorage.getItem("tinyBrief") || "";
-
-    function checksum(text) {
-      let hash = 2166136261;
-      for (let index = 0; index < text.length; index++) {
-        hash ^= text.charCodeAt(index);
-        hash = Math.imul(hash, 16777619);
-      }
-      return (hash >>> 0).toString(16).toUpperCase().padStart(8, "0");
-    }
-
-    function renderBrief(text) {
-      if (!text.trim()) {
-        briefReceipt.textContent = "No local brief saved yet.";
-        return;
-      }
-      briefReceipt.textContent = `LOCAL-${checksum(text)} / ${text.length} chars / ${new Date().toLocaleDateString()}`;
-    }
-
-    briefInput.value = savedBrief;
-    renderBrief(savedBrief);
-
-    document.getElementById("saveBrief").addEventListener("click", () => {
-      localStorage.setItem("tinyBrief", briefInput.value);
-      renderBrief(briefInput.value);
-    });
-
-    document.getElementById("clearBrief").addEventListener("click", () => {
-      briefInput.value = "";
-      localStorage.removeItem("tinyBrief");
-      renderBrief("");
-    });
+    initAmbientCanvas();
   </script>
 </body>
 </html>
