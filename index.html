@@ -3,1436 +3,327 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Tianyi Ma's personal site: software, systems, notes, experiments, and taste.">
-  <meta name="theme-color" content="#f6f1e8">
-  <title>Tianyi Ma | Studio Index</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%23171412'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Georgia,serif' font-size='34' fill='%23f6f1e8'%3ET%3C/text%3E%3C/svg%3E">
+  <meta name="description" content="Tianyi Ma — builder of interfaces that reward repeated use. Software, systems, taste.">
+  <meta name="theme-color" content="#0a0908">
+  <title>Tianyi Ma | Studio</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%230a0908'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Georgia,serif' font-size='34' fill='%23e8e0d4'%3ET%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
-  <style>
-    :root {
-      color-scheme: light;
-      --ink: #181411;
-      --muted: #625c52;
-      --faint: #938a7e;
-      --paper: #f6f1e8;
-      --paper-strong: #fffaf0;
-      --line: #d8cfc1;
-      --blue: #2457d6;
-      --green: #126b55;
-      --amber: #a75d00;
-      --coral: #c63f32;
-      --accent-h: 214;
-      --accent-s: 66%;
-      --accent-l: 48%;
-      --grain-angle: 135deg;
-      --field-x: 76%;
-      --field-y: 22%;
-      --pace: 13s;
-      --density: .5;
-      --radius: 8px;
-      --shadow: 0 24px 70px rgba(36, 31, 24, .1);
-      --font-sans: "Inter", "Noto Sans SC", system-ui, sans-serif;
-      --font-serif: "Instrument Serif", Georgia, serif;
-      --font-mono: "JetBrains Mono", ui-monospace, monospace;
-    }
-
-    [data-theme="night"] {
-      color-scheme: dark;
-      --ink: #f7f0e5;
-      --muted: #bab0a4;
-      --faint: #81776b;
-      --paper: #11100e;
-      --paper-strong: #1b1916;
-      --line: #39342e;
-      --blue: #8fb0ff;
-      --green: #8adfc4;
-      --amber: #f1bd73;
-      --coral: #ff9c8f;
-      --shadow: 0 24px 70px rgba(0, 0, 0, .34);
-    }
-
-    * { box-sizing: border-box; }
-
-    html {
-      scroll-behavior: smooth;
-      background: var(--paper);
-    }
-
-    body {
-      margin: 0;
-      min-width: 320px;
-      color: var(--ink);
-      background:
-        linear-gradient(90deg, color-mix(in srgb, var(--line) 34%, transparent) 1px, transparent 1px),
-        linear-gradient(color-mix(in srgb, var(--line) 28%, transparent) 1px, transparent 1px),
-        var(--paper);
-      background-size: 64px 64px;
-      font-family: var(--font-sans);
-      line-height: 1.55;
-      letter-spacing: 0;
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -3;
-      pointer-events: none;
-      background:
-        radial-gradient(circle at var(--field-x) var(--field-y), hsla(var(--accent-h), var(--accent-s), 72%, .32), transparent 19%),
-        linear-gradient(var(--grain-angle), hsla(var(--accent-h), var(--accent-s), var(--accent-l), .13), transparent 36%),
-        linear-gradient(245deg, color-mix(in srgb, var(--green) 10%, transparent), transparent 30%),
-        linear-gradient(0deg, color-mix(in srgb, var(--amber) 8%, transparent), transparent 48%);
-      transition: background .4s ease;
-    }
-
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-      pointer-events: none;
-      opacity: .08;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.22' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
-
-    a { color: inherit; text-decoration: none; }
-    button { border: 0; font: inherit; color: inherit; }
-    button, a, textarea { -webkit-tap-highlight-color: transparent; }
-
-    :focus-visible {
-      outline: 3px solid color-mix(in srgb, var(--blue) 70%, white);
-      outline-offset: 3px;
-    }
-
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    #ambientCanvas {
-      position: fixed;
-      inset: 0;
-      z-index: -1;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      opacity: calc(.18 + var(--density) * .18);
-      mix-blend-mode: multiply;
-    }
-
-    [data-theme="night"] #ambientCanvas {
-      mix-blend-mode: screen;
-      opacity: calc(.12 + var(--density) * .12);
-    }
-
-    .shell {
-      width: min(1440px, 100%);
-      margin: 0 auto;
-      padding: 18px;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 12px;
-      z-index: 20;
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      align-items: center;
-      min-height: 56px;
-      padding: 8px 10px;
-      border: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
-      border-radius: var(--radius);
-      background: color-mix(in srgb, var(--paper-strong) 82%, transparent);
-      box-shadow: 0 12px 40px rgba(23, 20, 18, .08);
-      backdrop-filter: blur(18px);
-    }
-
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      width: fit-content;
-      padding: 0 8px;
-      font-weight: 800;
-    }
-
-    .brand-mark {
-      display: grid;
-      width: 34px;
-      height: 34px;
-      place-items: center;
-      border-radius: 50%;
-      background: var(--ink);
-      color: var(--paper);
-      font-family: var(--font-serif);
-      font-size: 21px;
-      font-weight: 400;
-    }
-
-    .nav {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      padding: 4px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--paper) 64%, transparent);
-    }
-
-    .nav a {
-      min-height: 40px;
-      display: inline-flex;
-      align-items: center;
-      padding: 0 14px;
-      border-radius: 999px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
-      transition: background .2s ease, color .2s ease;
-    }
-
-    .nav a:hover,
-    .nav a.active {
-      color: var(--ink);
-      background: var(--paper-strong);
-    }
-
-    .top-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-
-    .icon-btn,
-    .small-action {
-      min-width: 44px;
-      min-height: 44px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--paper-strong);
-      cursor: pointer;
-      transition: transform .2s ease, border-color .2s ease, background .2s ease;
-    }
-
-    .small-action {
-      gap: 8px;
-      padding: 0 13px;
-      color: var(--paper);
-      background: var(--ink);
-      border-color: var(--ink);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .icon-btn:hover,
-    .small-action:hover {
-      transform: translateY(-1px);
-      border-color: color-mix(in srgb, var(--ink) 35%, var(--line));
-    }
-
-    .icon-btn svg,
-    .small-action svg,
-    .mini-icon svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    .hero {
-      min-height: calc(100vh - 106px);
-      display: grid;
-      grid-template-columns: minmax(0, .68fr) minmax(330px, .32fr);
-      gap: 18px;
-      padding: 18px 0 34px;
-    }
-
-    .hero-main,
-    .hero-side,
-    .panel,
-    .artifact,
-    .note-card,
-    .desk-card,
-    .contact-main {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: color-mix(in srgb, var(--paper-strong) 88%, transparent);
-      box-shadow: var(--shadow);
-    }
-
-    .hero-main {
-      position: relative;
-      overflow: hidden;
-      min-height: 650px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: clamp(28px, 5vw, 64px);
-    }
-
-    .hero-main::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        repeating-linear-gradient(100deg, transparent 0 18px, hsla(var(--accent-h), var(--accent-s), 42%, .1) 19px, transparent 20px),
-        linear-gradient(160deg, transparent 0 56%, color-mix(in srgb, var(--green) 10%, transparent) 56% 100%);
-      opacity: calc(.22 + var(--density) * .18);
-      animation: fieldDrift var(--pace) linear infinite;
-    }
-
-    .hero-copy,
-    .hero-foot {
-      position: relative;
-      z-index: 1;
-    }
-
-    .eyebrow {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 28px;
-      color: var(--muted);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    .pulse {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: hsl(var(--accent-h) var(--accent-s) var(--accent-l));
-      box-shadow: 0 0 0 6px hsla(var(--accent-h), var(--accent-s), var(--accent-l), .18);
-    }
-
-    h1 {
-      max-width: 900px;
-      margin: 0;
-      font-family: var(--font-serif);
-      font-size: clamp(62px, 11vw, 154px);
-      font-weight: 400;
-      line-height: .84;
-      letter-spacing: 0;
-    }
-
-    .hero-copy p {
-      max-width: 730px;
-      margin: 32px 0 0;
-      color: var(--muted);
-      font-size: clamp(18px, 2vw, 24px);
-      line-height: 1.45;
-    }
-
-    .hero-foot {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 56px;
-    }
-
-    .statement {
-      min-height: 146px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: color-mix(in srgb, var(--paper) 66%, transparent);
-    }
-
-    .statement strong {
-      font-size: clamp(24px, 3vw, 34px);
-      line-height: 1;
-      letter-spacing: 0;
-    }
-
-    .statement span {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .hero-side {
-      min-height: 650px;
-      overflow: hidden;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-    }
-
-    .side-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 16px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .side-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .side-title svg {
-      width: 17px;
-      height: 17px;
-      color: var(--blue);
-    }
-
-    .composition {
-      position: relative;
-      min-height: 380px;
-      margin: 18px;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background:
-        conic-gradient(from var(--grain-angle), hsla(var(--accent-h), var(--accent-s), var(--accent-l), .32), transparent 38%, color-mix(in srgb, var(--green) 18%, transparent), transparent),
-        radial-gradient(circle at var(--field-x) var(--field-y), hsla(var(--accent-h), var(--accent-s), 72%, .28), transparent 18%),
-        var(--paper);
-    }
-
-    .composition::before,
-    .composition::after {
-      content: "";
-      position: absolute;
-      border-radius: 50%;
-      border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
-      transform: rotate(var(--grain-angle));
-    }
-
-    .composition::before {
-      width: 280px;
-      height: 280px;
-      left: 50%;
-      top: 48%;
-      translate: -50% -50%;
-    }
-
-    .composition::after {
-      width: 150px;
-      height: 150px;
-      right: 12%;
-      bottom: 8%;
-      animation: spin calc(var(--pace) * 3) linear infinite;
-    }
-
-    .composition-line {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 42%;
-      height: 2px;
-      background: linear-gradient(90deg, var(--ink), transparent);
-      transform-origin: left center;
-      transform: rotate(var(--grain-angle));
-    }
-
-    .side-list {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      padding: 0 18px 18px;
-    }
-
-    .side-list div {
-      min-height: 112px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: color-mix(in srgb, var(--paper) 70%, transparent);
-    }
-
-    .side-list b {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 20px;
-    }
-
-    .side-list span {
-      display: block;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    section {
-      padding: 84px 0 0;
-    }
-
-    .section-head {
-      display: grid;
-      grid-template-columns: minmax(0, .72fr) minmax(280px, .28fr);
-      gap: 24px;
-      align-items: end;
-      margin-bottom: 18px;
-    }
-
-    .kicker {
-      color: var(--blue);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    h2 {
-      max-width: 960px;
-      margin: 8px 0 0;
-      font-family: var(--font-serif);
-      font-size: clamp(42px, 6vw, 86px);
-      font-weight: 400;
-      line-height: .95;
-      letter-spacing: 0;
-    }
-
-    .section-head p,
-    .panel p,
-    .artifact p,
-    .note-card p,
-    .desk-card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 15px;
-    }
-
-    .artifact-grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 18px;
-    }
-
-    .artifact {
-      position: relative;
-      overflow: hidden;
-      min-height: 420px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 20px;
-      transition: transform .25s ease, border-color .25s ease;
-    }
-
-    .artifact:hover {
-      transform: translateY(-4px);
-      border-color: color-mix(in srgb, var(--ink) 32%, var(--line));
-    }
-
-    .artifact.large { grid-column: span 7; }
-    .artifact.medium { grid-column: span 5; }
-    .artifact.wide {
-      grid-column: span 12;
-      min-height: 340px;
-      display: grid;
-      grid-template-columns: minmax(0, .62fr) minmax(280px, .38fr);
-      gap: 18px;
-    }
-
-    .visual {
-      min-height: 210px;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--paper);
-    }
-
-    .visual.system {
-      position: relative;
-      background:
-        linear-gradient(135deg, color-mix(in srgb, var(--blue) 17%, transparent), transparent 50%),
-        linear-gradient(45deg, color-mix(in srgb, var(--coral) 14%, transparent), transparent 48%),
-        var(--paper);
-    }
-
-    .node {
-      position: absolute;
-      width: 92px;
-      height: 92px;
-      border: 1px solid var(--line);
-      border-radius: 50%;
-      background: color-mix(in srgb, var(--paper-strong) 74%, transparent);
-    }
-
-    .node:nth-child(1) { left: 12%; top: 16%; }
-    .node:nth-child(2) { right: 16%; top: 22%; width: 130px; height: 130px; }
-    .node:nth-child(3) { left: 38%; bottom: 14%; width: 160px; height: 160px; }
-
-    .node::after {
-      content: "";
-      position: absolute;
-      inset: 22px;
-      border-radius: 50%;
-      background: hsla(var(--accent-h), var(--accent-s), var(--accent-l), .18);
-    }
-
-    .visual.rhythm {
-      display: grid;
-      grid-template-columns: repeat(9, 1fr);
-      align-items: end;
-      gap: 6px;
-      padding: 18px;
-      background:
-        linear-gradient(var(--grain-angle), hsla(var(--accent-h), var(--accent-s), var(--accent-l), .18), transparent 60%),
-        var(--paper);
-    }
-
-    .visual.rhythm span {
-      min-height: 58px;
-      border: 1px solid var(--line);
-      border-radius: 999px 999px 6px 6px;
-      background: hsla(var(--accent-h), var(--accent-s), var(--accent-l), .2);
-      transform: scaleY(calc(.38 + var(--density) + var(--i) * .035));
-      transform-origin: bottom;
-    }
-
-    .visual.tokens {
-      padding: 18px;
-      background: var(--paper);
-    }
-
-    .token {
-      display: inline-flex;
-      min-height: 34px;
-      align-items: center;
-      margin: 4px;
-      padding: 0 10px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      color: var(--muted);
-      background: var(--paper-strong);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .paper-line {
-      height: 1px;
-      margin: 20px 0;
-      background: var(--line);
-    }
-
-    .artifact h3,
-    .desk-card h3,
-    .note-card h3 {
-      margin: 18px 0 8px;
-      font-size: clamp(24px, 3vw, 38px);
-      line-height: 1.05;
-      letter-spacing: 0;
-    }
-
-    .tag-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 18px;
-    }
-
-    .tag {
-      display: inline-flex;
-      min-height: 32px;
-      align-items: center;
-      padding: 0 10px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      color: var(--muted);
-      background: color-mix(in srgb, var(--paper) 72%, transparent);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .about-grid {
-      display: grid;
-      grid-template-columns: .85fr 1.15fr;
-      gap: 18px;
-    }
-
-    .panel {
-      padding: 22px;
-    }
-
-    .bio {
-      font-family: var(--font-serif);
-      font-size: clamp(30px, 4vw, 56px);
-      line-height: 1.03;
-    }
-
-    .bio em {
-      color: hsl(var(--accent-h) var(--accent-s) var(--accent-l));
-      font-style: italic;
-    }
-
-    .principles {
-      display: grid;
-      gap: 10px;
-    }
-
-    .note-card {
-      display: grid;
-      grid-template-columns: 90px 1fr;
-      gap: 16px;
-      padding: 16px;
-      box-shadow: none;
-    }
-
-    .note-card time,
-    .number {
-      color: var(--blue);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .note-card strong {
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    .desk-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 18px;
-    }
-
-    .desk-card {
-      min-height: 272px;
-      padding: 18px;
-      box-shadow: none;
-      transition: transform .25s ease, border-color .25s ease;
-    }
-
-    .desk-card:hover {
-      transform: translateY(-3px);
-      border-color: color-mix(in srgb, var(--ink) 30%, var(--line));
-    }
-
-    .mini-icon {
-      display: grid;
-      width: 48px;
-      height: 48px;
-      place-items: center;
-      margin-bottom: 34px;
-      border-radius: var(--radius);
-      background: color-mix(in srgb, var(--blue) 13%, transparent);
-      color: var(--blue);
-    }
-
-    .desk-card:nth-child(2) .mini-icon { background: color-mix(in srgb, var(--green) 13%, transparent); color: var(--green); }
-    .desk-card:nth-child(3) .mini-icon { background: color-mix(in srgb, var(--amber) 16%, transparent); color: var(--amber); }
-    .desk-card:nth-child(4) .mini-icon { background: color-mix(in srgb, var(--coral) 14%, transparent); color: var(--coral); }
-
-    .library {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
-
-    .library .note-card {
-      min-height: 330px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      grid-template-columns: none;
-      box-shadow: var(--shadow);
-    }
-
-    .library h3 {
-      font-family: var(--font-serif);
-      font-size: 36px;
-      font-weight: 400;
-    }
-
-    .contact {
-      display: grid;
-      grid-template-columns: minmax(0, .75fr) minmax(280px, .25fr);
-      gap: 18px;
-      padding-bottom: 18px;
-    }
-
-    .contact-main {
-      min-height: 360px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: clamp(24px, 5vw, 56px);
-      background: var(--ink);
-      color: var(--paper);
-    }
-
-    .contact-main h2 {
-      color: var(--paper);
-    }
-
-    .contact-main p {
-      max-width: 650px;
-      color: color-mix(in srgb, var(--paper) 72%, transparent);
-      font-size: 17px;
-    }
-
-    .contact-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .contact-link {
-      min-height: 48px;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 14px;
-      border: 1px solid color-mix(in srgb, var(--paper) 24%, transparent);
-      border-radius: var(--radius);
-      color: var(--paper);
-      background: color-mix(in srgb, var(--paper) 8%, transparent);
-      font-weight: 800;
-      transition: transform .2s ease, background .2s ease;
-    }
-
-    .contact-link:hover {
-      transform: translateY(-2px);
-      background: color-mix(in srgb, var(--paper) 14%, transparent);
-    }
-
-    .contact-side {
-      display: grid;
-      gap: 18px;
-    }
-
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 26px 4px 10px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .reveal {
-      opacity: 0;
-      transform: translateY(18px);
-      transition: opacity .6s ease, transform .6s ease;
-    }
-
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    @keyframes fieldDrift {
-      to { background-position: 180px 0, 0 0; }
-    }
-
-    @keyframes spin {
-      to { rotate: 360deg; }
-    }
-
-    @media (max-width: 1120px) {
-      .hero,
-      .about-grid,
-      .contact,
-      .section-head {
-        grid-template-columns: 1fr;
-      }
-
-      .hero-main,
-      .hero-side {
-        min-height: auto;
-      }
-
-      .artifact.large,
-      .artifact.medium {
-        grid-column: span 6;
-      }
-
-      .desk-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .library {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 760px) {
-      .shell { padding: 10px; }
-
-      .topbar {
-        grid-template-columns: 1fr auto;
-      }
-
-      .nav {
-        grid-column: 1 / -1;
-        order: 3;
-        width: 100%;
-        margin-top: 8px;
-        overflow-x: auto;
-        justify-content: flex-start;
-      }
-
-      .brand span:last-child,
-      .small-action span {
-        display: none;
-      }
-
-      .hero-main {
-        padding: 24px;
-      }
-
-      h1 {
-        font-size: clamp(58px, 17vw, 92px);
-      }
-
-      .hero-foot,
-      .side-list,
-      .artifact.wide,
-      .desk-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .artifact.large,
-      .artifact.medium,
-      .artifact.wide {
-        grid-column: span 12;
-      }
-
-      .artifact {
-        min-height: 360px;
-      }
-
-      .note-card {
-        grid-template-columns: 1fr;
-      }
-
-      .footer {
-        flex-direction: column;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        scroll-behavior: auto !important;
-        transition-duration: .01ms !important;
-      }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script type="module" src="/src/main.js"></script>
 </head>
 <body>
-  <canvas id="ambientCanvas" aria-hidden="true"></canvas>
-  <span class="sr-only" id="ambientStatus">The page uses local environmental signals only to tune visual rhythm and color.</span>
 
-  <div class="shell">
-    <header class="topbar" aria-label="Primary navigation">
-      <a class="brand" href="#top" aria-label="Tianyi Ma home">
-        <span class="brand-mark">T</span>
-        <span>Tianyi Ma</span>
-      </a>
-      <nav class="nav" aria-label="Sections">
-        <a href="#work">Work</a>
-        <a href="#about">About</a>
-        <a href="#desk">Desk</a>
-        <a href="#notes">Notes</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      <div class="top-actions">
-        <button class="icon-btn" id="themeToggle" type="button" aria-label="Toggle color theme">
-          <i data-lucide="moon"></i>
-        </button>
-        <a class="small-action" href="https://github.com/KidSpartor" target="_blank" rel="noreferrer">
-          <i data-lucide="github"></i>
-          <span>GitHub</span>
-        </a>
-      </div>
-    </header>
-
-    <main id="top">
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-main reveal">
-          <div class="hero-copy">
-            <div class="eyebrow">
-              <span class="pulse" aria-hidden="true"></span>
-              <span>Studio index</span>
-              <span>software / systems / taste</span>
-            </div>
-            <h1 id="hero-title">Tianyi Ma keeps useful things slightly strange.</h1>
-            <p>A personal site for software, instruments, essays, prototypes, and the kind of interface details that make an idea feel alive without announcing the trick.</p>
-          </div>
-          <div class="hero-foot" aria-label="Editorial statements">
-            <div class="statement">
-              <strong>01</strong>
-              <span>Build interfaces that reward repeated use, not just first impressions.</span>
-            </div>
-            <div class="statement">
-              <strong>02</strong>
-              <span>Turn rough ideas into working objects before they become too precious.</span>
-            </div>
-            <div class="statement">
-              <strong>03</strong>
-              <span>Let the system show its intelligence through behavior, restraint, and rhythm.</span>
-            </div>
-          </div>
-        </div>
-
-        <aside class="hero-side reveal" aria-label="Studio composition">
-          <div class="side-head">
-            <div class="side-title"><i data-lucide="scan-line"></i> Working Surface</div>
-            <span class="tag">living layout</span>
-          </div>
-          <div class="composition" aria-hidden="true">
-            <span class="composition-line"></span>
-          </div>
-          <div class="side-list">
-            <div>
-              <b>Prototype</b>
-              <span>Fast sketches that become small tools, games, or personal systems.</span>
-            </div>
-            <div>
-              <b>Observe</b>
-              <span>Notes on interaction, writing, music, automation, and the shape of attention.</span>
-            </div>
-            <div>
-              <b>Compose</b>
-              <span>Design language as layout, motion, typography, contrast, and silence.</span>
-            </div>
-            <div>
-              <b>Ship</b>
-              <span>Deployable work with clean edges and enough personality to remember.</span>
-            </div>
-          </div>
-        </aside>
-      </section>
-
-      <section id="work" aria-labelledby="work-title">
-        <div class="section-head reveal">
-          <div>
-            <div class="kicker">Selected directions</div>
-            <h2 id="work-title">A portfolio can be a cabinet, not a trophy shelf.</h2>
-          </div>
-          <p>The work is organized by what it teaches: systems, instruments, playful models, and public thinking. Each tile can later become a full case study.</p>
-        </div>
-
-        <div class="artifact-grid">
-          <article class="artifact large reveal">
-            <div>
-              <div class="visual system" aria-hidden="true">
-                <span class="node"></span>
-                <span class="node"></span>
-                <span class="node"></span>
-              </div>
-              <h3>Personal systems</h3>
-              <p>Dashboards, automations, writing surfaces, and local-first tools that make everyday decisions easier without turning life into a spreadsheet.</p>
-            </div>
-            <div class="tag-row">
-              <span class="tag">Local-first</span>
-              <span class="tag">Automation</span>
-              <span class="tag">Workflow design</span>
-            </div>
-          </article>
-
-          <article class="artifact medium reveal">
-            <div>
-              <div class="visual rhythm" aria-hidden="true">
-                <span style="--i:.1"></span><span style="--i:.2"></span><span style="--i:.3"></span><span style="--i:.4"></span><span style="--i:.5"></span><span style="--i:.6"></span><span style="--i:.7"></span><span style="--i:.8"></span><span style="--i:.9"></span>
-              </div>
-              <h3>Interface instruments</h3>
-              <p>Small apps that feel like objects: a lyric player, a signal monitor, a visual notebook, or a control panel for a messy idea.</p>
-            </div>
-            <div class="tag-row">
-              <span class="tag">React</span>
-              <span class="tag">Electron</span>
-              <span class="tag">Canvas</span>
-            </div>
-          </article>
-
-          <article class="artifact wide reveal">
-            <div class="visual tokens" aria-hidden="true">
-              <span class="token">game feel</span>
-              <span class="token">music libraries</span>
-              <span class="token">AI workflows</span>
-              <div class="paper-line"></div>
-              <span class="token">tiny databases</span>
-              <span class="token">simulation toys</span>
-              <span class="token">reading systems</span>
-              <div class="paper-line"></div>
-              <span class="token">public notebooks</span>
-              <span class="token">deployment rituals</span>
-            </div>
-            <div>
-              <h3>Prototype cabinet</h3>
-              <p>A place for half-serious experiments: poker logic, space physics, music metadata, generative posters, prompt tools, and whatever else becomes useful by being made tangible.</p>
-              <div class="tag-row">
-                <span class="tag">Games</span>
-                <span class="tag">Tools</span>
-                <span class="tag">Experiments</span>
-              </div>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section id="about" aria-labelledby="about-title">
-        <div class="section-head reveal">
-          <div>
-            <div class="kicker">About</div>
-            <h2 id="about-title">Taste is a technical constraint.</h2>
-          </div>
-          <p>Good personal software needs engineering judgment, but it also needs a point of view: what to show, what to hide, what to make slower, what to make obvious.</p>
-        </div>
-
-        <div class="about-grid">
-          <div class="panel reveal">
-            <div class="bio">I like building things that feel <em>inhabited</em>: clear enough to use, specific enough to belong to someone, and weird enough to keep thinking about.</div>
-          </div>
-          <div class="principles">
-            <div class="note-card reveal">
-              <time>01</time>
-              <div>
-                <strong>Start with behavior.</strong>
-                <p>A page can look beautiful in a screenshot and still be inert. The better question is what it does when someone returns.</p>
-              </div>
-            </div>
-            <div class="note-card reveal">
-              <time>02</time>
-              <div>
-                <strong>Make the invisible legible.</strong>
-                <p>State, rhythm, constraints, and affordances should be felt through the interface before they need to be explained.</p>
-              </div>
-            </div>
-            <div class="note-card reveal">
-              <time>03</time>
-              <div>
-                <strong>Keep the edge human.</strong>
-                <p>Even technical work benefits from texture: good names, calm defaults, forgiving controls, and a little wit.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="desk" aria-labelledby="desk-title">
-        <div class="section-head reveal">
-          <div>
-            <div class="kicker">Desk</div>
-            <h2 id="desk-title">Things worth keeping open.</h2>
-          </div>
-          <p>This is the content layer: interests, shelves, and recurring obsessions that can grow into future pages without depending on a résumé format.</p>
-        </div>
-
-        <div class="desk-grid">
-          <article class="desk-card reveal">
-            <div class="mini-icon"><i data-lucide="library"></i></div>
-            <h3>Reading shelf</h3>
-            <p>Interface history, systems thinking, game design, human-computer interaction, fiction that understands machines, and essays about attention.</p>
-          </article>
-          <article class="desk-card reveal">
-            <div class="mini-icon"><i data-lucide="music-2"></i></div>
-            <h3>Listening desk</h3>
-            <p>Music tools, metadata, album art, lyrics, and the way personal libraries become emotional infrastructure.</p>
-          </article>
-          <article class="desk-card reveal">
-            <div class="mini-icon"><i data-lucide="gamepad-2"></i></div>
-            <h3>Play lab</h3>
-            <p>Small rule systems: cards, physics, resource loops, NPC behavior, and the satisfying moment when a mechanic starts teaching itself.</p>
-          </article>
-          <article class="desk-card reveal">
-            <div class="mini-icon"><i data-lucide="wrench"></i></div>
-            <h3>Tool room</h3>
-            <p>Scripts, personal dashboards, prompts, deployment notes, and tiny utilities that remove friction from everyday work.</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="notes" aria-labelledby="notes-title">
-        <div class="section-head reveal">
-          <div>
-            <div class="kicker">Notes</div>
-            <h2 id="notes-title">Drafts for future pages.</h2>
-          </div>
-          <p>These are deliberately written like doors, not summaries. A personal site gets better when it has places to wander.</p>
-        </div>
-
-        <div class="library">
-          <article class="note-card reveal">
-            <span class="number">NOTE 01</span>
-            <div>
-              <h3>Interfaces as furniture</h3>
-              <p>Some tools should be impressive once. The best ones become part of the room: sturdy, quiet, close at hand.</p>
-            </div>
-            <span class="tag">Essay seed</span>
-          </article>
-          <article class="note-card reveal">
-            <span class="number">NOTE 02</span>
-            <div>
-              <h3>Why tiny apps matter</h3>
-              <p>Small software lets you practice judgment quickly: scope, defaults, naming, failure states, and the feeling of the first click.</p>
-            </div>
-            <span class="tag">Build log</span>
-          </article>
-          <article class="note-card reveal">
-            <span class="number">NOTE 03</span>
-            <div>
-              <h3>The useful uncanny</h3>
-              <p>There is a sweet spot between utility and strangeness where people remember what they used and want to touch it again.</p>
-            </div>
-            <span class="tag">Design note</span>
-          </article>
-        </div>
-      </section>
-
-      <section id="contact" class="contact" aria-labelledby="contact-title">
-        <div class="contact-main reveal">
-          <div>
-            <div class="kicker">Contact</div>
-            <h2 id="contact-title">Bring a rough idea. I like rough ideas.</h2>
-            <p>For prototypes, experiments, collaboration, or a stronger version of this site, start with the fastest available channel.</p>
-          </div>
-          <div class="contact-actions">
-            <a class="contact-link" href="mailto:KidSpartor@users.noreply.github.com">
-              <i data-lucide="mail"></i>
-              Email
-            </a>
-            <a class="contact-link" href="https://github.com/KidSpartor" target="_blank" rel="noreferrer">
-              <i data-lucide="github"></i>
-              GitHub
-            </a>
-            <a class="contact-link" href="https://github.com/KidSpartor?tab=repositories" target="_blank" rel="noreferrer">
-              <i data-lucide="folder-git-2"></i>
-              Repos
-            </a>
-          </div>
-        </div>
-        <aside class="contact-side">
-          <div class="panel reveal">
-            <h3>Format</h3>
-            <p>Static, fast, deployable, and intentionally easy to migrate into Astro or Next.js when the writing archive becomes real.</p>
-          </div>
-          <div class="panel reveal">
-            <h3>Next obvious page</h3>
-            <p>A proper notebook: short posts, prototypes with source links, and a library of interface patterns worth reusing.</p>
-          </div>
-        </aside>
-      </section>
-    </main>
-
-    <footer class="footer">
-      <span>Designed and built for Tianyi Ma.</span>
-      <span>Studio index, always in motion.</span>
-    </footer>
+  <!-- Preloader -->
+  <div class="preloader" id="preloader">
+    <div class="preloader-mark">T</div>
+    <div class="preloader-bar"><div class="preloader-fill"></div></div>
   </div>
 
-  <script>
-    const root = document.documentElement;
-    const themeToggle = document.getElementById("themeToggle");
-    const savedTheme = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const ambient = {
-      hue: 214,
-      saturation: "66%",
-      light: "48%",
-      density: .5,
-      pace: 13,
-      angle: 135,
-      fieldX: 76,
-      fieldY: 22
-    };
+  <!-- Film grain overlay -->
+  <div class="grain" aria-hidden="true"></div>
 
-    if (savedTheme === "night" || (!savedTheme && prefersDark)) {
-      root.dataset.theme = "night";
-    }
+  <!-- Vignette overlay -->
+  <div class="vignette" aria-hidden="true"></div>
 
-    function refreshIcons() {
-      const icon = root.dataset.theme === "night" ? "sun" : "moon";
-      themeToggle.innerHTML = `<i data-lucide="${icon}"></i>`;
-      if (window.lucide) window.lucide.createIcons();
-    }
+  <!-- Letterbox bars -->
+  <div class="letterbox letterbox-top" aria-hidden="true"></div>
+  <div class="letterbox letterbox-bottom" aria-hidden="true"></div>
 
-    themeToggle.addEventListener("click", () => {
-      root.dataset.theme = root.dataset.theme === "night" ? "" : "night";
-      if (root.dataset.theme) localStorage.setItem("theme", root.dataset.theme);
-      else localStorage.removeItem("theme");
-      refreshIcons();
-    });
+  <!-- Ambient canvas -->
+  <canvas id="ambientCanvas" aria-hidden="true"></canvas>
 
-    window.addEventListener("load", refreshIcons);
+  <!-- Scroll progress bar -->
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
-    function tuneFromClock() {
-      const parts = new Intl.DateTimeFormat("en-GB", {
-        hour: "numeric",
-        minute: "numeric",
-        second: "numeric",
-        hour12: false,
-        timeZone: "Europe/Paris"
-      }).formatToParts(new Date());
-      const get = type => Number(parts.find(part => part.type === type)?.value || 0);
-      const progress = ((get("hour") * 3600) + (get("minute") * 60) + get("second")) / 86400;
-      ambient.angle = Math.round(progress * 360);
-      ambient.fieldX = 12 + Math.sin(progress * Math.PI) * 76;
-      ambient.fieldY = 78 - Math.sin(progress * Math.PI) * 58;
-      applyAmbient();
-    }
+  <!-- Navigation -->
+  <nav class="nav" id="nav" aria-label="Primary navigation">
+    <a class="nav-brand" href="#hero">
+      <span class="nav-mark">T</span>
+    </a>
+    <div class="nav-links">
+      <a href="#work">Work</a>
+      <a href="#story">Story</a>
+      <a href="#desk">Desk</a>
+      <a href="#notes">Notes</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div class="nav-actions">
+      <button class="nav-btn" id="themeToggle" type="button" aria-label="Toggle theme">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </nav>
 
-    function paletteFor(code, temp, wind) {
-      const rainy = [51, 53, 55, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(code);
-      const clear = [0, 1].includes(code);
-      const foggy = [45, 48].includes(code);
-      let hue = clear ? 38 : rainy ? 210 : foggy ? 168 : 214;
-      if (temp >= 24) hue = 18;
-      if (temp <= 3) hue = 198;
-      return {
-        hue,
-        saturation: clear ? "74%" : rainy ? "58%" : "52%",
-        light: clear ? "52%" : rainy ? "43%" : "48%",
-        density: Math.max(.22, Math.min(.88, (wind / 22) + (rainy ? .22 : .05))),
-        pace: Math.max(6, 18 - Math.min(wind, 24) * .45)
-      };
-    }
+  <!-- ============================== -->
+  <!-- ACT I : HERO — THE OPENING    -->
+  <!-- ============================== -->
+  <section class="scene scene-hero" id="hero">
+    <div class="scene-bg">
+      <div class="hero-gradient"></div>
+    </div>
+    <div class="scene-content hero-content">
+      <div class="hero-eyebrow">
+        <span class="pulse-dot"></span>
+        <span class="mono-label">Studio index — 2026</span>
+      </div>
+      <h1 class="hero-title" data-split>
+        <span class="hero-title-line">Tianyi Ma</span>
+        <span class="hero-title-line">keeps useful things</span>
+        <span class="hero-title-line"><em>slightly strange.</em></span>
+      </h1>
+      <p class="hero-subtitle">Software, systems, instruments, prototypes, and the kind of interface details that make an idea feel alive without announcing the trick.</p>
+      <div class="hero-statements">
+        <div class="hero-statement">
+          <span class="statement-num">01</span>
+          <span>Build interfaces that reward repeated use, not just first impressions.</span>
+        </div>
+        <div class="hero-statement">
+          <span class="statement-num">02</span>
+          <span>Turn rough ideas into working objects before they become too precious.</span>
+        </div>
+        <div class="hero-statement">
+          <span class="statement-num">03</span>
+          <span>Let the system show its intelligence through behavior, restraint, and rhythm.</span>
+        </div>
+      </div>
+      <div class="hero-scroll-cue">
+        <span class="mono-label">Scroll to explore</span>
+        <div class="scroll-line"></div>
+      </div>
+    </div>
+    <div class="hero-counter">
+      <span class="mono-label">001</span>
+    </div>
+  </section>
 
-    function applyAmbient() {
-      root.style.setProperty("--accent-h", ambient.hue);
-      root.style.setProperty("--accent-s", ambient.saturation);
-      root.style.setProperty("--accent-l", ambient.light);
-      root.style.setProperty("--grain-angle", `${ambient.angle}deg`);
-      root.style.setProperty("--field-x", `${ambient.fieldX.toFixed(1)}%`);
-      root.style.setProperty("--field-y", `${ambient.fieldY.toFixed(1)}%`);
-      root.style.setProperty("--density", ambient.density.toFixed(2));
-      root.style.setProperty("--pace", `${ambient.pace.toFixed(1)}s`);
-    }
+  <!-- ============================== -->
+  <!-- ACT II : WORK — THE SHOWCASE   -->
+  <!-- ============================== -->
+  <section class="scene scene-work" id="work">
+    <div class="scene-header">
+      <span class="mono-label">Selected directions</span>
+      <h2 class="section-title" data-split>A portfolio can be a cabinet, not a trophy shelf.</h2>
+      <p class="section-desc">The work is organized by what it teaches: systems, instruments, playful models, and public thinking.</p>
+    </div>
 
-    async function tuneFromEnvironment(latitude = 48.8566, longitude = 2.3522) {
-      const url = `https://wttr.in/${latitude.toFixed(4)},${longitude.toFixed(4)}?format=j1`;
-      try {
-        const response = await fetch(url, { cache: "no-store" });
-        const data = await response.json();
-        const current = data.current_condition?.[0] || {};
-        Object.assign(ambient, paletteFor(
-          Number(current.weatherCode || 2),
-          Number(current.temp_C || 12),
-          Number(current.windspeedKmph || 8)
-        ));
-      } catch (error) {
-        Object.assign(ambient, paletteFor(2, 12, 8));
-      }
-      applyAmbient();
-    }
+    <div class="showcase-track" id="showcaseTrack">
+      <div class="showcase-card" data-card>
+        <div class="card-visual card-visual-systems">
+          <div class="node-orbit">
+            <span class="node" style="--size:90px;--x:15%;--y:20%"></span>
+            <span class="node" style="--size:130px;--x:65%;--y:15%"></span>
+            <span class="node" style="--size:160px;--x:35%;--y:60%"></span>
+          </div>
+          <div class="card-number">01</div>
+        </div>
+        <div class="card-body">
+          <h3>Personal systems</h3>
+          <p>Dashboards, automations, writing surfaces, and local-first tools that make everyday decisions easier without turning life into a spreadsheet.</p>
+          <div class="tag-row">
+            <span class="tag">Local-first</span>
+            <span class="tag">Automation</span>
+            <span class="tag">Workflow design</span>
+          </div>
+        </div>
+      </div>
 
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        position => tuneFromEnvironment(position.coords.latitude, position.coords.longitude),
-        () => tuneFromEnvironment(),
-        { enableHighAccuracy: false, timeout: 3000, maximumAge: 600000 }
-      );
-    } else {
-      tuneFromEnvironment();
-    }
+      <div class="showcase-card" data-card>
+        <div class="card-visual card-visual-rhythm">
+          <div class="rhythm-bars">
+            <span style="--i:.15"></span><span style="--i:.35"></span><span style="--i:.55"></span>
+            <span style="--i:.4"></span><span style="--i:.7"></span><span style="--i:.25"></span>
+            <span style="--i:.6"></span><span style="--i:.85"></span><span style="--i:.45"></span>
+          </div>
+          <div class="card-number">02</div>
+        </div>
+        <div class="card-body">
+          <h3>Interface instruments</h3>
+          <p>Small apps that feel like objects: a lyric player, a signal monitor, a visual notebook, or a control panel for a messy idea.</p>
+          <div class="tag-row">
+            <span class="tag">React</span>
+            <span class="tag">Electron</span>
+            <span class="tag">Canvas</span>
+          </div>
+        </div>
+      </div>
 
-    tuneFromClock();
-    setInterval(tuneFromClock, 1000);
+      <div class="showcase-card" data-card>
+        <div class="card-visual card-visual-proto">
+          <div class="token-cloud">
+            <span class="token">game feel</span>
+            <span class="token">music libraries</span>
+            <span class="token">AI workflows</span>
+            <span class="token">tiny databases</span>
+            <span class="token">simulation toys</span>
+            <span class="token">reading systems</span>
+          </div>
+          <div class="card-number">03</div>
+        </div>
+        <div class="card-body">
+          <h3>Prototype cabinet</h3>
+          <p>A place for half-serious experiments: poker logic, space physics, music metadata, generative posters, prompt tools, and whatever else becomes useful by being made tangible.</p>
+          <div class="tag-row">
+            <span class="tag">Games</span>
+            <span class="tag">Tools</span>
+            <span class="tag">Experiments</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("visible");
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: .12 });
+  <!-- ============================== -->
+  <!-- ACT III : STORY — THE NARRATIVE -->
+  <!-- ============================== -->
+  <section class="scene scene-story" id="story">
+    <div class="story-pin" id="storyPin">
+      <div class="story-bg-text" aria-hidden="true">STUDIO</div>
+      <div class="story-content">
+        <div class="story-block" data-story>
+          <span class="mono-label">About</span>
+          <h2 class="section-title">Taste is a technical constraint.</h2>
+        </div>
+        <div class="story-block" data-story>
+          <p class="bio-text">I like building things that feel <em>inhabited</em>: clear enough to use, specific enough to belong to someone, and weird enough to keep thinking about.</p>
+        </div>
+        <div class="story-block story-principles" data-story>
+          <div class="principle">
+            <span class="principle-num">01</span>
+            <div>
+              <strong>Start with behavior.</strong>
+              <p>A page can look beautiful in a screenshot and still be inert. The better question is what it does when someone returns.</p>
+            </div>
+          </div>
+          <div class="principle">
+            <span class="principle-num">02</span>
+            <div>
+              <strong>Make the invisible legible.</strong>
+              <p>State, rhythm, constraints, and affordances should be felt through the interface before they need to be explained.</p>
+            </div>
+          </div>
+          <div class="principle">
+            <span class="principle-num">03</span>
+            <div>
+              <strong>Keep the edge human.</strong>
+              <p>Even technical work benefits from texture: good names, calm defaults, forgiving controls, and a little wit.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    document.querySelectorAll(".reveal").forEach(element => observer.observe(element));
+  <!-- ============================== -->
+  <!-- ACT IV : DESK — THE INTERESTS  -->
+  <!-- ============================== -->
+  <section class="scene scene-desk" id="desk">
+    <div class="scene-header">
+      <span class="mono-label">Desk</span>
+      <h2 class="section-title" data-split>Things worth keeping open.</h2>
+      <p class="section-desc">Interests, shelves, and recurring obsessions that can grow into future pages.</p>
+    </div>
+    <div class="desk-grid">
+      <article class="desk-card" data-reveal>
+        <div class="desk-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+        </div>
+        <h3>Reading shelf</h3>
+        <p>Interface history, systems thinking, game design, human-computer interaction, fiction that understands machines, and essays about attention.</p>
+      </article>
+      <article class="desk-card" data-reveal>
+        <div class="desk-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <h3>Listening desk</h3>
+        <p>Music tools, metadata, album art, lyrics, and the way personal libraries become emotional infrastructure.</p>
+      </article>
+      <article class="desk-card" data-reveal>
+        <div class="desk-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/><path d="M17 12h.01"/><path d="M7 12h.01"/></svg>
+        </div>
+        <h3>Play lab</h3>
+        <p>Small rule systems: cards, physics, resource loops, NPC behavior, and the satisfying moment when a mechanic starts teaching itself.</p>
+      </article>
+      <article class="desk-card" data-reveal>
+        <div class="desk-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        </div>
+        <h3>Tool room</h3>
+        <p>Scripts, personal dashboards, prompts, deployment notes, and tiny utilities that remove friction from everyday work.</p>
+      </article>
+    </div>
+  </section>
 
-    const sectionLinks = [...document.querySelectorAll(".nav a")];
-    const sections = sectionLinks.map(link => document.querySelector(link.getAttribute("href"))).filter(Boolean);
-    const sectionObserver = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        sectionLinks.forEach(link => link.classList.toggle("active", link.getAttribute("href") === `#${entry.target.id}`));
-      });
-    }, { rootMargin: "-35% 0px -55% 0px" });
-    sections.forEach(section => sectionObserver.observe(section));
+  <!-- ============================== -->
+  <!-- ACT V : NOTES — THE WRITING    -->
+  <!-- ============================== -->
+  <section class="scene scene-notes" id="notes">
+    <div class="scene-header">
+      <span class="mono-label">Notes</span>
+      <h2 class="section-title" data-split>Drafts for future pages.</h2>
+      <p class="section-desc">Deliberately written like doors, not summaries. A personal site gets better when it has places to wander.</p>
+    </div>
+    <div class="notes-grid">
+      <article class="note-card" data-reveal>
+        <span class="note-num">NOTE 01</span>
+        <h3>Interfaces as furniture</h3>
+        <p>Some tools should be impressive once. The best ones become part of the room: sturdy, quiet, close at hand.</p>
+        <span class="tag">Essay seed</span>
+      </article>
+      <article class="note-card" data-reveal>
+        <span class="note-num">NOTE 02</span>
+        <h3>Why tiny apps matter</h3>
+        <p>Small software lets you practice judgment quickly: scope, defaults, naming, failure states, and the feeling of the first click.</p>
+        <span class="tag">Build log</span>
+      </article>
+      <article class="note-card" data-reveal>
+        <span class="note-num">NOTE 03</span>
+        <h3>The useful uncanny</h3>
+        <p>There is a sweet spot between utility and strangeness where people remember what they used and want to touch it again.</p>
+        <span class="tag">Design note</span>
+      </article>
+    </div>
+  </section>
 
-    function initAmbientCanvas() {
-      const canvas = document.getElementById("ambientCanvas");
-      const context = canvas.getContext("2d");
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-      let width = 0;
-      let height = 0;
-      let marks = [];
+  <!-- ============================== -->
+  <!-- ACT VI : CONTACT — THE CLOSE   -->
+  <!-- ============================== -->
+  <section class="scene scene-contact" id="contact">
+    <div class="contact-frame">
+      <div class="contact-main">
+        <span class="mono-label">Contact</span>
+        <h2 class="section-title">Bring a rough idea.<br>I like rough ideas.</h2>
+        <p class="contact-desc">For prototypes, experiments, collaboration, or a stronger version of this site, start with the fastest available channel.</p>
+        <div class="contact-actions">
+          <a class="contact-link" href="mailto:KidSpartor@users.noreply.github.com">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            Email
+          </a>
+          <a class="contact-link" href="https://github.com/KidSpartor" target="_blank" rel="noreferrer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+      <div class="contact-side">
+        <div class="contact-panel" data-reveal>
+          <h3>Format</h3>
+          <p>Static, fast, deployable, and intentionally easy to migrate into Astro or Next.js when the writing archive becomes real.</p>
+        </div>
+        <div class="contact-panel" data-reveal>
+          <h3>Next obvious page</h3>
+          <p>A proper notebook: short posts, prototypes with source links, and a library of interface patterns worth reusing.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-      function resize() {
-        const ratio = Math.min(window.devicePixelRatio || 1, 2);
-        width = canvas.width = Math.floor(window.innerWidth * ratio);
-        height = canvas.height = Math.floor(window.innerHeight * ratio);
-        canvas.style.width = `${window.innerWidth}px`;
-        canvas.style.height = `${window.innerHeight}px`;
-        marks = Array.from({ length: 80 }, (_, index) => ({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          length: 20 + Math.random() * 90,
-          phase: Math.random() * Math.PI * 2,
-          lane: index % 9
-        }));
-      }
+  <!-- Footer -->
+  <footer class="footer">
+    <span>Designed and built for Tianyi Ma.</span>
+    <span class="mono-label">Studio — always in motion.</span>
+  </footer>
 
-      function draw(time = 0) {
-        context.clearRect(0, 0, width, height);
-        const speed = reduced.matches ? 0 : time / 1000;
-        const hue = getComputedStyle(root).getPropertyValue("--accent-h").trim() || "214";
-        const density = Number(getComputedStyle(root).getPropertyValue("--density")) || .5;
-        const angle = (ambient.angle * Math.PI) / 180;
-        context.lineWidth = Math.max(1, width / 1600);
-
-        marks.forEach((mark, index) => {
-          const drift = speed * (8 + density * 18) * (mark.lane + 1) * .06;
-          const x = (mark.x + Math.cos(angle) * drift * 30) % width;
-          const y = (mark.y + Math.sin(angle) * drift * 30 + Math.sin(speed + mark.phase) * 10) % height;
-          const len = mark.length * (.6 + density);
-          context.beginPath();
-          context.moveTo(x, y);
-          context.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
-          context.strokeStyle = `hsla(${hue}, 65%, 48%, ${.05 + density * .08})`;
-          context.stroke();
-
-          if (index % 13 === 0) {
-            context.beginPath();
-            context.arc(x, y, 38 + density * 45, 0, Math.PI * 2);
-            context.strokeStyle = `hsla(${hue}, 55%, 45%, ${.025 + density * .025})`;
-            context.stroke();
-          }
-        });
-
-        if (!reduced.matches) requestAnimationFrame(draw);
-      }
-
-      resize();
-      draw();
-      window.addEventListener("resize", resize);
-    }
-
-    initAmbientCanvas();
-  </script>
 </body>
 </html>
