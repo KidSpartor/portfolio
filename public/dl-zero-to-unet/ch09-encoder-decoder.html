@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第 9 章 · 编码器-解码器 - 从零到 UNet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .ed-status {
+      font-family: var(--font-mono);
+      font-size: var(--font-size-sm);
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: var(--space-md);
+      margin-top: var(--space-md);
+      color: var(--text-secondary);
+      text-align: center;
+      min-height: 24px;
+    }
+    .ed-status .enc { color: #4a90d9; font-weight: 600; }
+    .ed-status .dec { color: #e85d5d; font-weight: 600; }
+    .ed-status .bn { color: #a78bfa; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <!-- ======== Navigation ======== -->
+  <nav class="nav"><div class="nav-inner"><a href="index.html" class="nav-brand">从零到 UNet</a><ul class="nav-links"><li><a href="ch01-what-is-dl.html">Ch1</a></li><li><a href="ch02-perceptron.html">Ch2</a></li><li><a href="ch03-mlp.html">Ch3</a></li><li><a href="ch04-activation.html">Ch4</a></li><li><a href="ch05-loss.html">Ch5</a></li><li><a href="ch06-optimization.html">Ch6</a></li><li><a href="ch07-backprop.html">Ch7</a></li><li><a href="ch08-cnn.html">Ch8</a></li><li><a href="ch09-encoder-decoder.html" class="active">Ch9</a></li><li><a href="ch10-unet.html">Ch10</a></li><li><a href="ch11-practice.html">Ch11</a></li><li><a href="ch12-unet-variants.html">Ch12</a></li></ul></div></nav>
+
+  <!-- ======== Chapter Header ======== -->
+  <header class="chapter-header">
+    <div class="container">
+      <span class="chapter-number">第 9 章</span>
+      <h1>编码器-解码器</h1>
+      <p class="chapter-subtitle">压缩与重建：语义分割的核心架构</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ======== Section 1: The Segmentation Problem ======== -->
+    <section class="section">
+      <h2>从分类到分割</h2>
+      <p>
+        在前面的章节中，我们了解了 CNN 如何对整张图片进行分类——输入一张图片，输出一个标签（如"猫"或"狗"）。但在很多实际应用中，我们需要的不仅仅是"这张图里有什么"，而是"图片中的<strong>每一个像素</strong>属于什么"。
+      </p>
+      <p>
+        这就是<strong>语义分割</strong>（Semantic Segmentation）问题。
+      </p>
+
+      <table>
+        <thead><tr><th>任务</th><th>输入</th><th>输出</th><th>问题</th></tr></thead>
+        <tbody>
+          <tr><td>图像分类</td><td>一张图片</td><td>一个标签</td><td>"这是什么？"</td></tr>
+          <tr><td>目标检测</td><td>一张图片</td><td>边界框 + 标签</td><td>"在哪里？是什么？"</td></tr>
+          <tr><td><strong>语义分割</strong></td><td>一张图片</td><td>像素级标签图</td><td>"每个像素是什么？"</td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        语义分割在医学影像（肿瘤区域标注）、自动驾驶（道路/行人/车辆区分）、卫星图像分析等领域有着广泛应用。
+      </p>
+
+      <figure class="figure">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Seq2seq-training.svg/500px-Seq2seq-training.svg.png" alt="编码器-解码器架构图" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;">
+        <figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">
+          图: 编码器-解码器架构——编码器压缩输入提取语义特征，解码器恢复空间分辨率生成分割结果。来源: <a href="https://d2l.ai/chapter_recurrent-modern/seq2seq.html" target="_blank">Dive into Deep Learning (d2l.ai)</a>
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ======== Section 2: Interactive Encoder-Decoder Demo ======== -->
+    <section class="section">
+      <h2>交互演示：编码器-解码器管线</h2>
+      <p>
+        编码器-解码器是语义分割的基本架构。编码器逐步压缩图像提取语义信息，解码器逐步恢复空间分辨率。点击按钮观看动画。
+      </p>
+
+      <div class="demo-container">
+        <canvas id="edCanvas" width="900" height="480"></canvas>
+        <div class="ed-status" id="edStatus">
+          点击"下采样"或"上采样"开始演示
+        </div>
+        <div class="demo-controls">
+          <button class="btn btn-primary" id="btnDownsample">下采样</button>
+          <button class="btn btn-secondary" id="btnUpsample">上采样</button>
+          <button class="btn btn-secondary" id="btnResetED">重置</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== Section 3: Encoder ======== -->
+    <section class="section">
+      <h2>编码器：收缩路径</h2>
+      <p>
+        编码器（Encoder）的作用是逐步<strong>压缩</strong>输入图像，提取越来越抽象的语义特征。典型的编码器由多个"块"组成，每个块包含：
+      </p>
+      <ul>
+        <li><strong>卷积层</strong>：提取局部特征</li>
+        <li><strong>池化层</strong>（或步幅为 2 的卷积）：将空间尺寸减半</li>
+      </ul>
+      <p>
+        随着层数加深，特征图的<strong>空间尺寸越来越小</strong>，但<strong>通道数越来越多</strong>。这意味着编码器逐渐用"更多的特征维度"换取"更少的空间信息"。
+      </p>
+      <p>
+        编码器捕获了"<strong>是什么</strong>"（what），但丢失了"<strong>在哪里</strong>"（where）的信息。
+      </p>
+    </section>
+
+    <!-- ======== Section 4: Decoder ======== -->
+    <section class="section">
+      <h2>解码器：扩展路径</h2>
+      <p>
+        解码器（Decoder）的作用与编码器相反——它逐步<strong>恢复</strong>空间分辨率，将压缩后的语义特征映射回原始图像尺寸。解码器的每个块通常包含：
+      </p>
+      <ul>
+        <li><strong>上采样层</strong>：将特征图尺寸加倍</li>
+        <li><strong>卷积层</strong>：细化上采样后的特征</li>
+      </ul>
+
+      <h3>上采样方法</h3>
+      <p>
+        <strong>最近邻上采样</strong>：简单地复制每个像素，将尺寸加倍。速度快但效果粗糙，容易产生"棋盘格"伪影。
+      </p>
+      <p>
+        <strong>转置卷积（Transposed Convolution）</strong>：也叫"反卷积"（deconvolution），通过可学习的参数来进行上采样。它是卷积的"逆操作"，能够学习如何最好地恢复空间细节。
+      </p>
+    </section>
+
+    <!-- ======== Section 5: Information Bottleneck ======== -->
+    <section class="section">
+      <h2>信息瓶颈</h2>
+      <p>
+        编码器-解码器架构面临的最大挑战是<strong>信息瓶颈</strong>（Information Bottleneck）。
+      </p>
+      <p>
+        想象一下：你把一本 300 页的书压缩成一段 100 字的摘要（编码器），然后再试图从这段摘要重新写出整本书（解码器）。结果可想而知——大量的细节信息在压缩过程中丢失了，重建的版本会非常模糊。
+      </p>
+      <p>
+        同样地，当编码器将 $256 \times 256$ 的输入压缩到 $16 \times 16$ 的特征图时，许多精细的空间信息（如物体的精确边界、小物体的位置）不可避免地丢失了。解码器再怎么努力，也很难恢复这些信息。
+      </p>
+
+      <div class="warning-box">
+        <h4>FCN 的局限</h4>
+        <p style="margin:0">
+          Long 等人在 2015 年提出的<strong>全卷积网络（FCN）</strong>是第一个成功将 CNN 应用于语义分割的工作。但 FCN 生成的分割图往往比较模糊，正是因为信息瓶颈导致精细细节的丢失。
+        </p>
+      </div>
+    </section>
+
+    <!-- ======== Section 6: Preview ======== -->
+    <section class="section">
+      <h2>怎么办？UNet 的解决方案</h2>
+      <p>
+        解码器无法恢复的精细信息，其实还在编码器中存在——只是被丢弃了。如果能把编码器中的信息直接"跳过"瓶颈传递给解码器呢？
+      </p>
+      <p>
+        这就是<strong>跳跃连接</strong>（Skip Connection）的核心思想，也是下一章 UNet 架构的精髓。UNet 在编码器和解码器之间添加了直接的信息通道，让解码器能够同时获得高层语义信息和低层细节信息，从而生成精确的分割结果。
+      </p>
+
+      <div class="tip-box">
+        <h4>FCN vs UNet</h4>
+        <p style="margin:0">
+          FCN 也使用了跳跃连接，但只在少数几层之间添加。UNet 则在<strong>每一层</strong>都添加了跳跃连接，形成了对称的 U 型结构，这使得它在医学影像等需要精确边界的任务上表现尤为出色。
+        </p>
+      </div>
+    </section>
+
+    <!-- ======== Navigation ======== -->
+    <nav class="chapter-nav">
+      <a href="ch08-cnn.html">
+        <span class="label">&larr; 上一章</span>
+        <span class="title">卷积神经网络</span>
+      </a>
+      <a href="ch10-unet.html" class="next">
+        <span class="label">下一章 &rarr;</span>
+        <span class="title">UNet 架构</span>
+      </a>
+    </nav>
+  </main>
+
+  <!-- ======== Footer ======== -->
+  <footer class="footer">
+    <div class="container">
+      <p>从零到 UNet &mdash; 深度学习入门课程</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/common.js"></script>
+  <script>if(typeof renderMathInElement==='function')renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}]});</script>
+
+  <script>
+  // Theme color helper — reads CSS variables so canvas adapts to light/dark mode
+  function tc(varName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  }
+
+  (function() {
+    'use strict';
+
+    var canvas = document.getElementById('edCanvas');
+    var ctx = canvas.getContext('2d');
+    var CW = canvas.width, CH = canvas.height;
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = CW * dpr;
+    canvas.height = CH * dpr;
+    canvas.style.width = CW + 'px';
+    canvas.style.height = CH + 'px';
+    ctx.scale(dpr, dpr);
+
+    // ---- Pipeline stages ----
+    var stages = [
+      { label: '输入',       w: 120, h: 120, channels: 3,  color: '#e0e7ff' },
+      { label: '编码 1',     w: 100, h: 100, channels: 16, color: '#bfdbfe' },
+      { label: '编码 2',     w: 80,  h: 80,  channels: 32, color: '#93c5fd' },
+      { label: '编码 3',     w: 60,  h: 60,  channels: 64, color: '#60a5fa' },
+      { label: '瓶颈',      w: 40,  h: 40,  channels: 128, color: '#a78bfa' },
+      { label: '解码 3',     w: 60,  h: 60,  channels: 64, color: '#fca5a5' },
+      { label: '解码 2',     w: 80,  h: 80,  channels: 32, color: '#f87171' },
+      { label: '解码 1',     w: 100, h: 100, channels: 16, color: '#ef4444' },
+      { label: '输出',       w: 120, h: 120, channels: 3,  color: '#fecaca' }
+    ];
+
+    var numStages = stages.length;
+    var stageSpacing = CW / (numStages + 1);
+    var centerY = CH / 2 + 20;
+
+    // Assign x positions
+    for (var i = 0; i < numStages; i++) {
+      stages[i].x = stageSpacing * (i + 1);
+      stages[i].y = centerY;
+    }
+
+    // Animation state
+    var animPhase = 'idle'; // 'downsample' or 'upsample'
+    var animCurrentStage = -1;
+    var animProgress = 0;
+    var visibleStages = {};
+    var STAGE_ANIM_DURATION = 800;
+    var animTimerId = null;
+
+    // Feature map data (random colors for visualization)
+    function generateFeatureMapData(stage) {
+      var rows = Math.max(2, Math.round(stage.h / 15));
+      var cols = Math.max(2, Math.round(stage.w / 15));
+      var data = [];
+      for (var r = 0; r < rows; r++) {
+        data[r] = [];
+        for (var c = 0; c < cols; c++) {
+          data[r][c] = Math.random();
+        }
+      }
+      return { rows: rows, cols: cols, data: data };
+    }
+
+    // Pre-generate feature maps for each stage
+    for (var i = 0; i < numStages; i++) {
+      stages[i].fm = generateFeatureMapData(stages[i]);
+    }
+
+    function drawStage(stage, active, blurry) {
+      var x = stage.x, y = stage.y;
+      var w = stage.w, h = stage.h;
+
+      // Shadow/glow for active
+      if (active) {
+        ctx.save();
+        ctx.shadowColor = 'rgba(74,108,247,0.4)';
+        ctx.shadowBlur = 20;
+        ctx.fillStyle = 'rgba(0,0,0,0)';
+        ctx.fillRect(x - w/2, y - h/2, w, h);
+        ctx.restore();
+      }
+
+      // Draw feature map as colored grid
+      var fm = stage.fm;
+      var cellW = w / fm.cols;
+      var cellH = h / fm.rows;
+
+      for (var r = 0; r < fm.rows; r++) {
+        for (var c = 0; c < fm.cols; c++) {
+          var cx = x - w/2 + c * cellW;
+          var cy = y - h/2 + r * cellH;
+          var v = fm.data[r][c];
+
+          // Color based on stage type
+          var baseColor = stage.color;
+          ctx.globalAlpha = blurry ? 0.3 + v * 0.3 : 0.4 + v * 0.6;
+          ctx.fillStyle = baseColor;
+          ctx.fillRect(cx, cy, cellW - 0.5, cellH - 0.5);
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // Border
+      ctx.strokeStyle = active ? '#4a6cf7' : 'rgba(0,0,0,0.15)';
+      ctx.lineWidth = active ? 3 : 1.5;
+      ctx.strokeRect(x - w/2, y - h/2, w, h);
+
+      // Label below
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = active ? '#4a6cf7' : tc('--text-muted');
+      ctx.fillText(stage.label, x, y + h/2 + 8);
+
+      // Channel count
+      ctx.font = '500 10px "JetBrains Mono", monospace';
+      ctx.fillStyle = tc('--text-muted');
+      ctx.fillText(stage.channels + 'ch', x, y + h/2 + 24);
+    }
+
+    function drawConnection(from, to, highlighted) {
+      var fx = from.x + from.w/2;
+      var fy = from.y;
+      var tx = to.x - to.w/2;
+      var ty = to.y;
+
+      ctx.strokeStyle = highlighted ? '#4a6cf7' : 'rgba(0,0,0,0.1)';
+      ctx.lineWidth = highlighted ? 2 : 1;
+      ctx.setLineDash(highlighted ? [] : [4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(fx, fy);
+      ctx.lineTo(tx, ty);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Arrow
+      if (highlighted) {
+        var angle = Math.atan2(ty - fy, tx - fx);
+        var headLen = 8;
+        ctx.fillStyle = '#4a6cf7';
+        ctx.beginPath();
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(tx - headLen * Math.cos(angle - Math.PI/6), ty - headLen * Math.sin(angle - Math.PI/6));
+        ctx.lineTo(tx - headLen * Math.cos(angle + Math.PI/6), ty - headLen * Math.sin(angle + Math.PI/6));
+        ctx.fill();
+      }
+    }
+
+    // Draw bottleneck indicator
+    function drawBottleneck() {
+      var bn = stages[4]; // bottleneck
+      ctx.save();
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = '#a78bfa';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(bn.x, bn.y - bn.h/2 - 30);
+      ctx.lineTo(bn.x, bn.y + bn.h/2 + 40);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.font = '600 10px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#a78bfa';
+      ctx.fillText('信息瓶颈', bn.x, bn.y - bn.h/2 - 38);
+      ctx.restore();
+    }
+
+    // Labels for encoder/decoder
+    function drawSectionLabels() {
+      ctx.font = '700 13px Inter, sans-serif';
+      ctx.textAlign = 'center';
+
+      // Encoder label
+      var encMid = (stages[0].x + stages[4].x) / 2;
+      ctx.fillStyle = '#4a90d9';
+      ctx.fillText('编码器（Encoder）', encMid, 30);
+
+      // Decoder label
+      var decMid = (stages[4].x + stages[8].x) / 2;
+      ctx.fillStyle = '#e85d5d';
+      ctx.fillText('解码器（Decoder）', decMid, 30);
+
+      // Arrows
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillStyle = tc('--text-muted');
+      ctx.fillText('空间缩小，通道增加 →', (stages[1].x + stages[3].x) / 2, 50);
+      ctx.fillText('← 空间放大，通道减少', (stages[5].x + stages[7].x) / 2, 50);
+    }
+
+    // Degradation indicator
+    function drawDegradation() {
+      if (visibleStages[8] && animPhase === 'idle') {
+        // Show "blurry" indicator on output
+        var out = stages[8];
+        ctx.font = '600 11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ef4444';
+        ctx.fillText('边界模糊', out.x, out.y - out.h/2 - 15);
+      }
+    }
+
+    function drawAll() {
+      ctx.clearRect(0, 0, CW, CH);
+
+      drawSectionLabels();
+      drawBottleneck();
+
+      // Draw connections
+      for (var i = 0; i < numStages - 1; i++) {
+        var bothVisible = visibleStages[i] && visibleStages[i+1];
+        drawConnection(stages[i], stages[i+1], bothVisible);
+      }
+
+      // Draw stages
+      for (var i = 0; i < numStages; i++) {
+        if (!visibleStages[i]) continue;
+        var isActive = false;
+        if (animPhase === 'downsample' && animCurrentStage === i) isActive = true;
+        if (animPhase === 'upsample' && animCurrentStage === i) isActive = true;
+        var blurry = (i >= 5 && visibleStages[i]); // decoder stages look blurry
+        drawStage(stages[i], isActive, blurry);
+      }
+
+      drawDegradation();
+    }
+
+    // ---- Animation functions ----
+    var statusEl = document.getElementById('edStatus');
+
+    function animateDownsample() {
+      if (animPhase !== 'idle' && animPhase !== 'downsample') return;
+
+      if (animPhase === 'idle') {
+        animPhase = 'downsample';
+        animCurrentStage = -1;
+        animProgress = 0;
+        visibleStages = {};
+      }
+
+      animCurrentStage++;
+      if (animCurrentStage > 4) {
+        // Done with downsample
+        animPhase = 'idle';
+        statusEl.innerHTML = '<span class="enc">下采样完成!</span> 信息被压缩到瓶颈层。点击"上采样"恢复空间分辨率。';
+        drawAll();
+        return;
+      }
+
+      visibleStages[animCurrentStage] = true;
+      var s = stages[animCurrentStage];
+
+      statusEl.innerHTML = '<span class="enc">编码步骤 ' + (animCurrentStage) + '</span>：' +
+        s.label + ' — 特征图 ' + s.w + '×' + s.h + '，通道数 ' + s.channels;
+
+      // Animate fade in
+      var startTime = null;
+      var idx = animCurrentStage;
+      function tick(ts) {
+        if (!startTime) startTime = ts;
+        animProgress = Math.min(1, (ts - startTime) / STAGE_ANIM_DURATION);
+        drawAll();
+
+        // Draw progress indicator on current stage
+        var stg = stages[idx];
+        ctx.fillStyle = 'rgba(74,108,247,' + (0.3 * (1 - animProgress)) + ')';
+        ctx.fillRect(stg.x - stg.w/2, stg.y - stg.h/2, stg.w, stg.h);
+
+        if (animProgress < 1) {
+          animTimerId = requestAnimationFrame(tick);
+        } else {
+          animProgress = 0;
+          setTimeout(animateDownsample, 200);
+        }
+      }
+      animTimerId = requestAnimationFrame(tick);
+    }
+
+    function animateUpsample() {
+      if (animPhase !== 'idle' && animPhase !== 'upsample') return;
+
+      if (animPhase === 'idle') {
+        animPhase = 'upsample';
+        animCurrentStage = 4; // start from bottleneck
+        animProgress = 0;
+        // Ensure encoder stages are visible
+        for (var i = 0; i <= 4; i++) visibleStages[i] = true;
+      }
+
+      animCurrentStage++;
+      if (animCurrentStage > 8) {
+        animPhase = 'idle';
+        statusEl.innerHTML = '<span class="dec">上采样完成!</span> 输出已恢复原始尺寸，但边界仍然<span class="dec">模糊</span>——因为精细信息在编码过程中丢失了。';
+        drawAll();
+        return;
+      }
+
+      visibleStages[animCurrentStage] = true;
+      var s = stages[animCurrentStage];
+
+      statusEl.innerHTML = '<span class="dec">解码步骤 ' + (animCurrentStage - 4) + '</span>：' +
+        s.label + ' — 特征图 ' + s.w + '×' + s.h + '，通道数 ' + s.channels;
+
+      var startTime = null;
+      var idx = animCurrentStage;
+      function tick(ts) {
+        if (!startTime) startTime = ts;
+        animProgress = Math.min(1, (ts - startTime) / STAGE_ANIM_DURATION);
+        drawAll();
+
+        var stg = stages[idx];
+        ctx.fillStyle = 'rgba(232,93,93,' + (0.3 * (1 - animProgress)) + ')';
+        ctx.fillRect(stg.x - stg.w/2, stg.y - stg.h/2, stg.w, stg.h);
+
+        if (animProgress < 1) {
+          animTimerId = requestAnimationFrame(tick);
+        } else {
+          animProgress = 0;
+          setTimeout(animateUpsample, 200);
+        }
+      }
+      animTimerId = requestAnimationFrame(tick);
+    }
+
+    function resetED() {
+      if (animTimerId) { cancelAnimationFrame(animTimerId); clearTimeout(animTimerId); animTimerId = null; }
+      animPhase = 'idle';
+      animCurrentStage = -1;
+      animProgress = 0;
+      visibleStages = {};
+      statusEl.innerHTML = '点击"下采样"或"上采样"开始演示';
+      drawAll();
+    }
+
+    document.getElementById('btnDownsample').addEventListener('click', function() {
+      if (animPhase !== 'idle') return;
+      resetED();
+      setTimeout(animateDownsample, 50);
+    });
+
+    document.getElementById('btnUpsample').addEventListener('click', function() {
+      if (animPhase !== 'idle') return;
+      // Ensure encoder is visible
+      if (Object.keys(visibleStages).length === 0) {
+        for (var i = 0; i <= 4; i++) visibleStages[i] = true;
+      }
+      animPhase = 'idle';
+      animateUpsample();
+    });
+
+    document.getElementById('btnResetED').addEventListener('click', resetED);
+
+    // Initial draw
+    drawAll();
+
+  })();
+  </script>
+
+</body>
+</html>

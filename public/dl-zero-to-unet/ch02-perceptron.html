@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>感知机 - 从零到 UNet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .content-wrap {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    .chapter-header {
+      text-align: center;
+      padding: 3rem 0 2rem;
+    }
+    .chapter-header .chapter-num {
+      font-size: 0.85rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 0.5rem;
+    }
+    .chapter-header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--primary);
+      padding-left: 0.75rem;
+    }
+    p { margin: 1rem 0; color: var(--text-secondary); }
+    strong { color: var(--text); }
+
+    .demo-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+    .demo-box h3 {
+      color: var(--primary);
+      font-size: 1rem;
+      margin: 0 0 1rem;
+    }
+    .demo-canvas-wrap {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    #perc-canvas {
+      display: block;
+      border-radius: 8px;
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+    .demo-controls {
+      flex: 1;
+      min-width: 220px;
+    }
+    .control-group {
+      margin-bottom: 1rem;
+    }
+    .control-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+    .control-group .val {
+      color: var(--primary);
+      font-family: var(--font-mono);
+      font-weight: 500;
+    }
+    .control-group input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+    }
+    .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+    .stats {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .stats span {
+      font-family: var(--font-mono);
+    }
+    .stats .correct { color: var(--success); }
+    .stats .wrong { color: var(--danger); }
+
+    .code-block {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      overflow-x: auto;
+    }
+    .code-block pre {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    .code-block .comment { color: var(--text-muted); }
+    .code-block .keyword { color: #c084fc; }
+    .code-block .func { color: #60a5fa; }
+    .code-block .str { color: var(--success); }
+    .code-block .num { color: var(--warning); }
+
+    .math-block {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+
+    .xor-box {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 1.5rem 0;
+    }
+    #xor-canvas {
+      border-radius: 8px;
+      background: var(--bg);
+    }
+
+    .truth-table {
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    .truth-table th, .truth-table td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+    .truth-table th {
+      background: var(--bg-tertiary);
+      color: var(--primary);
+    }
+    .truth-table td {
+      color: var(--text-secondary);
+    }
+
+    .analogy {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .analogy .emoji { font-size: 1.5rem; margin-right: 0.5rem; }
+
+    .chapter-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+    .chapter-nav a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .chapter-nav a:hover { color: var(--primary-dark); }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">从零到 UNet</a>
+      <ul class="nav-links">
+        <li><a href="ch01-what-is-dl.html">Ch1</a></li>
+        <li><a href="ch02-perceptron.html">Ch2</a></li>
+        <li><a href="ch03-mlp.html">Ch3</a></li>
+        <li><a href="ch04-activation.html">Ch4</a></li>
+        <li><a href="ch05-loss.html">Ch5</a></li>
+        <li><a href="ch06-optimization.html">Ch6</a></li>
+        <li><a href="ch07-backprop.html">Ch7</a></li>
+        <li><a href="ch08-cnn.html">Ch8</a></li>
+        <li><a href="ch09-encoder-decoder.html">Ch9</a></li>
+        <li><a href="ch10-unet.html">Ch10</a></li>
+        <li><a href="ch11-practice.html">Ch11</a></li>
+        <li><a href="ch12-unet-variants.html">Ch12</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="content-wrap">
+    <header class="chapter-header">
+      <div class="chapter-num">Chapter 2</div>
+      <h1>第 2 章 &middot; 感知机：最简单的神经网络</h1>
+    </header>
+
+    <p>感知机（Perceptron）是所有神经网络的起点。它简单、直观，却是理解深度学习的基石。</p>
+
+    <figure class="figure">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/60/ArtificialNeuronModel_english.png" alt="人工神经元模型图" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;">
+      <figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">
+        图: 经典人工神经元模型——输入 $x_1, x_2, \ldots$ 经过加权求和后通过激活函数产生输出。来源: <a href="https://en.wikipedia.org/wiki/Artificial_neuron" target="_blank">Wikipedia - Artificial Neuron</a>
+      </figcaption>
+    </figure>
+
+    <!-- Interactive Demo -->
+    <div class="demo-box">
+      <h3>交互式感知机模拟器</h3>
+      <div class="math-block" style="background:transparent; border:none; padding:0; margin-bottom:1rem;">
+        $$\hat{y} = \text{step}(w_1 x_1 + w_2 x_2 + b)$$
+      </div>
+      <div class="demo-canvas-wrap">
+        <canvas id="perc-canvas" width="400" height="400"></canvas>
+        <div class="demo-controls">
+          <div class="control-group">
+            <label>w1 (权重 1): <span class="val" id="w1-val">0.50</span></label>
+            <input type="range" id="w1-slider" min="-3" max="3" step="0.05" value="0.5">
+          </div>
+          <div class="control-group">
+            <label>w2 (权重 2): <span class="val" id="w2-val">0.50</span></label>
+            <input type="range" id="w2-slider" min="-3" max="3" step="0.05" value="0.5">
+          </div>
+          <div class="control-group">
+            <label>b (偏置): <span class="val" id="bias-val">-0.50</span></label>
+            <input type="range" id="bias-slider" min="-3" max="3" step="0.05" value="-0.5">
+          </div>
+          <div class="control-group">
+            <label>学习率: <span class="val" id="lr-val">0.10</span></label>
+            <input type="range" id="lr-slider" min="0.01" max="1" step="0.01" value="0.1">
+          </div>
+          <div class="btn-row">
+            <button class="btn" id="btn-step">训练一步</button>
+            <button class="btn" id="btn-auto">自动训练</button>
+            <button class="btn" id="btn-reset">重置数据</button>
+          </div>
+          <div class="stats">
+            正确: <span class="correct" id="stat-correct">0</span> /
+            错误: <span class="wrong" id="stat-wrong">0</span> /
+            总计: <span id="stat-total">0</span>
+            <br>Epoch: <span id="stat-epoch">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>直觉理解</h2>
+    <div class="analogy">
+      <p><span class="emoji">&#127919;</span> <strong>投票类比：</strong>想象一个评审委员会。每位评委（输入）根据自己的重要性（权重）投票。如果总票数超过某个门槛（偏置），就通过（输出 1）；否则拒绝（输出 0）。感知机就是这样一个简单的"多数决"系统。</p>
+    </div>
+
+    <h2>核心组件</h2>
+    <ul>
+      <li><strong>权重 (Weights)</strong> &mdash; 每个输入的重要性。$w_1$ 和 $w_2$ 控制各输入对最终决策的影响程度。</li>
+      <li><strong>偏置 (Bias)</strong> &mdash; 决策的门槛。相当于"通过的最低分数线"。</li>
+      <li><strong>阶跃函数 (Step Function)</strong> &mdash; 如果加权求和 > 0，输出 1；否则输出 0。</li>
+    </ul>
+
+    <h2>数学公式</h2>
+    <div class="math-block">
+      $$z = w_1 x_1 + w_2 x_2 + b$$
+      $$\hat{y} = \text{step}(z) = \begin{cases} 1 & \text{if } z > 0 \\ 0 & \text{otherwise} \end{cases}$$
+    </div>
+
+    <h2>训练规则</h2>
+    <p>感知机的学习规则非常简单：</p>
+    <div class="math-block">
+      $$w_i \leftarrow w_i + \eta \cdot (y - \hat{y}) \cdot x_i$$
+      $$b \leftarrow b + \eta \cdot (y - \hat{y})$$
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.8rem;">其中 $\eta$ 是学习率，$y$ 是真实标签，$\hat{y}$ 是预测值</p>
+    </div>
+    <p>预测正确时 ($y = \hat{y}$)，权重不变；预测错误时，权重朝正确方向调整。</p>
+
+    <h2>代码实现</h2>
+    <div class="code-block">
+      <pre><span class="keyword">import</span> numpy <span class="keyword">as</span> np
+
+<span class="keyword">class</span> <span class="func">Perceptron</span>:
+    <span class="keyword">def</span> <span class="func">__init__</span>(self, lr=<span class="num">0.1</span>):
+        self.w = np.random.randn(<span class="num">2</span>)  <span class="comment"># 两个权重</span>
+        self.b = <span class="num">0.0</span>                    <span class="comment"># 偏置</span>
+        self.lr = lr                     <span class="comment"># 学习率</span>
+
+    <span class="keyword">def</span> <span class="func">predict</span>(self, x):
+        z = np.dot(self.w, x) + self.b
+        <span class="keyword">return</span> <span class="num">1</span> <span class="keyword">if</span> z > <span class="num">0</span> <span class="keyword">else</span> <span class="num">0</span>
+
+    <span class="keyword">def</span> <span class="func">train</span>(self, X, y, epochs=<span class="num">100</span>):
+        <span class="keyword">for</span> _ <span class="keyword">in</span> range(epochs):
+            <span class="keyword">for</span> xi, yi <span class="keyword">in</span> zip(X, y):
+                y_hat = self.predict(xi)
+                error = yi - y_hat
+                self.w += self.lr * error * xi
+                self.b += self.lr * error
+
+<span class="comment"># AND 门示例</span>
+X = np.array([[<span class="num">0</span>,<span class="num">0</span>], [<span class="num">0</span>,<span class="num">1</span>], [<span class="num">1</span>,<span class="num">0</span>], [<span class="num">1</span>,<span class="num">1</span>]])
+y = np.array([<span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">1</span>])
+
+p = Perceptron(lr=<span class="num">0.1</span>)
+p.train(X, y)
+<span class="keyword">print</span>(<span class="str">"训练后预测："</span>, [p.predict(xi) <span class="keyword">for</span> xi <span class="keyword">in</span> X])
+<span class="comment"># 输出: [0, 0, 0, 1] ✓</span></pre>
+    </div>
+
+    <h2>局限性：XOR 问题</h2>
+    <p>感知机只能解决<strong>线性可分</strong>的问题。1969 年，Minsky 和 Papert 证明了感知机无法解决异或（XOR）问题，这一发现曾让神经网络研究陷入低潮。</p>
+
+    <figure class="figure">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/XOR_perceptron_net.png/500px-XOR_perceptron_net.png" alt="XOR问题非线性可分" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;">
+      <figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">
+        图: XOR 问题是线性不可分的——无法用一条直线将两类点完全分开。来源: <a href="https://d2l.ai/chapter_linear-classification/classification.html" target="_blank">Dive into Deep Learning (d2l.ai)</a>
+      </figcaption>
+    </figure>
+
+    <table class="truth-table">
+      <thead>
+        <tr><th>$x_1$</th><th>$x_2$</th><th>AND</th><th>OR</th><th>XOR</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+        <tr><td>0</td><td>1</td><td>0</td><td>1</td><td>1</td></tr>
+        <tr><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td></tr>
+        <tr><td>1</td><td>1</td><td>1</td><td>1</td><td>0</td></tr>
+      </tbody>
+    </table>
+
+    <div class="xor-box">
+      <canvas id="xor-canvas" width="300" height="300"></canvas>
+      <div>
+        <p><strong>为什么 XOR 不可分？</strong></p>
+        <p>在上图中，蓝色的 $(0,0)$ 和 $(1,1)$ 属于类 0，红色的 $(0,1)$ 和 $(1,0)$ 属于类 1。无论你如何画一条直线，都无法将红色和蓝色完全分开。这就是线性不可分的含义。</p>
+        <p>解决方案？引入多个感知机 &mdash; 组成<strong>多层感知机</strong>。这是下一章的内容。</p>
+      </div>
+    </div>
+
+    <div class="chapter-nav">
+      <a href="ch01-what-is-dl.html">&larr; 什么是深度学习</a>
+      <a href="ch03-mlp.html">下一章：多层感知机 &rarr;</a>
+    </div>
+  </div>
+
+  <script src="assets/js/common.js"></script>
+  <script>if(typeof renderMathInElement==='function')renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}]});</script>
+
+  <script>
+  // Theme color helper — reads CSS variables so canvas adapts to light/dark mode
+  function tc(varName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  }
+
+  // ========================================
+  // Perceptron Interactive Simulator
+  // ========================================
+  (function() {
+    var canvas = document.getElementById('perc-canvas');
+    var ctx = canvas.getContext('2d');
+    var SIZE = canvas.width;
+
+    // DOM
+    var w1Slider = document.getElementById('w1-slider');
+    var w2Slider = document.getElementById('w2-slider');
+    var biasSlider = document.getElementById('bias-slider');
+    var lrSlider = document.getElementById('lr-slider');
+    var w1Val = document.getElementById('w1-val');
+    var w2Val = document.getElementById('w2-val');
+    var biasVal = document.getElementById('bias-val');
+    var lrVal = document.getElementById('lr-val');
+    var btnStep = document.getElementById('btn-step');
+    var btnAuto = document.getElementById('btn-auto');
+    var btnReset = document.getElementById('btn-reset');
+    var statCorrect = document.getElementById('stat-correct');
+    var statWrong = document.getElementById('stat-wrong');
+    var statTotal = document.getElementById('stat-total');
+    var statEpoch = document.getElementById('stat-epoch');
+
+    // State
+    var w1 = 0.5, w2 = 0.5, bias = -0.5, lr = 0.1;
+    var points = [];
+    var autoInterval = null;
+    var epoch = 0;
+    var trainIdx = 0;
+    var correct = 0, wrong = 0;
+
+    // Generate random points (class 0: bottom-left cluster, class 1: top-right cluster)
+    function generatePoints() {
+      points = [];
+      for (var i = 0; i < 30; i++) {
+        points.push({
+          x: Math.random() * 0.4 + 0.05,
+          y: Math.random() * 0.4 + 0.05,
+          label: 0
+        });
+      }
+      for (var i = 0; i < 30; i++) {
+        points.push({
+          x: Math.random() * 0.4 + 0.55,
+          y: Math.random() * 0.4 + 0.55,
+          label: 1
+        });
+      }
+      epoch = 0;
+      trainIdx = 0;
+      correct = 0;
+      wrong = 0;
+      updateStats();
+    }
+
+    function step(z) { return z > 0 ? 1 : 0; }
+
+    function classify(px, py) {
+      return step(w1 * px + w2 * py + bias);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, SIZE, SIZE);
+
+      // Background grid
+      ctx.strokeStyle = tc('--border');
+      ctx.lineWidth = 1;
+      for (var i = 0; i <= 10; i++) {
+        var p = i / 10 * SIZE;
+        ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, SIZE); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(SIZE, p); ctx.stroke();
+      }
+
+      // Decision boundary: w1*x + w2*y + bias = 0  =>  y = -(w1*x + bias) / w2
+      if (Math.abs(w2) > 0.001) {
+        ctx.strokeStyle = '#8b5cf6';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 4]);
+        ctx.beginPath();
+        var x0 = 0, y0 = -(w1 * x0 + bias) / w2;
+        var x1 = 1, y1 = -(w1 * x1 + bias) / w2;
+        ctx.moveTo(x0 * SIZE, (1 - y0) * SIZE);
+        ctx.lineTo(x1 * SIZE, (1 - y1) * SIZE);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else if (Math.abs(w1) > 0.001) {
+        // Vertical line: x = -bias / w1
+        ctx.strokeStyle = '#8b5cf6';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([8, 4]);
+        var xv = -bias / w1;
+        ctx.beginPath();
+        ctx.moveTo(xv * SIZE, 0);
+        ctx.lineTo(xv * SIZE, SIZE);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Decision regions (shading)
+      ctx.globalAlpha = 0.08;
+      for (var gx = 0; gx < SIZE; gx += 8) {
+        for (var gy = 0; gy < SIZE; gy += 8) {
+          var px = gx / SIZE;
+          var py = 1 - gy / SIZE;
+          if (classify(px, py) === 1) {
+            ctx.fillStyle = '#60a5fa';
+          } else {
+            ctx.fillStyle = '#f87171';
+          }
+          ctx.fillRect(gx, gy, 8, 8);
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // Points
+      points.forEach(function(p) {
+        var sx = p.x * SIZE;
+        var sy = (1 - p.y) * SIZE;
+        var pred = classify(p.x, p.y);
+        var isCorrect = pred === p.label;
+
+        ctx.beginPath();
+        ctx.arc(sx, sy, 6, 0, Math.PI * 2);
+        ctx.fillStyle = p.label === 1 ? '#60a5fa' : '#f87171';
+        ctx.fill();
+
+        if (!isCorrect) {
+          ctx.strokeStyle = '#fbbf24';
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+        }
+
+        // Inner dot
+        ctx.beginPath();
+        ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = tc('--text');
+        ctx.fill();
+      });
+
+      // Axes labels
+      ctx.fillStyle = tc('--text-muted');
+      ctx.font = '12px Inter';
+      ctx.textAlign = 'center';
+      ctx.fillText('x1', SIZE / 2, SIZE - 5);
+      ctx.save();
+      ctx.translate(12, SIZE / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('x2', 0, 0);
+      ctx.restore();
+
+      // Formula display
+      ctx.fillStyle = '#8b5cf6';
+      ctx.font = '600 13px JetBrains Mono';
+      ctx.textAlign = 'left';
+      ctx.fillText('step(' + w1.toFixed(2) + 'x1 + ' + w2.toFixed(2) + 'x2 + ' + bias.toFixed(2) + ')', 10, 20);
+    }
+
+    function updateStats() {
+      statCorrect.textContent = correct;
+      statWrong.textContent = wrong;
+      statTotal.textContent = correct + wrong;
+      statEpoch.textContent = epoch;
+    }
+
+    function trainOneStep() {
+      var p = points[trainIdx];
+      var pred = classify(p.x, p.y);
+      var err = p.label - pred;
+      if (err !== 0) {
+        w1 += lr * err * p.x;
+        w2 += lr * err * p.y;
+        bias += lr * err;
+        wrong++;
+      } else {
+        correct++;
+      }
+      trainIdx++;
+      if (trainIdx >= points.length) {
+        trainIdx = 0;
+        epoch++;
+      }
+      // Sync sliders
+      w1Slider.value = w1;
+      w2Slider.value = w2;
+      biasSlider.value = bias;
+      w1Val.textContent = w1.toFixed(2);
+      w2Val.textContent = w2.toFixed(2);
+      biasVal.textContent = bias.toFixed(2);
+      updateStats();
+      draw();
+    }
+
+    function resetAll() {
+      if (autoInterval) {
+        clearInterval(autoInterval);
+        autoInterval = null;
+        btnAuto.classList.remove('active');
+        btnAuto.textContent = '自动训练';
+      }
+      w1 = parseFloat(w1Slider.value);
+      w2 = parseFloat(w2Slider.value);
+      bias = parseFloat(biasSlider.value);
+      generatePoints();
+      draw();
+    }
+
+    // Slider events
+    w1Slider.addEventListener('input', function() {
+      w1 = parseFloat(this.value);
+      w1Val.textContent = w1.toFixed(2);
+      draw();
+    });
+    w2Slider.addEventListener('input', function() {
+      w2 = parseFloat(this.value);
+      w2Val.textContent = w2.toFixed(2);
+      draw();
+    });
+    biasSlider.addEventListener('input', function() {
+      bias = parseFloat(this.value);
+      biasVal.textContent = bias.toFixed(2);
+      draw();
+    });
+    lrSlider.addEventListener('input', function() {
+      lr = parseFloat(this.value);
+      lrVal.textContent = lr.toFixed(2);
+    });
+
+    btnStep.addEventListener('click', function() {
+      trainOneStep();
+    });
+
+    btnAuto.addEventListener('click', function() {
+      if (autoInterval) {
+        clearInterval(autoInterval);
+        autoInterval = null;
+        btnAuto.classList.remove('active');
+        btnAuto.textContent = '自动训练';
+      } else {
+        btnAuto.classList.add('active');
+        btnAuto.textContent = '停止训练';
+        autoInterval = setInterval(function() {
+          for (var i = 0; i < 5; i++) trainOneStep();
+        }, 50);
+      }
+    });
+
+    btnReset.addEventListener('click', function() {
+      resetAll();
+    });
+
+    // Init
+    generatePoints();
+    draw();
+  })();
+
+  // ========================================
+  // XOR Diagram
+  // ========================================
+  (function() {
+    var canvas = document.getElementById('xor-canvas');
+    var ctx = canvas.getContext('2d');
+    var S = canvas.width;
+    var PAD = 40;
+
+    function draw() {
+      ctx.clearRect(0, 0, S, S);
+
+      // Grid
+      ctx.strokeStyle = tc('--border');
+      ctx.lineWidth = 1;
+      for (var i = 0; i <= 4; i++) {
+        var g = PAD + i * (S - 2 * PAD) / 4;
+        ctx.beginPath(); ctx.moveTo(g, PAD); ctx.lineTo(g, S - PAD); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(PAD, g); ctx.lineTo(S - PAD, g); ctx.stroke();
+      }
+
+      // Axes
+      ctx.strokeStyle = tc('--text-muted');
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(PAD, S - PAD);
+      ctx.lineTo(S - PAD + 10, S - PAD);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(PAD, S - PAD);
+      ctx.lineTo(PAD, PAD - 10);
+      ctx.stroke();
+
+      // Axis labels
+      ctx.fillStyle = tc('--text-muted');
+      ctx.font = '12px Inter';
+      ctx.textAlign = 'center';
+      ctx.fillText('x1', S / 2, S - 8);
+      ctx.save();
+      ctx.translate(12, S / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('x2', 0, 0);
+      ctx.restore();
+
+      // Tick labels
+      ctx.fillStyle = tc('--text-muted');
+      ctx.font = '11px JetBrains Mono';
+      ctx.fillText('0', PAD, S - PAD + 18);
+      ctx.fillText('1', S - PAD, S - PAD + 18);
+      ctx.textAlign = 'right';
+      ctx.fillText('0', PAD - 8, S - PAD + 4);
+      ctx.fillText('1', PAD - 8, PAD + 4);
+
+      // XOR points
+      var pts = [
+        { x: 0, y: 0, label: 0 },
+        { x: 0, y: 1, label: 1 },
+        { x: 1, y: 0, label: 1 },
+        { x: 1, y: 1, label: 0 }
+      ];
+
+      pts.forEach(function(p) {
+        var sx = PAD + p.x * (S - 2 * PAD);
+        var sy = S - PAD - p.y * (S - 2 * PAD);
+        ctx.beginPath();
+        ctx.arc(sx, sy, 10, 0, Math.PI * 2);
+        ctx.fillStyle = p.label === 1 ? '#f87171' : '#60a5fa';
+        ctx.fill();
+        ctx.strokeStyle = tc('--bg');
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Label
+        ctx.fillStyle = tc('--text');
+        ctx.font = '600 11px JetBrains Mono';
+        ctx.textAlign = 'center';
+        ctx.fillText(p.label, sx, sy + 4);
+      });
+
+      // Draw crossed lines showing no linear separation works
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 4]);
+      // Diagonal 1
+      ctx.beginPath();
+      ctx.moveTo(PAD, S - PAD);
+      ctx.lineTo(S - PAD, PAD);
+      ctx.stroke();
+      // Diagonal 2
+      ctx.beginPath();
+      ctx.moveTo(PAD, PAD);
+      ctx.lineTo(S - PAD, S - PAD);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // X marks
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 2;
+      var cx = S / 2, cy = S / 2;
+      ctx.beginPath(); ctx.moveTo(cx - 15, cy - 15); ctx.lineTo(cx + 15, cy + 15); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx + 15, cy - 15); ctx.lineTo(cx - 15, cy + 15); ctx.stroke();
+
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = '12px Inter';
+      ctx.textAlign = 'center';
+      ctx.fillText('无法线性分割!', cx, cy + 35);
+    }
+
+    draw();
+  })();
+  </script>
+</body>
+</html>

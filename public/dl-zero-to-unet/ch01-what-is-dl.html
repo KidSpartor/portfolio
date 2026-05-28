@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>什么是深度学习 - 从零到 UNet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .content-wrap {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    .chapter-header {
+      text-align: center;
+      padding: 3rem 0 2rem;
+    }
+    .chapter-header .chapter-num {
+      font-size: 0.85rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 0.5rem;
+    }
+    .chapter-header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--primary);
+      padding-left: 0.75rem;
+    }
+    p {
+      margin: 1rem 0;
+      color: var(--text-secondary);
+    }
+    strong {
+      color: var(--text);
+    }
+
+    .demo-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+    }
+    .demo-box h3 {
+      color: var(--primary);
+      font-size: 1rem;
+      margin: 0 0 1rem;
+    }
+    #venn-canvas {
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+      cursor: pointer;
+    }
+    .venn-hint {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+
+    .tabs-container {
+      margin: 2rem 0;
+    }
+    .tab-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0;
+    }
+    .tab-btn {
+      padding: 0.6rem 1.2rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .tab-btn:hover:not(.active) {
+      color: var(--text);
+      border-color: var(--primary);
+    }
+    .tab-content {
+      display: none;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 0 8px 8px 8px;
+      padding: 1.5rem;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .tab-content h4 {
+      color: var(--primary);
+      margin-top: 0;
+    }
+    .tab-content p {
+      color: var(--text-secondary);
+      margin-bottom: 0;
+    }
+
+    .math-block {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+    .math-block .label {
+      font-size: 0.85rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .chapter-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+    .chapter-nav a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .chapter-nav a:hover {
+      color: var(--primary-dark);
+    }
+
+    ul {
+      padding-left: 1.5rem;
+    }
+    ul li {
+      margin: 0.5rem 0;
+      color: var(--text-secondary);
+    }
+    ul li strong {
+      color: var(--text);
+    }
+
+    .highlight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .highlight-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.2rem;
+      text-align: center;
+      transition: border-color 0.3s;
+    }
+    .highlight-card:hover {
+      border-color: var(--primary);
+    }
+    .highlight-card .icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    .highlight-card .title {
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .highlight-card .desc {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+    }
+
+    .why-now {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .why-now-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+    .why-now-card .num {
+      color: var(--primary);
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .why-now-card .title {
+      color: var(--text);
+      font-weight: 600;
+      margin: 0.3rem 0;
+    }
+    .why-now-card .desc {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 600px) {
+      .why-now {
+        grid-template-columns: 1fr;
+      }
+      .highlight-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">从零到 UNet</a>
+      <ul class="nav-links">
+        <li><a href="ch01-what-is-dl.html">Ch1</a></li>
+        <li><a href="ch02-perceptron.html">Ch2</a></li>
+        <li><a href="ch03-mlp.html">Ch3</a></li>
+        <li><a href="ch04-activation.html">Ch4</a></li>
+        <li><a href="ch05-loss.html">Ch5</a></li>
+        <li><a href="ch06-optimization.html">Ch6</a></li>
+        <li><a href="ch07-backprop.html">Ch7</a></li>
+        <li><a href="ch08-cnn.html">Ch8</a></li>
+        <li><a href="ch09-encoder-decoder.html">Ch9</a></li>
+        <li><a href="ch10-unet.html">Ch10</a></li>
+        <li><a href="ch11-practice.html">Ch11</a></li>
+        <li><a href="ch12-unet-variants.html">Ch12</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="content-wrap">
+    <header class="chapter-header">
+      <div class="chapter-num">Chapter 1</div>
+      <h1>第 1 章 &middot; 什么是深度学习</h1>
+    </header>
+
+    <!-- Venn Diagram -->
+    <div class="demo-box">
+      <h3>AI &rarr; ML &rarr; DL 的关系</h3>
+      <canvas id="venn-canvas" width="560" height="400"></canvas>
+      <p class="venn-hint">将鼠标移到各个圆上查看说明</p>
+    </div>
+
+    <p>要理解深度学习，我们首先需要把它放在更大的背景中来看。人工智能（AI）、机器学习（ML）和深度学习（DL）是三个层层嵌套的概念。</p>
+
+    <h2>三层概念</h2>
+    <ul>
+      <li><strong>人工智能 (AI)</strong> &mdash; 最广泛的概念：让机器模拟人类智能的一切尝试。包括规则系统、专家系统、搜索算法等等。</li>
+      <li><strong>机器学习 (ML)</strong> &mdash; AI 的一个子集：让算法从数据中自动学习规律，而不是手动编写规则。</li>
+      <li><strong>深度学习 (DL)</strong> &mdash; ML 的一个子集：使用多层神经网络来学习数据的层次化表示。</li>
+    </ul>
+
+    <h2>关键应用与示例</h2>
+    <div class="highlight-grid">
+      <div class="highlight-card">
+        <div class="icon">&#128247;</div>
+        <div class="title">图像识别</div>
+        <div class="desc">人脸识别、物体检测</div>
+      </div>
+      <div class="highlight-card">
+        <div class="icon">&#128172;</div>
+        <div class="title">自然语言处理</div>
+        <div class="desc">翻译、对话、文本生成</div>
+      </div>
+      <div class="highlight-card">
+        <div class="icon">&#129657;</div>
+        <div class="title">医学影像</div>
+        <div class="desc">肿瘤检测、X 光分析</div>
+      </div>
+      <div class="highlight-card">
+        <div class="icon">&#128663;</div>
+        <div class="title">自动驾驶</div>
+        <div class="desc">环境感知、路径规划</div>
+      </div>
+    </div>
+
+    <div class="tabs-container">
+      <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="tab-img">图像识别</button>
+        <button class="tab-btn" data-tab="tab-nlp">自然语言处理</button>
+        <button class="tab-btn" data-tab="tab-med">医学影像</button>
+      </div>
+      <div class="tab-content active" id="tab-img">
+        <h4>图像识别</h4>
+        <p>深度学习模型可以通过卷积神经网络（CNN）自动从图像中提取特征。例如，模型可以识别图片中的猫、汽车或人脸，准确率甚至超过人类。典型应用包括：手机人脸解锁、照片自动分类、安防监控中的异常检测等。</p>
+      </div>
+      <div class="tab-content" id="tab-nlp">
+        <h4>自然语言处理</h4>
+        <p>通过 Transformer 等架构，深度学习可以理解和生成人类语言。大语言模型（如 GPT 系列）能够进行对话、翻译、写代码和创作文章。这些模型通过海量文本数据训练，学会了语言的统计规律和语义关系。</p>
+      </div>
+      <div class="tab-content" id="tab-med">
+        <h4>医学影像</h4>
+        <p>深度学习在医学影像分析中表现突出。UNet 等架构被广泛用于器官和病灶的分割。模型可以从 CT、MRI 图像中检测肿瘤、量化器官大小，辅助医生做出更准确的诊断。这正是本课程最终要学习的 UNet 的核心应用场景。</p>
+      </div>
+    </div>
+
+    <h2>为什么深度学习现在才火？</h2>
+    <div class="why-now">
+      <div class="why-now-card">
+        <div class="num">01</div>
+        <div class="title">大数据</div>
+        <div class="desc">互联网时代产生了海量标注数据，为训练提供了燃料</div>
+      </div>
+      <div class="why-now-card">
+        <div class="num">02</div>
+        <div class="title">GPU 算力</div>
+        <div class="desc">图形处理器的并行计算能力使大规模矩阵运算成为可能</div>
+      </div>
+      <div class="why-now-card">
+        <div class="num">03</div>
+        <div class="title">算法突破</div>
+        <div class="desc">ReLU、Dropout、BatchNorm 等技术解决了训练深层网络的难题</div>
+      </div>
+    </div>
+
+    <h2>神经网络做了什么？</h2>
+    <p>从最本质的角度看，一个神经网络所做的计算可以用一个简洁的公式来概括：</p>
+    <div class="math-block">
+      <div class="label">神经网络的基本计算</div>
+      $$\hat{y} = f(W \cdot x + b)$$
+      <p style="font-size:0.9rem; color:var(--text-muted); margin-top:0.8rem;">其中 $x$ 是输入，$W$ 是权重矩阵，$b$ 是偏置，$f$ 是激活函数，$\hat{y}$ 是输出</p>
+    </div>
+    <p>后面的章节将一步步拆解这个公式中的每个组成部分。</p>
+
+    <div class="chapter-nav">
+      <a href="index.html">&larr; 课程首页</a>
+      <a href="ch02-perceptron.html">下一章：感知机 &rarr;</a>
+    </div>
+  </div>
+
+  <script src="assets/js/common.js"></script>
+  <script>if(typeof renderMathInElement==='function')renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}]});</script>
+
+  <script>
+  // Theme color helper — reads CSS variables so canvas adapts to light/dark mode
+  function tc(varName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  }
+
+  // === Venn Diagram ===
+  (function() {
+    const canvas = document.getElementById('venn-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    let hoverRegion = null;
+
+    // Circle definitions: {cx, cy, r, label, color, sublabel}
+    const circles = [
+      { cx: W/2, cy: H/2, r: 170, label: 'AI', color: 'rgba(99, 102, 241, 0.25)', border: '#6366f1', sublabel: '人工智能' },
+      { cx: W/2, cy: H/2 + 20, r: 120, label: 'ML', color: 'rgba(139, 92, 246, 0.3)', border: '#8b5cf6', sublabel: '机器学习' },
+      { cx: W/2, cy: H/2 + 35, r: 70, label: 'DL', color: 'rgba(168, 85, 247, 0.4)', border: '#a855f7', sublabel: '深度学习' },
+    ];
+
+    function draw(hoverIdx) {
+      ctx.clearRect(0, 0, W, H);
+
+      // Draw circles from largest to smallest
+      circles.forEach(function(c, i) {
+        ctx.beginPath();
+        ctx.arc(c.cx, c.cy, c.r, 0, Math.PI * 2);
+        ctx.fillStyle = (hoverIdx === i) ? c.color.replace(/[\d.]+\)$/, '0.5)') : c.color;
+        ctx.fill();
+        ctx.strokeStyle = (hoverIdx === i) ? tc('--text') : c.border;
+        ctx.lineWidth = (hoverIdx === i) ? 3 : 2;
+        ctx.stroke();
+      });
+
+      // Labels
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      // AI label (top area)
+      ctx.font = '600 18px Inter';
+      ctx.fillStyle = hoverIdx === 0 ? tc('--text') : '#a5b4fc';
+      ctx.fillText('AI', W/2, H/2 - 130);
+      ctx.font = '400 13px Inter';
+      ctx.fillStyle = tc('--text-muted');
+      ctx.fillText('人工智能', W/2, H/2 - 108);
+
+      // ML label
+      ctx.font = '600 17px Inter';
+      ctx.fillStyle = hoverIdx === 1 ? tc('--text') : '#c4b5fd';
+      ctx.fillText('ML', W/2, H/2 - 55);
+      ctx.font = '400 12px Inter';
+      ctx.fillStyle = tc('--text-muted');
+      ctx.fillText('机器学习', W/2, H/2 - 37);
+
+      // DL label
+      ctx.font = '600 16px Inter';
+      ctx.fillStyle = hoverIdx === 2 ? tc('--text') : '#d8b4fe';
+      ctx.fillText('DL', W/2, H/2 + 30);
+      ctx.font = '400 11px Inter';
+      ctx.fillStyle = tc('--text-muted');
+      ctx.fillText('深度学习', W/2, H/2 + 48);
+
+      // Hover description
+      if (hoverIdx !== null) {
+        var desc = '';
+        if (hoverIdx === 0) desc = '最广泛的范畴：让机器模拟人类智能';
+        else if (hoverIdx === 1) desc = '从数据中学习规律的算法';
+        else desc = '使用多层神经网络的强大方法';
+        ctx.font = '400 14px Inter';
+        ctx.fillStyle = tc('--text');
+        ctx.fillText(desc, W/2, H - 30);
+      }
+    }
+
+    draw(null);
+
+    canvas.addEventListener('mousemove', function(e) {
+      var rect = canvas.getBoundingClientRect();
+      var mx = (e.clientX - rect.left) * (W / rect.width);
+      var my = (e.clientY - rect.top) * (H / rect.height);
+      var found = null;
+      // Check from smallest to largest (DL first)
+      for (var i = circles.length - 1; i >= 0; i--) {
+        var c = circles[i];
+        var dx = mx - c.cx, dy = my - c.cy;
+        if (dx * dx + dy * dy <= c.r * c.r) {
+          found = i;
+          break;
+        }
+      }
+      if (found !== hoverRegion) {
+        hoverRegion = found;
+        draw(found);
+      }
+    });
+
+    canvas.addEventListener('mouseleave', function() {
+      hoverRegion = null;
+      draw(null);
+    });
+  })();
+
+  // === Tabs ===
+  document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+  </script>
+</body>
+</html>

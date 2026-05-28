@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第 8 章 · 卷积神经网络 - 从零到 UNet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .conv-info {
+      font-family: var(--font-mono);
+      font-size: var(--font-size-sm);
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: var(--space-md);
+      margin-top: var(--space-md);
+      color: var(--text-secondary);
+      text-align: center;
+      min-height: 24px;
+    }
+    .conv-info .highlight { color: var(--primary); font-weight: 600; }
+    .pool-grid-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-xl);
+      flex-wrap: wrap;
+    }
+    .pool-grid-wrap canvas { flex-shrink: 0; }
+    .pool-label {
+      text-align: center;
+      font-size: var(--font-size-sm);
+      color: var(--text-muted);
+      margin-top: var(--space-xs);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ======== Navigation ======== -->
+  <nav class="nav"><div class="nav-inner"><a href="index.html" class="nav-brand">从零到 UNet</a><ul class="nav-links"><li><a href="ch01-what-is-dl.html">Ch1</a></li><li><a href="ch02-perceptron.html">Ch2</a></li><li><a href="ch03-mlp.html">Ch3</a></li><li><a href="ch04-activation.html">Ch4</a></li><li><a href="ch05-loss.html">Ch5</a></li><li><a href="ch06-optimization.html">Ch6</a></li><li><a href="ch07-backprop.html">Ch7</a></li><li><a href="ch08-cnn.html" class="active">Ch8</a></li><li><a href="ch09-encoder-decoder.html">Ch9</a></li><li><a href="ch10-unet.html">Ch10</a></li><li><a href="ch11-practice.html">Ch11</a></li><li><a href="ch12-unet-variants.html">Ch12</a></li></ul></div></nav>
+
+  <!-- ======== Chapter Header ======== -->
+  <header class="chapter-header">
+    <div class="container">
+      <span class="chapter-number">第 8 章</span>
+      <h1>卷积神经网络</h1>
+      <p class="chapter-subtitle">用滤波器看世界：从边缘检测到特征提取</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ======== Section 1: Why CNN ======== -->
+    <section class="section">
+      <h2>为什么 MLP 不够好？</h2>
+      <p>
+        在前面的章节中，我们学习了多层感知机（MLP）。MLP 能学习复杂的非线性映射，但当它面对图像数据时，有两个致命的弱点：
+      </p>
+      <p>
+        <strong>1. 参数爆炸。</strong>假设输入是一张 $224 \times 224 \times 3$ 的彩色图片，仅第一个隐藏层有 1000 个神经元，就需要 $224 \times 224 \times 3 \times 1000 = 1.5$ 亿个参数。这不仅占用大量内存，而且极易过拟合。
+      </p>
+      <p>
+        <strong>2. 没有空间感知。</strong>MLP 将输入展平为一维向量，完全丢失了像素之间的空间关系。对于 MLP 来说，把一张图片的像素随机打乱，它根本分辨不出来。
+      </p>
+      <p>
+        <strong>卷积神经网络（CNN）</strong>通过两个关键思想解决了这些问题：<strong>局部连接</strong>（每个神经元只看一个小区域）和<strong>参数共享</strong>（同一个滤波器在整个图像上滑动使用）。
+      </p>
+
+      <figure class="figure">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/LeNet-5_architecture.svg/960px-LeNet-5_architecture.svg.png" alt="LeNet-5 CNN架构图" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;">
+        <figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">
+          图: LeNet-5 卷积神经网络架构（1998）——经典的 CNN 结构：卷积 → 池化 → 全连接。来源: <a href="https://d2l.ai/chapter_convolutional-neural-networks/lenet.html" target="_blank">Dive into Deep Learning (d2l.ai)</a>
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ======== Section 2: Interactive Convolution Demo ======== -->
+    <section class="section">
+      <h2>交互演示：卷积操作</h2>
+      <p>
+        卷积的核心操作非常简单：一个小的滤波器（kernel）在输入图像上滑动，每到一个位置就做逐元素相乘再求和。你可以自由调整输入大小、核大小、步幅和填充，观察它们如何影响输出。点击"自动滑动"观看动画，或用鼠标拖动蓝色高亮区域手动选择位置。
+      </p>
+
+      <div class="demo-container">
+        <div id="conv-params" style="font-family:var(--font-mono);font-size:var(--font-size-sm);background:var(--bg-tertiary);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-sm) var(--space-md);margin-bottom:var(--space-md);color:var(--text-secondary);text-align:center;">输入: 8×8 | 卷积核: 3×3 | 步幅: 1 | 填充: 0 | 输出: 6×6</div>
+        <canvas id="convCanvas" width="1060" height="520"></canvas>
+        <div class="conv-info" id="convInfo">
+          选择一个滤波器，然后点击"自动滑动"或拖动输入上的高亮区域
+        </div>
+        <div class="conv-info" id="convFormula" style="margin-top:0;margin-bottom:var(--space-md);background:var(--bg-secondary);">
+          输出尺寸: out = (in - kernel + 2 &times; padding) / stride + 1
+        </div>
+        <div class="demo-controls">
+          <label>输入大小:
+            <select id="inputSizeSelect">
+              <option value="6">6 &times; 6</option>
+              <option value="8" selected>8 &times; 8</option>
+              <option value="10">10 &times; 10</option>
+              <option value="12">12 &times; 12</option>
+            </select>
+          </label>
+          <label>核大小:
+            <select id="kernelSizeSelect">
+              <option value="2">2 &times; 2</option>
+              <option value="3" selected>3 &times; 3</option>
+              <option value="5">5 &times; 5</option>
+            </select>
+          </label>
+          <label>滤波器:
+            <select id="kernelSelect">
+              <option value="edge_h">水平边缘检测</option>
+              <option value="edge_v">垂直边缘检测</option>
+              <option value="sharpen">锐化</option>
+              <option value="blur">模糊（均值）</option>
+              <option value="emboss">浮雕</option>
+              <option value="identity">恒等</option>
+            </select>
+          </label>
+          <label>步幅:
+            <input type="range" id="strideSlider" min="1" max="3" value="1" style="vertical-align:middle;width:80px;">
+            <span id="strideValue" style="display:inline-block;min-width:18px;text-align:center;font-weight:600;">1</span>
+          </label>
+          <label style="cursor:pointer;">
+            <input type="checkbox" id="paddingToggle"> 零填充 (Same Padding)
+          </label>
+          <button class="btn btn-primary" id="btnAutoSlide">自动滑动</button>
+          <button class="btn btn-secondary" id="btnResetConv">重置</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== Section 3: Pooling Demo ======== -->
+    <section class="section">
+      <h2>交互演示：最大池化</h2>
+      <p>
+        池化（Pooling）是 CNN 中用于缩小特征图尺寸的操作。最常见的<strong>最大池化</strong>（Max Pooling）会在每个小区域内取最大值。下面展示了 2×2 最大池化的效果。
+      </p>
+
+      <div class="demo-container">
+        <div class="pool-grid-wrap">
+          <div>
+            <canvas id="poolInputCanvas" width="240" height="240"></canvas>
+            <div class="pool-label">输入 (4×4)</div>
+          </div>
+          <div style="font-size:2rem;color:var(--text-muted);">&#8594;</div>
+          <div>
+            <canvas id="poolOutputCanvas" width="160" height="160"></canvas>
+            <div class="pool-label">输出 (2×2)</div>
+          </div>
+        </div>
+        <div class="demo-controls">
+          <button class="btn btn-primary" id="btnPoolStep">逐步池化</button>
+          <button class="btn btn-secondary" id="btnPoolReset">重置</button>
+          <span id="poolStatus" style="font-size:0.85rem;color:var(--text-muted);"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== Section 4: Convolution Math ======== -->
+    <section class="section">
+      <h2>卷积的数学</h2>
+      <p>
+        对于输入矩阵 $I$ 和核矩阵 $K$（大小为 $k \times k$），在位置 $(i, j)$ 的卷积输出为：
+      </p>
+      $$O(i,j) = \sum_{m=0}^{k-1} \sum_{n=0}^{k-1} I(i+m,\, j+n) \cdot K(m, n)$$
+      <p>
+        通过改变<strong>步幅</strong>（stride）和<strong>填充</strong>（padding），我们可以控制输出的尺寸：
+      </p>
+      $$\text{out} = \frac{\text{in} - \text{kernel} + 2 \times \text{padding}}{\text{stride}} + 1$$
+      <p>
+        例如：输入 $8 \times 8$，核 $3 \times 3$，步幅 1，填充 0：
+      </p>
+      $$\frac{8 - 3 + 2 \times 0}{1} + 1 = 6$$
+      <p>
+        输出为 $6 \times 6$ 的特征图。
+      </p>
+
+      <h3>参数效率</h3>
+      <p>
+        一个 $3 \times 3$ 的卷积核只有 <strong>9 个参数</strong>（加上 1 个偏置 = 10），但它可以在任意大小的输入上滑动。相比之下，全连接层将输入展平后每个输出神经元都需要与所有输入连接——这就是 CNN 参数效率的秘密。
+      </p>
+    </section>
+
+    <!-- ======== Section 5: Pooling ======== -->
+    <section class="section">
+      <h2>池化：压缩空间信息</h2>
+      <p>
+        池化层的作用是<strong>降低特征图的空间尺寸</strong>，从而减少计算量并增加对微小位移的不变性。常见的池化方式有：
+      </p>
+      <ul>
+        <li><strong>最大池化（Max Pooling）</strong>：取区域内的最大值，保留最显著的特征</li>
+        <li><strong>平均池化（Average Pooling）</strong>：取区域内的平均值</li>
+        <li><strong>全局平均池化（Global Average Pooling）</strong>：对整个特征图取平均，常用于分类网络的最后一层</li>
+      </ul>
+    </section>
+
+    <!-- ======== Section 6: Feature Hierarchy ======== -->
+    <section class="section">
+      <h2>特征层级：从边缘到物体</h2>
+      <p>
+        CNN 最令人惊叹的特性之一是它自动学习到的<strong>特征层级</strong>：
+      </p>
+      <table>
+        <thead><tr><th>网络层级</th><th>学到的特征</th><th>示例</th></tr></thead>
+        <tbody>
+          <tr><td>第 1 层</td><td>低级特征</td><td>边缘、颜色、纹理</td></tr>
+          <tr><td>第 2-3 层</td><td>中级特征</td><td>角点、轮廓、简单形状</td></tr>
+          <tr><td>第 4+ 层</td><td>高级特征</td><td>物体部件、完整对象</td></tr>
+        </tbody>
+      </table>
+      <p>
+        这种从简单到复杂的特征组合方式，和人类视觉系统的工作原理惊人地相似。
+      </p>
+
+      <figure class="figure">
+        <img src="https://cs231n.github.io/assets/cnnvis/filt1.jpeg" alt="CNN特征层级可视化" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;">
+        <figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">
+          图: CNN 各层学到的特征可视化——从底层的边缘和纹理，到高层的物体部件和完整对象。来源: <a href="https://d2l.ai/chapter_convolutional-modern/alexnet.html" target="_blank">Zeiler & Fergus (2013) via Dive into Deep Learning</a>
+        </figcaption>
+      </figure>
+
+      <h3>经典 CNN 架构演进</h3>
+      <p>
+        <strong>LeNet-5</strong>（1998）：Yann LeCun 的开创性工作，用于手写数字识别。奠定了 CNN 的基本结构：卷积 → 池化 → 全连接。
+      </p>
+      <p>
+        <strong>AlexNet</strong>（2012）：在 ImageNet 竞赛中大幅领先，开启了深度学习的时代。使用 ReLU 激活函数、Dropout 正则化和 GPU 训练。
+      </p>
+      <p>
+        <strong>VGGNet</strong>（2014）：证明了"更深更好"——通过堆叠 $3 \times 3$ 小卷积核来增大感受野，网络深度达到 16-19 层。
+      </p>
+    </section>
+
+    <!-- ======== Navigation ======== -->
+    <nav class="chapter-nav">
+      <a href="ch07-backprop.html">
+        <span class="label">&larr; 上一章</span>
+        <span class="title">反向传播</span>
+      </a>
+      <a href="ch09-encoder-decoder.html" class="next">
+        <span class="label">下一章 &rarr;</span>
+        <span class="title">编码器-解码器</span>
+      </a>
+    </nav>
+  </main>
+
+  <!-- ======== Footer ======== -->
+  <footer class="footer">
+    <div class="container">
+      <p>从零到 UNet &mdash; 深度学习入门课程</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/common.js"></script>
+  <script>if(typeof renderMathInElement==='function')renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}]});</script>
+
+  <script>
+  // Theme color helper — reads CSS variables so canvas adapts to light/dark mode
+  function tc(varName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  }
+
+  (function() {
+    'use strict';
+
+    // =====================
+    // Convolution Demo (Fully Configurable)
+    // =====================
+    var convCanvas = document.getElementById('convCanvas');
+    var convCtx = convCanvas.getContext('2d');
+    var logicalW = convCanvas.width, logicalH = convCanvas.height;
+    var dpr = window.devicePixelRatio || 1;
+    convCanvas.width = logicalW * dpr;
+    convCanvas.height = logicalH * dpr;
+    convCanvas.style.width = '100%';
+    convCanvas.style.height = 'auto';
+    convCtx.scale(dpr, dpr);
+    var CW = logicalW, CH = logicalH;
+
+    // ---- State ----
+    var inputSize = 8;      // NxN input
+    var kernelSize = 3;     // KxK kernel
+    var stride = 1;
+    var usePadding = false; // false = valid, true = same padding
+    var currentKernel = 'edge_h';
+    var kernelPosR = 0, kernelPosC = 0;
+    var convAnimId = null;
+    var convDragging = false;
+
+    // ---- Generate input data ----
+    function generateInputData(n) {
+      var d = [];
+      for (var i = 0; i < n; i++) {
+        d[i] = [];
+        for (var j = 0; j < n; j++) {
+          d[i][j] = Math.round(Math.random() * 10);
+        }
+      }
+      return d;
+    }
+    var inputData = generateInputData(inputSize);
+
+    // ---- Kernel definitions for different sizes ----
+    function makeKernel(size, type) {
+      // Returns a size x size 2D array
+      var k = [];
+      for (var i = 0; i < size; i++) { k[i] = []; for (var j = 0; j < size; j++) k[i][j] = 0; }
+      if (type === 'edge_h') {
+        // Horizontal edge: top rows negative, middle row positive
+        var mid = Math.floor(size / 2);
+        for (var i = 0; i < size; i++)
+          for (var j = 0; j < size; j++)
+            k[i][j] = (i === mid) ? 2 : -1;
+        // Normalize so sum of positives is balanced with negatives
+        var posCount = size, negCount = size * (size - 1);
+        for (var i = 0; i < size; i++)
+          for (var j = 0; j < size; j++)
+            if (k[i][j] > 0) k[i][j] = negCount / posCount;
+        for (var i = 0; i < size; i++)
+          for (var j = 0; j < size; j++)
+            k[i][j] = Math.round(k[i][j] * 10) / 10;
+      } else if (type === 'edge_v') {
+        var mid = Math.floor(size / 2);
+        for (var i = 0; i < size; i++)
+          for (var j = 0; j < size; j++)
+            k[i][j] = (j === mid) ? 2 : -1;
+        var posCount = size, negCount = size * (size - 1);
+        for (var i = 0; i < size; i++)
+          for (var j = 0; j < size; j++)
+            if (k[i][j] > 0) k[i][j] = negCount / posCount;
+        for (var i = 0; i < size; i++)
+          for (var j = 0; j < size; j++)
+            k[i][j] = Math.round(k[i][j] * 10) / 10;
+      } else if (type === 'sharpen') {
+        var mid = Math.floor(size / 2);
+        var totalCells = size * size;
+        for (var i = 0; i < size; i++)
+          for (var j = 0; j < size; j++)
+            k[i][j] = -1;
+        k[mid][mid] = totalCells + (totalCells - 1); // center = sum of abs(others) + 1
+      } else if (type === 'blur') {
+        var val = 1.0 / (size * size);
+        for (var i = 0; i < size; i++)
+          for (var j = 0; j < size; j++)
+            k[i][j] = Math.round(val * 1000) / 1000;
+      } else if (type === 'emboss') {
+        // Diagonal emboss
+        for (var i = 0; i < size; i++)
+          for (var j = 0; j < size; j++)
+            k[i][j] = -1;
+        for (var d = 0; d < size; d++)
+          k[d][d] = size;
+      } else if (type === 'identity') {
+        var mid = Math.floor(size / 2);
+        k[mid][mid] = 1;
+      }
+      return k;
+    }
+
+    function getCurrentKernelData() {
+      return makeKernel(kernelSize, currentKernel);
+    }
+
+    // ---- Compute padding ----
+    function getPadding() {
+      if (!usePadding) return 0;
+      // "Same" padding: output size = ceil(input / stride)
+      // out = (in - k + 2*p) / s + 1 => solve for p to make out = ceil(in/s)
+      return Math.floor((kernelSize - 1) / 2);
+    }
+
+    function computeOutSize() {
+      var p = getPadding();
+      return Math.floor((inputSize - kernelSize + 2 * p) / stride) + 1;
+    }
+
+    var outRows, outCols;
+    var outputData = [];
+
+    function recalcDimensions() {
+      outRows = computeOutSize();
+      outCols = outRows; // square
+      kernelPosR = 0;
+      kernelPosC = 0;
+      initOutput();
+    }
+
+    function initOutput() {
+      outputData = [];
+      for (var i = 0; i < outRows; i++) {
+        outputData[i] = [];
+        for (var j = 0; j < outCols; j++) {
+          outputData[i][j] = 0;
+        }
+      }
+    }
+    recalcDimensions();
+
+    // ---- Padded input accessor ----
+    function getPaddedValue(r, c) {
+      if (r < 0 || r >= inputSize || c < 0 || c >= inputSize) return 0;
+      return inputData[r][c];
+    }
+
+    function computeConvAt(outR, outC) {
+      var k = getCurrentKernelData();
+      var p = getPadding();
+      var sum = 0;
+      for (var m = 0; m < kernelSize; m++) {
+        for (var n = 0; n < kernelSize; n++) {
+          var inR = outR * stride + m - p;
+          var inC = outC * stride + n - p;
+          sum += getPaddedValue(inR, inC) * k[m][n];
+        }
+      }
+      return sum;
+    }
+
+    function computeAllOutput() {
+      for (var i = 0; i < outRows; i++)
+        for (var j = 0; j < outCols; j++)
+          outputData[i][j] = computeConvAt(i, j);
+    }
+
+    // ---- Colors ----
+    function valToColorConv(v, min, max) {
+      var t = (v - min) / (max - min + 0.0001);
+      t = Math.max(0, Math.min(1, t));
+      if (t < 0.5) {
+        var s = t * 2;
+        var r = Math.round(232 + (248 - 232) * s);
+        var g = Math.round(93 + (248 - 93) * s);
+        var b = Math.round(93 + (248 - 93) * s);
+        return 'rgb(' + r + ',' + g + ',' + b + ')';
+      } else {
+        var s = (t - 0.5) * 2;
+        var r = Math.round(248 + (74 - 248) * s);
+        var g = Math.round(248 + (144 - 248) * s);
+        var b = Math.round(248 + (217 - 248) * s);
+        return 'rgb(' + r + ',' + g + ',' + b + ')';
+      }
+    }
+
+    // ---- Layout computation ----
+    function computeLayout() {
+      var padding = getPadding();
+      var visualInputSize = inputSize + 2 * padding;
+      // Available width: CW - leftMargin - gaps - rightMargin
+      var availW = CW - 30 - 40 - 50 - 20; // margins and gaps
+      // We need: cellSize*visualInputSize + gap + kCellSize*kernelSize + gap + oCellSize*outCols
+      // Rough split: input 45%, kernel 15%, output 35%, gaps 5%
+      var inputBudget = availW * 0.45;
+      var kernelBudget = availW * 0.15;
+      var outputBudget = availW * 0.35;
+      var cellSize = Math.max(16, Math.min(42, Math.floor(inputBudget / visualInputSize)));
+      var kCellSize = Math.max(14, Math.min(35, Math.floor(kernelBudget / kernelSize)));
+      var oCellSize = Math.max(16, Math.min(42, Math.floor(outputBudget / Math.max(outRows, 1))));
+      // Cap cell sizes by available height to keep cells square
+      var topMargin = 55;
+      var bottomMargin = 30;
+      var availH = CH - topMargin - bottomMargin;
+      var hCapInput = Math.floor(availH / visualInputSize);
+      var hCapKernel = Math.floor(availH / kernelSize);
+      var hCapOutput = Math.floor(availH / Math.max(outRows, 1));
+      cellSize = Math.min(cellSize, hCapInput);
+      kCellSize = Math.min(kCellSize, hCapKernel);
+      oCellSize = Math.min(oCellSize, hCapOutput);
+      var inputGridX = 20;
+      var inputGridY = topMargin;
+      var kernelGridX = inputGridX + cellSize * visualInputSize + 30;
+      var kernelGridY = topMargin;
+      var outputGridX = kernelGridX + kCellSize * kernelSize + 40;
+      var outputGridY = topMargin;
+      return { cellSize: cellSize, kCellSize: kCellSize, oCellSize: oCellSize,
+               inputGridX: inputGridX, inputGridY: inputGridY,
+               kernelGridX: kernelGridX, kernelGridY: kernelGridY,
+               outputGridX: outputGridX, outputGridY: outputGridY };
+    }
+
+    function updateFormulaDisplay() {
+      var p = getPadding();
+      var out = computeOutSize();
+      document.getElementById('convFormula').innerHTML =
+        '输出尺寸: (<span class="highlight">' + inputSize + '</span> - ' +
+        kernelSize + ' + 2 &times; ' + p + ') / ' + stride + ' + 1 = ' +
+        '<span class="highlight">' + out + ' &times; ' + out + '</span>';
+    }
+
+    function updateParamsDisplay() {
+      var p = getPadding();
+      var out = computeOutSize();
+      document.getElementById('conv-params').innerHTML =
+        '输入: <span class="highlight">' + inputSize + '×' + inputSize + '</span> | ' +
+        '卷积核: <span class="highlight">' + kernelSize + '×' + kernelSize + '</span> | ' +
+        '步幅: <span class="highlight">' + stride + '</span> | ' +
+        '填充: <span class="highlight">' + p + '</span> | ' +
+        '输出: <span class="highlight">' + out + '×' + out + '</span>';
+    }
+
+    function drawConvDemo() {
+      updateFormulaDisplay();
+      updateParamsDisplay();
+      var L = computeLayout();
+      var cellSize = L.cellSize, kCellSize = L.kCellSize, oCellSize = L.oCellSize;
+      var inputGridX = L.inputGridX, inputGridY = L.inputGridY;
+      var kernelGridX = L.kernelGridX, kernelGridY = L.kernelGridY;
+      var outputGridX = L.outputGridX, outputGridY = L.outputGridY;
+
+      convCtx.clearRect(0, 0, CW, CH);
+
+      // ---- Section labels ----
+      convCtx.font = '600 13px Inter, sans-serif';
+      convCtx.textAlign = 'center';
+      convCtx.fillStyle = tc('--bg');
+      var padLabel = usePadding ? ' +P' : '';
+      convCtx.fillText('输入 (' + inputSize + '×' + inputSize + padLabel + ')', inputGridX + cellSize * inputSize / 2, 30);
+      convCtx.fillText('核 (' + kernelSize + '×' + kernelSize + ')', kernelGridX + kCellSize * kernelSize / 2, 30);
+      convCtx.fillText('输出 (' + outRows + '×' + outCols + ') s=' + stride, outputGridX + oCellSize * outCols / 2, 30);
+
+      var p = getPadding();
+
+      // ---- Input grid (with padding visualization) ----
+      // Total visual grid includes padding zone
+      var totalRows = inputSize + 2 * p;
+      var totalCols = inputSize + 2 * p;
+      var inMin = Infinity, inMax = -Infinity;
+      for (var i = 0; i < inputSize; i++)
+        for (var j = 0; j < inputSize; j++) {
+          if (inputData[i][j] < inMin) inMin = inputData[i][j];
+          if (inputData[i][j] > inMax) inMax = inputData[i][j];
+        }
+
+      for (var vi = 0; vi < totalRows; vi++) {
+        for (var vj = 0; vj < totalCols; vj++) {
+          var actualR = vi - p, actualC = vj - p;
+          var x = inputGridX + vj * cellSize;
+          var y = inputGridY + vi * cellSize;
+          var isPadding = (actualR < 0 || actualR >= inputSize || actualC < 0 || actualC >= inputSize);
+
+          if (isPadding) {
+            convCtx.fillStyle = tc('--border');
+            convCtx.fillRect(x, y, cellSize - 1, cellSize - 1);
+            convCtx.font = '400 9px "JetBrains Mono", monospace';
+            convCtx.fillStyle = tc('--text-muted');
+            convCtx.textAlign = 'center';
+            convCtx.textBaseline = 'middle';
+            convCtx.fillText('0', x + cellSize / 2, y + cellSize / 2);
+          } else {
+            convCtx.fillStyle = valToColorConv(inputData[actualR][actualC], inMin, inMax);
+            convCtx.fillRect(x, y, cellSize - 1, cellSize - 1);
+            convCtx.font = '500 ' + Math.max(9, Math.min(12, cellSize * 0.3)) + 'px "JetBrains Mono", monospace';
+            convCtx.fillStyle = tc('--bg');
+            convCtx.textAlign = 'center';
+            convCtx.textBaseline = 'middle';
+            convCtx.fillText(inputData[actualR][actualC], x + cellSize / 2, y + cellSize / 2);
+          }
+        }
+      }
+
+      // ---- Highlight kernel coverage region on input (including padding coords) ----
+      for (var m = 0; m < kernelSize; m++) {
+        for (var n = 0; n < kernelSize; n++) {
+          var vi = kernelPosR * stride + m;
+          var vj = kernelPosC * stride + n;
+          var x = inputGridX + vj * cellSize;
+          var y = inputGridY + vi * cellSize;
+          convCtx.strokeStyle = '#4a6cf7';
+          convCtx.lineWidth = 2.5;
+          convCtx.strokeRect(x + 1, y + 1, cellSize - 3, cellSize - 3);
+        }
+      }
+
+      // ---- Kernel grid ----
+      var kData = getCurrentKernelData();
+      var kMin = Infinity, kMax = -Infinity;
+      for (var m = 0; m < kernelSize; m++)
+        for (var n = 0; n < kernelSize; n++) {
+          if (kData[m][n] < kMin) kMin = kData[m][n];
+          if (kData[m][n] > kMax) kMax = kData[m][n];
+        }
+
+      for (var m = 0; m < kernelSize; m++) {
+        for (var n = 0; n < kernelSize; n++) {
+          var kx = kernelGridX + n * kCellSize;
+          var ky = kernelGridY + m * kCellSize;
+          convCtx.fillStyle = valToColorConv(kData[m][n], kMin, kMax);
+          convCtx.fillRect(kx, ky, kCellSize - 1, kCellSize - 1);
+          convCtx.font = '500 ' + Math.max(9, Math.min(12, kCellSize * 0.32)) + 'px "JetBrains Mono", monospace';
+          convCtx.fillStyle = tc('--bg');
+          convCtx.textAlign = 'center';
+          convCtx.textBaseline = 'middle';
+          var label = Number.isInteger(kData[m][n]) ? '' + kData[m][n] : kData[m][n].toFixed(2);
+          convCtx.fillText(label, kx + kCellSize / 2, ky + kCellSize / 2);
+        }
+      }
+
+      // ---- Arrow ----
+      var arrowX = kernelGridX + kCellSize * kernelSize + 30;
+      var arrowY = kernelGridY + kCellSize * kernelSize / 2;
+      convCtx.font = '600 20px Inter, sans-serif';
+      convCtx.fillStyle = tc('--text-muted');
+      convCtx.textAlign = 'center';
+      convCtx.textBaseline = 'middle';
+      convCtx.fillText('→', arrowX, arrowY);
+
+      // ---- Output grid ----
+      computeAllOutput();
+      var outMin = Infinity, outMax = -Infinity;
+      for (var i = 0; i < outRows; i++)
+        for (var j = 0; j < outCols; j++) {
+          if (outputData[i][j] < outMin) outMin = outputData[i][j];
+          if (outputData[i][j] > outMax) outMax = outputData[i][j];
+        }
+
+      for (var i = 0; i < outRows; i++) {
+        for (var j = 0; j < outCols; j++) {
+          var ox = outputGridX + j * oCellSize;
+          var oy = outputGridY + i * oCellSize;
+          convCtx.fillStyle = valToColorConv(outputData[i][j], outMin, outMax);
+          convCtx.fillRect(ox, oy, oCellSize - 1, oCellSize - 1);
+
+          // Highlight active output cell
+          if (i === kernelPosR && j === kernelPosC) {
+            convCtx.strokeStyle = '#e85d5d';
+            convCtx.lineWidth = 3;
+            convCtx.strokeRect(ox + 1, oy + 1, oCellSize - 3, oCellSize - 3);
+          }
+
+          convCtx.font = '500 ' + Math.max(9, Math.min(12, oCellSize * 0.3)) + 'px "JetBrains Mono", monospace';
+          convCtx.fillStyle = tc('--bg');
+          convCtx.textAlign = 'center';
+          convCtx.textBaseline = 'middle';
+          convCtx.fillText(outputData[i][j].toFixed(1), ox + oCellSize / 2, oy + oCellSize / 2);
+        }
+      }
+
+      // ---- Computation breakdown ----
+      var comp = [];
+      for (var m = 0; m < kernelSize; m++) {
+        for (var n = 0; n < kernelSize; n++) {
+          var inR = kernelPosR * stride + m - p;
+          var inC = kernelPosC * stride + n - p;
+          var inVal = getPaddedValue(inR, inC);
+          var kVal = kData[m][n];
+          var kLabel = Number.isInteger(kVal) ? '' + kVal : kVal.toFixed(2);
+          // Use color to indicate padding
+          if (inR < 0 || inR >= inputSize || inC < 0 || inC >= inputSize) {
+            comp.push('<span style="color:var(--text-muted)">' + inVal + '</span>×' + kLabel);
+          } else {
+            comp.push(inVal + '×' + kLabel);
+          }
+        }
+      }
+      var result = computeConvAt(kernelPosR, kernelPosC);
+
+      document.getElementById('convInfo').innerHTML =
+        '位置 (' + kernelPosR + ',' + kernelPosC + ') stride=' + stride + ': ' +
+        comp.join(' + ') + ' = <span class="highlight">' + result.toFixed(2) + '</span>';
+    }
+
+    // ---- Grid position from mouse (for drag) ----
+    function getGridPos(e) {
+      var L = computeLayout();
+      var rect = convCanvas.getBoundingClientRect();
+      var mx = (e.clientX - rect.left) * (CW / rect.width);
+      var my = (e.clientY - rect.top) * (CH / rect.height);
+      var p = getPadding();
+      // Mouse is over the visual grid which includes padding
+      var col = Math.floor((mx - L.inputGridX) / L.cellSize) - p;
+      var row = Math.floor((my - L.inputGridY) / L.cellSize) - p;
+      return { row: row, col: col };
+    }
+
+    convCanvas.addEventListener('mousedown', function(e) {
+      var p = getGridPos(e);
+      var maxR = outRows - 1, maxC = outCols - 1;
+      if (p.row >= 0 && p.row <= maxR && p.col >= 0 && p.col <= maxC) {
+        kernelPosR = p.row;
+        kernelPosC = p.col;
+        convDragging = true;
+        drawConvDemo();
+      }
+    });
+
+    convCanvas.addEventListener('mousemove', function(e) {
+      if (!convDragging) return;
+      var p = getGridPos(e);
+      var maxR = outRows - 1, maxC = outCols - 1;
+      var r = Math.max(0, Math.min(maxR, p.row));
+      var c = Math.max(0, Math.min(maxC, p.col));
+      if (r !== kernelPosR || c !== kernelPosC) {
+        kernelPosR = r;
+        kernelPosC = c;
+        drawConvDemo();
+      }
+    });
+
+    document.addEventListener('mouseup', function() { convDragging = false; });
+
+    // ---- Auto-slide animation ----
+    function autoSlide() {
+      if (convAnimId) { clearTimeout(convAnimId); convAnimId = null; }
+      kernelPosR = 0; kernelPosC = -1;
+      var delay = Math.max(100, 400 - outRows * outCols * 3); // faster for smaller outputs
+      function step() {
+        kernelPosC++;
+        if (kernelPosC >= outCols) {
+          kernelPosC = 0;
+          kernelPosR++;
+        }
+        if (kernelPosR >= outRows) {
+          drawConvDemo();
+          document.getElementById('convInfo').innerHTML = '<span class="highlight">自动滑动完成!</span> 共计算 ' + outRows + '×' + outCols + ' = ' + (outRows * outCols) + ' 个输出值。';
+          return;
+        }
+        drawConvDemo();
+        convAnimId = setTimeout(step, delay);
+      }
+      step();
+    }
+
+    // ---- UI event bindings ----
+    document.getElementById('btnAutoSlide').addEventListener('click', autoSlide);
+
+    document.getElementById('inputSizeSelect').addEventListener('change', function() {
+      if (convAnimId) { clearTimeout(convAnimId); convAnimId = null; }
+      inputSize = parseInt(this.value, 10);
+      inputData = generateInputData(inputSize);
+      recalcDimensions();
+      drawConvDemo();
+    });
+
+    document.getElementById('kernelSizeSelect').addEventListener('change', function() {
+      if (convAnimId) { clearTimeout(convAnimId); convAnimId = null; }
+      kernelSize = parseInt(this.value, 10);
+      recalcDimensions();
+      drawConvDemo();
+    });
+
+    document.getElementById('kernelSelect').addEventListener('change', function() {
+      currentKernel = this.value;
+      initOutput();
+      kernelPosR = 0; kernelPosC = 0;
+      drawConvDemo();
+    });
+
+    document.getElementById('strideSlider').addEventListener('input', function() {
+      stride = parseInt(this.value, 10);
+      document.getElementById('strideValue').textContent = stride;
+      if (convAnimId) { clearTimeout(convAnimId); convAnimId = null; }
+      recalcDimensions();
+      drawConvDemo();
+    });
+
+    document.getElementById('paddingToggle').addEventListener('change', function() {
+      usePadding = this.checked;
+      if (convAnimId) { clearTimeout(convAnimId); convAnimId = null; }
+      recalcDimensions();
+      drawConvDemo();
+    });
+
+    document.getElementById('btnResetConv').addEventListener('click', function() {
+      if (convAnimId) { clearTimeout(convAnimId); convAnimId = null; }
+      inputData = generateInputData(inputSize);
+      recalcDimensions();
+      drawConvDemo();
+    });
+
+    drawConvDemo();
+
+    // =====================
+    // Pooling Demo
+    // =====================
+    var poolInputCanvas = document.getElementById('poolInputCanvas');
+    var poolOutputCanvas = document.getElementById('poolOutputCanvas');
+    var pInCtx = poolInputCanvas.getContext('2d');
+    var pOutCtx = poolOutputCanvas.getContext('2d');
+
+    // Pooling input 4x4
+    var poolData = [
+      [3, 1, 2, 8],
+      [6, 5, 4, 1],
+      [7, 2, 9, 3],
+      [1, 4, 6, 2]
+    ];
+    var poolSize = 2;
+    var poolOutRows = 2, poolOutCols = 2;
+    var poolResult = [[0,0],[0,0]];
+    var poolStep = -1; // -1 = not started, 0-3 = steps
+    var poolHighlightRegions = [
+      { r: 0, c: 0 },
+      { r: 0, c: 2 },
+      { r: 2, c: 0 },
+      { r: 2, c: 2 }
+    ];
+
+    var pCellSize = 55;
+    var pOutCellSize = 70;
+    var pInX = 0, pInY = 0;
+    var pOutX = 0, pOutY = 0;
+
+    function valToColorPool(v) {
+      var t = v / 10;
+      var r = Math.round(238 + (74 - 238) * t);
+      var g = Math.round(241 + (108 - 241) * t);
+      var b = Math.round(255 + (247 - 255) * t);
+      return 'rgb(' + r + ',' + g + ',' + b + ')';
+    }
+
+    function drawPoolInput() {
+      var pw = poolInputCanvas.width / dpr;
+      var ph = poolInputCanvas.height / dpr;
+      pInCtx.clearRect(0, 0, pw, ph);
+
+      for (var i = 0; i < 4; i++) {
+        for (var j = 0; j < 4; j++) {
+          var x = pInX + j * pCellSize;
+          var y = pInY + i * pCellSize;
+          pInCtx.fillStyle = valToColorPool(poolData[i][j]);
+          pInCtx.fillRect(x, y, pCellSize - 2, pCellSize - 2);
+
+          // Highlight current pooling region
+          if (poolStep >= 0 && poolStep < 4) {
+            var hr = poolHighlightRegions[poolStep];
+            if (i >= hr.r && i < hr.r + poolSize && j >= hr.c && j < hr.c + poolSize) {
+              pInCtx.strokeStyle = '#4a6cf7';
+              pInCtx.lineWidth = 3;
+              pInCtx.strokeRect(x + 1, y + 1, pCellSize - 4, pCellSize - 4);
+
+              // Mark max value
+              var maxVal = -Infinity, maxI = hr.r, maxJ = hr.c;
+              for (var mi = hr.r; mi < hr.r + poolSize; mi++)
+                for (var mj = hr.c; mj < hr.c + poolSize; mj++)
+                  if (poolData[mi][mj] > maxVal) { maxVal = poolData[mi][mj]; maxI = mi; maxJ = mj; }
+              if (i === maxI && j === maxJ) {
+                pInCtx.strokeStyle = '#e85d5d';
+                pInCtx.lineWidth = 3;
+                pInCtx.strokeRect(x + 2, y + 2, pCellSize - 6, pCellSize - 6);
+              }
+            }
+          }
+
+          pInCtx.font = '600 14px "JetBrains Mono", monospace';
+          pInCtx.fillStyle = tc('--bg');
+          pInCtx.textAlign = 'center';
+          pInCtx.textBaseline = 'middle';
+          pInCtx.fillText(poolData[i][j], x + pCellSize / 2, y + pCellSize / 2);
+        }
+      }
+    }
+
+    function drawPoolOutput() {
+      var pw = poolOutputCanvas.width / dpr;
+      var ph = poolOutputCanvas.height / dpr;
+      pOutCtx.clearRect(0, 0, pw, ph);
+
+      for (var i = 0; i < poolOutRows; i++) {
+        for (var j = 0; j < poolOutCols; j++) {
+          var x = pOutX + j * pOutCellSize;
+          var y = pOutY + i * pOutCellSize;
+
+          var stepIdx = i * poolOutCols + j;
+          var filled = (poolStep >= stepIdx);
+
+          if (filled) {
+            pOutCtx.fillStyle = valToColorPool(poolResult[i][j]);
+          } else {
+            pOutCtx.fillStyle = tc('--bg-tertiary');
+          }
+          pOutCtx.fillRect(x, y, pOutCellSize - 2, pOutCellSize - 2);
+
+          if (filled) {
+            pOutCtx.font = '600 18px "JetBrains Mono", monospace';
+            pOutCtx.fillStyle = tc('--bg');
+            pOutCtx.textAlign = 'center';
+            pOutCtx.textBaseline = 'middle';
+            pOutCtx.fillText(poolResult[i][j], x + pOutCellSize / 2, y + pOutCellSize / 2);
+          }
+        }
+      }
+    }
+
+    function poolStepForward() {
+      if (poolStep >= 3) return;
+      poolStep++;
+      var hr = poolHighlightRegions[poolStep];
+      var maxVal = -Infinity;
+      for (var mi = hr.r; mi < hr.r + poolSize; mi++)
+        for (var mj = hr.c; mj < hr.c + poolSize; mj++)
+          if (poolData[mi][mj] > maxVal) maxVal = poolData[mi][mj];
+      var outR = Math.floor(poolStep / poolOutCols);
+      var outC = poolStep % poolOutCols;
+      poolResult[outR][outC] = maxVal;
+      drawPoolInput();
+      drawPoolOutput();
+
+      var regionCells = [];
+      for (var mi = hr.r; mi < hr.r + poolSize; mi++)
+        for (var mj = hr.c; mj < hr.c + poolSize; mj++)
+          regionCells.push(poolData[mi][mj]);
+      document.getElementById('poolStatus').innerHTML =
+        '区域 [' + regionCells.join(', ') + '] → max = <strong>' + maxVal + '</strong>';
+
+      if (poolStep >= 3) {
+        document.getElementById('poolStatus').innerHTML += ' — <strong>池化完成!</strong>';
+      }
+    }
+
+    document.getElementById('btnPoolStep').addEventListener('click', poolStepForward);
+
+    document.getElementById('btnPoolReset').addEventListener('click', function() {
+      poolStep = -1;
+      poolResult = [[0,0],[0,0]];
+      drawPoolInput();
+      drawPoolOutput();
+      document.getElementById('poolStatus').innerHTML = '';
+    });
+
+    // Setup pooling canvas DPR
+    (function setupPoolCanvas(canvas, ctx) {
+      var w = canvas.width / dpr;
+      var h = canvas.height / dpr;
+    })(poolInputCanvas, pInCtx);
+
+    drawPoolInput();
+    drawPoolOutput();
+
+  })();
+  </script>
+
+</body>
+</html>

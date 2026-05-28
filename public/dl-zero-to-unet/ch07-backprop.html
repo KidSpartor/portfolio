@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第 7 章 · 反向传播 - 从零到 UNet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .demo-container canvas { cursor: default; }
+    .chain-rule-display {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: var(--space-md) var(--space-lg);
+      margin-top: var(--space-md);
+      font-family: var(--font-mono);
+      font-size: var(--font-size-sm);
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .chain-rule-display .step-label {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .chain-rule-display .val { color: #4a90d9; font-weight: 600; }
+    .chain-rule-display .grad { color: #e85d5d; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <!-- ======== Navigation ======== -->
+  <nav class="nav"><div class="nav-inner"><a href="index.html" class="nav-brand">从零到 UNet</a><ul class="nav-links"><li><a href="ch01-what-is-dl.html">Ch1</a></li><li><a href="ch02-perceptron.html">Ch2</a></li><li><a href="ch03-mlp.html">Ch3</a></li><li><a href="ch04-activation.html">Ch4</a></li><li><a href="ch05-loss.html">Ch5</a></li><li><a href="ch06-optimization.html">Ch6</a></li><li><a href="ch07-backprop.html" class="active">Ch7</a></li><li><a href="ch08-cnn.html">Ch8</a></li><li><a href="ch09-encoder-decoder.html">Ch9</a></li><li><a href="ch10-unet.html">Ch10</a></li><li><a href="ch11-practice.html">Ch11</a></li><li><a href="ch12-unet-variants.html">Ch12</a></li></ul></div></nav>
+
+  <!-- ======== Chapter Header ======== -->
+  <header class="chapter-header">
+    <div class="container">
+      <span class="chapter-number">第 7 章</span>
+      <h1>反向传播</h1>
+      <p class="chapter-subtitle">链式法则的实战：让网络学会"归咎"</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ======== Section 1: Intuition ======== -->
+    <section class="section">
+      <h2>什么是反向传播？</h2>
+      <p>
+        在上一章中，我们知道了梯度下降需要计算损失函数对每个参数的偏导数。但是当网络有很多层时，如何高效地计算这些梯度呢？答案就是<strong>反向传播</strong>（Backpropagation）。
+      </p>
+      <p>
+        反向传播的核心思想可以用一个生活中的类比来理解：<strong>归咎</strong>。想象一个团队项目失败了——你需要从最终结果（失败）开始，一步步往回追溯，找出每个人应该承担多少责任。这正是反向传播所做的事：从损失开始，沿着计算图反向传播，将"错误"分配给每一个参数。
+      </p>
+
+      <div class="info-box">
+        <h4>直觉理解</h4>
+        <p style="margin:0">
+          前向传播 = 计算答案（从输入到输出）。<br>
+          反向传播 = 追溯责任（从输出到输入，计算每个参数对错误的贡献）。
+        </p>
+      </div>
+
+      <figure class="figure">
+        <img src="https://cs231n.github.io/assets/dataflow.jpeg" alt="反向传播计算图" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;">
+        <figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">
+          图: 反向传播计算图——梯度从损失函数出发，沿计算图反向传播到每个参数。来源: <a href="https://d2l.ai/chapter_optimization/gd.html" target="_blank">Dive into Deep Learning (d2l.ai)</a>
+        </figcaption>
+      </figure>
+    </section>
+
+    <!-- ======== Section 2: Chain Rule ======== -->
+    <section class="section">
+      <h2>链式法则</h2>
+      <p>
+        反向传播的数学基础是微积分中的<strong>链式法则</strong>（Chain Rule）。如果 $y = f(g(x))$，那么：
+      </p>
+      $$\frac{dy}{dx} = f'(g(x)) \cdot g'(x)$$
+      <p>
+        也就是说，复合函数的导数等于外层函数的导数乘以内层函数的导数。在神经网络中，每一层都是上一层输出的函数，因此我们可以一层一层地传播梯度。
+      </p>
+      <p>
+        对于我们的两层网络，梯度的完整链条是：
+      </p>
+      $$\frac{\partial L}{\partial w_1} = \frac{\partial L}{\partial a_2} \cdot \frac{\partial a_2}{\partial z_2} \cdot \frac{\partial z_2}{\partial a_1} \cdot \frac{\partial a_1}{\partial z_1} \cdot \frac{\partial z_1}{\partial w_1}$$
+    </section>
+
+    <!-- ======== Section 3: Interactive Demo ======== -->
+    <section class="section">
+      <h2>交互演示：计算图上的反向传播</h2>
+      <p>
+        下面的演示展示了一个简单两层网络的计算图。蓝色数字表示前向传播的值，红色数字表示反向传播的梯度。点击按钮观看数据如何流动。
+      </p>
+
+      <div class="demo-container">
+        <canvas id="backpropCanvas" width="900" height="400"></canvas>
+        <div class="chain-rule-display" id="chainRuleDisplay">
+          点击"前向传播"或"反向传播"开始演示
+        </div>
+        <div class="demo-controls">
+          <button class="btn btn-primary" id="btnForward">前向传播</button>
+          <button class="btn btn-secondary" id="btnBackward">反向传播</button>
+          <button class="btn btn-secondary" id="btnReset">重置</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== Section 4: The Math ======== -->
+    <section class="section">
+      <h2>前向传播：计算输出和损失</h2>
+      <p>
+        在前向传播中，我们从输入开始，逐层计算：
+      </p>
+      <p><strong>第 1 层：</strong></p>
+      $$z_1 = w_1 \cdot x, \quad a_1 = \sigma(z_1) = \frac{1}{1 + e^{-z_1}}$$
+      <p><strong>第 2 层：</strong></p>
+      $$z_2 = w_2 \cdot a_1, \quad a_2 = \sigma(z_2) = \frac{1}{1 + e^{-z_2}}$$
+      <p><strong>损失函数（均方误差）：</strong></p>
+      $$L = (y - a_2)^2$$
+
+      <h2>反向传播：计算梯度</h2>
+      <p>
+        反向传播从损失开始，利用链式法则逐层计算梯度：
+      </p>
+      $$\frac{\partial L}{\partial a_2} = -2(y - a_2)$$
+      $$\frac{\partial L}{\partial z_2} = \frac{\partial L}{\partial a_2} \cdot \sigma'(z_2) = \frac{\partial L}{\partial a_2} \cdot a_2(1 - a_2)$$
+      $$\frac{\partial L}{\partial w_2} = \frac{\partial L}{\partial z_2} \cdot a_1$$
+      $$\frac{\partial L}{\partial a_1} = \frac{\partial L}{\partial z_2} \cdot w_2$$
+      $$\frac{\partial L}{\partial z_1} = \frac{\partial L}{\partial a_1} \cdot \sigma'(z_1) = \frac{\partial L}{\partial a_1} \cdot a_1(1 - a_1)$$
+      $$\frac{\partial L}{\partial w_1} = \frac{\partial L}{\partial z_1} \cdot x$$
+
+      <div class="tip-box">
+        <h4>PyTorch 的 autograd</h4>
+        <p style="margin:0">
+          在 PyTorch 中，你不需要手动实现反向传播。当你设置 <code>requires_grad=True</code> 并调用 <code>loss.backward()</code> 时，PyTorch 会自动计算所有参数的梯度。这就是自动微分（Automatic Differentiation）的魔力！
+        </p>
+      </div>
+    </section>
+
+    <!-- ======== Section 5: Why Backprop Matters ======== -->
+    <section class="section">
+      <h2>为什么反向传播如此重要？</h2>
+      <p>
+        在反向传播算法被普及之前（1986 年 Rumelhart 等人的论文），训练多层神经网络是非常困难的。反向传播提供了一种<strong>高效</strong>的方式来计算梯度——它的时间复杂度与前向传播相同，都是 $O(n)$，其中 $n$ 是网络中的参数数量。
+      </p>
+      <p>
+        没有反向传播，我们需要对每个参数独立地进行数值微分，时间复杂度为 $O(n^2)$，对于现代网络中动辄数十亿的参数来说，这是完全不可行的。
+      </p>
+
+      <div class="warning-box">
+        <h4>常见误区</h4>
+        <p style="margin:0">
+          反向传播<strong>不是</strong>梯度下降。反向传播是计算梯度的<strong>算法</strong>，而梯度下降是使用梯度来更新参数的<strong>策略</strong>。它们是两个不同的概念，但经常一起使用。
+        </p>
+      </div>
+    </section>
+
+    <!-- ======== Navigation ======== -->
+    <nav class="chapter-nav">
+      <a href="ch06-optimization.html">
+        <span class="label">&larr; 上一章</span>
+        <span class="title">优化与梯度下降</span>
+      </a>
+      <a href="ch08-cnn.html" class="next">
+        <span class="label">下一章 &rarr;</span>
+        <span class="title">卷积神经网络</span>
+      </a>
+    </nav>
+  </main>
+
+  <!-- ======== Footer ======== -->
+  <footer class="footer">
+    <div class="container">
+      <p>从零到 UNet &mdash; 深度学习入门课程</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/common.js"></script>
+  <script>if(typeof renderMathInElement==='function')renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}]});</script>
+
+  <script>
+  // Theme color helper — reads CSS variables so canvas adapts to light/dark mode
+  function tc(varName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  }
+
+  (function() {
+    'use strict';
+
+    // ---- Network parameters ----
+    var x = 0.5, w1 = 0.8, w2 = -0.4, y_true = 1.0;
+
+    // ---- Compute values ----
+    function sigmoid(v) { return 1 / (1 + Math.exp(-v)); }
+
+    function forward() {
+      var z1 = w1 * x;
+      var a1 = sigmoid(z1);
+      var z2 = w2 * a1;
+      var a2 = sigmoid(z2);
+      var L = (y_true - a2) * (y_true - a2);
+      return { x: x, w1: w1, z1: z1, a1: a1, w2: w2, z2: z2, a2: a2, y: y_true, L: L };
+    }
+
+    function backward(vals) {
+      var dL_da2 = -2 * (vals.y - vals.a2);
+      var da2_dz2 = vals.a2 * (1 - vals.a2);
+      var dL_dz2 = dL_da2 * da2_dz2;
+      var dL_dw2 = dL_dz2 * vals.a1;
+      var dL_da1 = dL_dz2 * vals.w2;
+      var da1_dz1 = vals.a1 * (1 - vals.a1);
+      var dL_dz1 = dL_da1 * da1_dz1;
+      var dL_dw1 = dL_dz1 * vals.x;
+      return { dL_da2: dL_da2, dL_dz2: dL_dz2, dL_dw2: dL_dw2, dL_da1: dL_da1, dL_dz1: dL_dz1, dL_dw1: dL_dw1 };
+    }
+
+    // ---- Canvas setup ----
+    var canvas = document.getElementById('backpropCanvas');
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+
+    var vals = forward();
+    var grads = backward(vals);
+
+    // Node positions
+    var nodes = [
+      { id: 'x',  label: 'x',        x: 60,  y: 200, val: vals.x },
+      { id: 'w1', label: 'w\u2081',   x: 170, y: 110, val: vals.w1 },
+      { id: 'z1', label: 'z\u2081',   x: 290, y: 200, val: vals.z1 },
+      { id: 'a1', label: 'a\u2081',   x: 400, y: 200, val: vals.a1 },
+      { id: 'w2', label: 'w\u2082',   x: 500, y: 110, val: vals.w2 },
+      { id: 'z2', label: 'z\u2082',   x: 600, y: 200, val: vals.z2 },
+      { id: 'a2', label: 'a\u2082',   x: 710, y: 200, val: vals.a2 },
+      { id: 'L',  label: 'L',         x: 830, y: 200, val: vals.L }
+    ];
+
+    var edges = [
+      { from: 'x',  to: 'z1' },
+      { from: 'w1', to: 'z1' },
+      { from: 'z1', to: 'a1' },
+      { from: 'a1', to: 'z2' },
+      { from: 'w2', to: 'z2' },
+      { from: 'z2', to: 'a2' },
+      { from: 'a2', to: 'L'  }
+    ];
+
+    var opLabels = [
+      { x: 230, y: 160, text: '×' },
+      { x: 345, y: 160, text: '\u03C3' },
+      { x: 550, y: 160, text: '×' },
+      { x: 655, y: 160, text: '\u03C3' },
+      { x: 770, y: 160, text: 'MSE' }
+    ];
+
+    // Gradient labels positioned between nodes
+    var gradPositions = [
+      { id: 'dL_da2', x: 770, y: 280, text: '\u2202L/\u2202a\u2082' },
+      { id: 'dL_dz2', x: 655, y: 280, text: '\u2202L/\u2202z\u2082' },
+      { id: 'dL_dw2', x: 550, y: 280, text: '\u2202L/\u2202w\u2082' },
+      { id: 'dL_da1', x: 450, y: 280, text: '\u2202L/\u2202a\u2081' },
+      { id: 'dL_dz1', x: 345, y: 280, text: '\u2202L/\u2202z\u2081' },
+      { id: 'dL_dw1', x: 230, y: 280, text: '\u2202L/\u2202w\u2081' }
+    ];
+
+    // Animation state
+    var animPhase = 'idle'; // 'idle', 'forward', 'backward'
+    var animStep = 0;
+    var animProgress = 0;
+    var forwardSteps = ['x', 'z1', 'a1', 'z2', 'a2', 'L'];
+    var backwardSteps = ['dL_da2', 'dL_dz2', 'dL_dw2', 'dL_da1', 'dL_dz1', 'dL_dw1'];
+    var visibleForward = {};
+    var visibleBackward = {};
+    var animFrameId = null;
+
+    var NODE_RADIUS = 28;
+
+    function getNode(id) {
+      for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].id === id) return nodes[i];
+      }
+      return null;
+    }
+
+    function drawNode(node, showVal, highlighted, showGrad) {
+      var x = node.x, y = node.y;
+      // Glow
+      if (highlighted) {
+        ctx.save();
+        ctx.shadowColor = showGrad ? 'rgba(232,93,93,0.5)' : 'rgba(74,108,247,0.5)';
+        ctx.shadowBlur = 18;
+        ctx.beginPath();
+        ctx.arc(x, y, NODE_RADIUS, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,0)';
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Circle
+      ctx.beginPath();
+      ctx.arc(x, y, NODE_RADIUS, 0, Math.PI * 2);
+      ctx.fillStyle = showGrad ? '#fef2f2' : '#eef1ff';
+      ctx.fill();
+      ctx.strokeStyle = showGrad ? '#e85d5d' : '#4a6cf7';
+      ctx.lineWidth = highlighted ? 3 : 2;
+      ctx.stroke();
+
+      // Label
+      ctx.fillStyle = tc('--text');
+      ctx.font = '600 14px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(node.label, x, y - (showVal ? 7 : 0));
+
+      // Value
+      if (showVal && node._displayVal !== undefined) {
+        ctx.font = '500 11px "JetBrains Mono", monospace';
+        ctx.fillStyle = showGrad ? '#e85d5d' : '#4a90d9';
+        ctx.fillText(node._displayVal.toFixed(4), x, y + 10);
+      }
+    }
+
+    function drawEdge(fromNode, toNode, highlighted, reverse) {
+      var x1 = fromNode.x, y1 = fromNode.y;
+      var x2 = toNode.x, y2 = toNode.y;
+      // Shorten for radius
+      var angle = Math.atan2(y2 - y1, x2 - x1);
+      var sx = x1 + NODE_RADIUS * Math.cos(angle);
+      var sy = y1 + NODE_RADIUS * Math.sin(angle);
+      var ex = x2 - NODE_RADIUS * Math.cos(angle);
+      var ey = y2 - NODE_RADIUS * Math.sin(angle);
+
+      if (reverse) {
+        var tmp; tmp = sx; sx = ex; ex = tmp; tmp = sy; sy = ey; ey = tmp;
+      }
+
+      var headLen = 10;
+      var aAngle = Math.atan2(ey - sy, ex - sx);
+      ctx.strokeStyle = highlighted ? (reverse ? '#e85d5d' : '#4a6cf7') : tc('--border');
+      ctx.lineWidth = highlighted ? 2.5 : 1.5;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(ex, ey);
+      ctx.stroke();
+
+      if (highlighted) {
+        ctx.fillStyle = reverse ? '#e85d5d' : '#4a6cf7';
+        ctx.beginPath();
+        ctx.moveTo(ex, ey);
+        ctx.lineTo(ex - headLen * Math.cos(aAngle - Math.PI / 6), ey - headLen * Math.sin(aAngle - Math.PI / 6));
+        ctx.lineTo(ex - headLen * Math.cos(aAngle + Math.PI / 6), ey - headLen * Math.sin(aAngle + Math.PI / 6));
+        ctx.fill();
+      }
+    }
+
+    function drawOpLabel(item, highlighted) {
+      ctx.font = highlighted ? '700 16px Inter, sans-serif' : '600 14px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = highlighted ? '#4a6cf7' : tc('--text-muted');
+      ctx.fillText(item.text, item.x, item.y);
+    }
+
+    function drawGradLabel(item, value, visible) {
+      if (!visible) return;
+      ctx.font = '500 10px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#e85d5d';
+      ctx.fillText(item.text, item.x, item.y);
+      if (value !== undefined) {
+        ctx.fillText('=' + value.toFixed(4), item.x, item.y + 14);
+      }
+    }
+
+    // Main draw function
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Title
+      ctx.font = '600 13px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = tc('--text-muted');
+      ctx.fillText('计算图：两层神经网络', 20, 30);
+
+      // Legend
+      ctx.fillStyle = '#4a90d9';
+      ctx.fillRect(W - 240, 15, 12, 12);
+      ctx.font = '12px Inter, sans-serif';
+      ctx.fillStyle = tc('--text-muted');
+      ctx.textAlign = 'left';
+      ctx.fillText('前向传播值', W - 222, 26);
+
+      ctx.fillStyle = '#e85d5d';
+      ctx.fillRect(W - 120, 15, 12, 12);
+      ctx.fillStyle = tc('--text-muted');
+      ctx.fillText('反向梯度', W - 102, 26);
+
+      // Draw edges
+      for (var i = 0; i < edges.length; i++) {
+        var e = edges[i];
+        var fn = getNode(e.from), tn = getNode(e.to);
+        var isForwardActive = visibleForward[e.from] && visibleForward[e.to];
+        var isBackwardActive = visibleBackward[e.from] && visibleBackward[e.to];
+        drawEdge(fn, tn, isForwardActive || isBackwardActive, isBackwardActive && !isForwardActive);
+      }
+
+      // Draw weight labels on edges from w1->z1 and w2->z2
+      var weightLabels = [
+        { fromNode: getNode('w1'), toNode: getNode('z1'), text: 'w\u2081=' + vals.w1.toFixed(2) },
+        { fromNode: getNode('w2'), toNode: getNode('z2'), text: 'w\u2082=' + vals.w2.toFixed(2) }
+      ];
+      for (var i = 0; i < weightLabels.length; i++) {
+        var wl = weightLabels[i];
+        var mx = (wl.fromNode.x + wl.toNode.x) / 2;
+        var my = (wl.fromNode.y + wl.toNode.y) / 2;
+        // Offset the label slightly above the edge midpoint
+        ctx.font = '500 11px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillStyle = tc('--text-muted');
+        ctx.fillText(wl.text, mx, my - 6);
+      }
+
+      // Draw operation labels
+      for (var i = 0; i < opLabels.length; i++) {
+        var hl = false;
+        if (animPhase === 'forward') {
+          if (i < animStep) hl = true;
+        }
+        if (animPhase === 'backward') {
+          hl = true;
+        }
+        drawOpLabel(opLabels[i], hl);
+      }
+
+      // Draw nodes
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        var showVal = !!visibleForward[n.id];
+        var highlighted = false;
+        var showGrad = false;
+
+        if (animPhase === 'forward') {
+          highlighted = (forwardSteps[animStep] === n.id);
+        }
+        if (visibleBackward[n.id]) {
+          showGrad = true;
+          highlighted = false;
+        }
+        if (animPhase === 'backward') {
+          var bIdx = backwardSteps.indexOf(backwardSteps[animStep]);
+          // Highlight the target node for current backward step
+        }
+
+        n._displayVal = showVal ? n.val : undefined;
+        drawNode(n, showVal, highlighted, showGrad);
+      }
+
+      // Draw gradient labels
+      var gradValues = {
+        dL_da2: grads.dL_da2,
+        dL_dz2: grads.dL_dz2,
+        dL_dw2: grads.dL_dw2,
+        dL_da1: grads.dL_da1,
+        dL_dz1: grads.dL_dz1,
+        dL_dw1: grads.dL_dw1
+      };
+      for (var i = 0; i < gradPositions.length; i++) {
+        var gp = gradPositions[i];
+        drawGradLabel(gp, gradValues[gp.id], !!visibleBackward[gp.id]);
+      }
+
+      // Animated particle
+      if (animPhase === 'forward' && animStep < forwardSteps.length) {
+        drawParticle(false);
+      }
+      if (animPhase === 'backward' && animStep < backwardSteps.length) {
+        drawParticle(true);
+      }
+    }
+
+    function drawParticle(reverse) {
+      var t = animProgress;
+      var fromIdx, toIdx;
+      if (!reverse) {
+        // Forward: animate between nodes
+        if (animStep === 0) { fromIdx = -1; toIdx = 0; } // start -> x
+        else if (animStep === 1) { fromIdx = 0; toIdx = 2; } // x -> z1
+        else if (animStep === 2) { fromIdx = 2; toIdx = 3; } // z1 -> a1
+        else if (animStep === 3) { fromIdx = 3; toIdx = 5; } // a1 -> z2
+        else if (animStep === 4) { fromIdx = 5; toIdx = 6; } // z2 -> a2
+        else if (animStep === 5) { fromIdx = 6; toIdx = 7; } // a2 -> L
+      } else {
+        if (animStep === 0) { fromIdx = 7; toIdx = 6; }
+        else if (animStep === 1) { fromIdx = 6; toIdx = 5; }
+        else if (animStep === 2) { fromIdx = 5; toIdx = 4; }
+        else if (animStep === 3) { fromIdx = 5; toIdx = 3; }
+        else if (animStep === 4) { fromIdx = 3; toIdx = 2; }
+        else if (animStep === 5) { fromIdx = 2; toIdx = 1; }
+      }
+
+      var px, py;
+      if (fromIdx < 0) {
+        px = 20 + t * (nodes[toIdx].x - 20);
+        py = nodes[toIdx].y;
+      } else {
+        var fn = nodes[fromIdx], tn = nodes[toIdx];
+        px = fn.x + (tn.x - fn.x) * t;
+        py = fn.y + (tn.y - fn.y) * t;
+      }
+
+      ctx.beginPath();
+      ctx.arc(px, py, 6, 0, Math.PI * 2);
+      ctx.fillStyle = reverse ? '#e85d5d' : '#4a6cf7';
+      ctx.fill();
+      ctx.strokeStyle = tc('--bg');
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    // ---- Chain rule display ----
+    var chainRuleEl = document.getElementById('chainRuleDisplay');
+
+    var forwardDescriptions = [
+      function() { return '<span class="step-label">输入 x = </span><span class="val">' + vals.x.toFixed(4) + '</span>'; },
+      function() { return '<span class="step-label">z\u2081 = w\u2081 \u00D7 x = </span><span class="val">' + vals.w1.toFixed(4) + ' \u00D7 ' + vals.x.toFixed(4) + ' = ' + vals.z1.toFixed(4) + '</span>'; },
+      function() { return '<span class="step-label">a\u2081 = \u03C3(z\u2081) = </span><span class="val">\u03C3(' + vals.z1.toFixed(4) + ') = ' + vals.a1.toFixed(4) + '</span>'; },
+      function() { return '<span class="step-label">z\u2082 = w\u2082 \u00D7 a\u2081 = </span><span class="val">' + vals.w2.toFixed(4) + ' \u00D7 ' + vals.a1.toFixed(4) + ' = ' + vals.z2.toFixed(4) + '</span>'; },
+      function() { return '<span class="step-label">a\u2082 = \u03C3(z\u2082) = </span><span class="val">\u03C3(' + vals.z2.toFixed(4) + ') = ' + vals.a2.toFixed(4) + '</span>'; },
+      function() { return '<span class="step-label">L = (y - a\u2082)\u00B2 = </span><span class="val">(' + vals.y.toFixed(4) + ' - ' + vals.a2.toFixed(4) + ')\u00B2 = ' + vals.L.toFixed(4) + '</span>'; }
+    ];
+
+    var backwardDescriptions = [
+      function() { return '<span class="step-label">\u2202L/\u2202a\u2082 = -2(y - a\u2082) = </span><span class="grad">' + grads.dL_da2.toFixed(4) + '</span>'; },
+      function() { return '<span class="step-label">\u2202L/\u2202z\u2082 = \u2202L/\u2202a\u2082 \u00B7 a\u2082(1-a\u2082) = </span><span class="grad">' + grads.dL_dz2.toFixed(4) + '</span>'; },
+      function() { return '<span class="step-label">\u2202L/\u2202w\u2082 = \u2202L/\u2202z\u2082 \u00B7 a\u2081 = </span><span class="grad">' + grads.dL_dw2.toFixed(4) + '</span>'; },
+      function() { return '<span class="step-label">\u2202L/\u2202a\u2081 = \u2202L/\u2202z\u2082 \u00B7 w\u2082 = </span><span class="grad">' + grads.dL_da1.toFixed(4) + '</span>'; },
+      function() { return '<span class="step-label">\u2202L/\u2202z\u2081 = \u2202L/\u2202a\u2081 \u00B7 a\u2081(1-a\u2081) = </span><span class="grad">' + grads.dL_dz1.toFixed(4) + '</span>'; },
+      function() { return '<span class="step-label">\u2202L/\u2202w\u2081 = \u2202L/\u2202z\u2081 \u00B7 x = </span><span class="grad">' + grads.dL_dw1.toFixed(4) + '</span>'; }
+    ];
+
+    // ---- Animation ----
+    var STEP_DURATION = 1200; // ms per step
+
+    function animateForward() {
+      if (animPhase !== 'idle' && animPhase !== 'forward') return;
+      if (animStep >= forwardSteps.length) {
+        animPhase = 'idle';
+        return;
+      }
+
+      if (animPhase === 'idle') {
+        animPhase = 'forward';
+        animStep = 0;
+        animProgress = 0;
+        visibleForward = {};
+        visibleBackward = {};
+      }
+
+      chainRuleEl.innerHTML = forwardDescriptions[animStep]();
+
+      var startTime = null;
+      function tick(ts) {
+        if (!startTime) startTime = ts;
+        var elapsed = ts - startTime;
+        animProgress = Math.min(1, elapsed / STEP_DURATION);
+        draw();
+
+        if (animProgress < 1) {
+          animFrameId = requestAnimationFrame(tick);
+        } else {
+          // Mark node as visible
+          visibleForward[forwardSteps[animStep]] = true;
+          animStep++;
+          if (animStep < forwardSteps.length) {
+            animProgress = 0;
+            animateForward();
+          } else {
+            animPhase = 'idle';
+            chainRuleEl.innerHTML = '<span class="step-label">前向传播完成!</span> 点击"反向传播"计算梯度';
+            draw();
+          }
+        }
+      }
+      animFrameId = requestAnimationFrame(tick);
+    }
+
+    function animateBackward() {
+      if (animPhase !== 'idle' && animPhase !== 'backward') return;
+      if (animStep >= backwardSteps.length) {
+        animPhase = 'idle';
+        return;
+      }
+
+      if (animPhase === 'idle') {
+        animPhase = 'backward';
+        animStep = 0;
+        animProgress = 0;
+        visibleBackward = {};
+        // Ensure forward values are visible
+        for (var i = 0; i < nodes.length; i++) {
+          visibleForward[nodes[i].id] = true;
+        }
+      }
+
+      chainRuleEl.innerHTML = backwardDescriptions[animStep]();
+
+      var startTime = null;
+      function tick(ts) {
+        if (!startTime) startTime = ts;
+        var elapsed = ts - startTime;
+        animProgress = Math.min(1, elapsed / STEP_DURATION);
+        draw();
+
+        if (animProgress < 1) {
+          animFrameId = requestAnimationFrame(tick);
+        } else {
+          visibleBackward[backwardSteps[animStep]] = true;
+          animStep++;
+          if (animStep < backwardSteps.length) {
+            animProgress = 0;
+            animateBackward();
+          } else {
+            animPhase = 'idle';
+            chainRuleEl.innerHTML = '<span class="step-label">反向传播完成!</span> <span class="grad">\u2202L/\u2202w\u2081 = ' + grads.dL_dw1.toFixed(4) + '</span>，<span class="grad">\u2202L/\u2202w\u2082 = ' + grads.dL_dw2.toFixed(4) + '</span>';
+            draw();
+          }
+        }
+      }
+      animFrameId = requestAnimationFrame(tick);
+    }
+
+    function resetDemo() {
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      animPhase = 'idle';
+      animStep = 0;
+      animProgress = 0;
+      visibleForward = {};
+      visibleBackward = {};
+      chainRuleEl.innerHTML = '点击"前向传播"或"反向传播"开始演示';
+      draw();
+    }
+
+    // ---- Button handlers ----
+    document.getElementById('btnForward').addEventListener('click', function() {
+      if (animPhase !== 'idle') return;
+      resetDemo();
+      setTimeout(animateForward, 50);
+    });
+
+    document.getElementById('btnBackward').addEventListener('click', function() {
+      if (animPhase !== 'idle') return;
+      // If forward hasn't run, auto-run it first
+      if (Object.keys(visibleForward).length === 0) {
+        for (var i = 0; i < nodes.length; i++) {
+          visibleForward[nodes[i].id] = true;
+        }
+      }
+      animStep = 0;
+      animProgress = 0;
+      animPhase = 'idle';
+      draw();
+      animateBackward();
+    });
+
+    document.getElementById('btnReset').addEventListener('click', resetDemo);
+
+    // Initial draw
+    draw();
+  })();
+  </script>
+
+</body>
+</html>

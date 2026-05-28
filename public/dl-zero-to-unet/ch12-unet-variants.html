@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNet 的应用与变体 - 从零到 UNet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .content-wrap {
+      max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem;
+    }
+    .chapter-header { text-align: center; padding: 3rem 0 2rem; }
+    .chapter-header .chapter-num {
+      font-size: 0.85rem; color: var(--primary);
+      text-transform: uppercase; letter-spacing: 3px; margin-bottom: 0.5rem;
+    }
+    .chapter-header h1 { font-size: 2.2rem; font-weight: 700; color: var(--text); margin: 0; }
+    h2 {
+      font-size: 1.5rem; font-weight: 600; color: var(--text);
+      margin-top: 2.5rem; margin-bottom: 1rem;
+      border-left: 4px solid var(--primary); padding-left: 0.75rem;
+    }
+    h3 { font-size: 1.15rem; font-weight: 600; color: var(--primary); margin-top: 1.5rem; }
+    p { margin: 1rem 0; color: var(--text-secondary); }
+    strong { color: var(--text); }
+    ul { padding-left: 1.5rem; }
+    ul li { margin: 0.5rem 0; color: var(--text-secondary); }
+    ul li strong { color: var(--text); }
+
+    .demo-box {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem; margin: 2rem 0;
+    }
+    .demo-box h3 { color: var(--primary); font-size: 1rem; margin: 0 0 1rem; }
+    .demo-box canvas { display: block; margin: 0 auto; max-width: 100%; border-radius: 8px; }
+    .hint { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+    .math-block {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem; margin: 2rem 0;
+      text-align: center; font-size: 1.2rem;
+    }
+    .math-block .label {
+      font-size: 0.85rem; color: var(--primary); margin-bottom: 0.5rem;
+    }
+
+    table {
+      width: 100%; border-collapse: collapse; margin: 1.5rem 0;
+      font-size: 0.9rem; background: var(--bg-secondary); border-radius: 10px; overflow: hidden;
+    }
+    th, td {
+      padding: 0.6rem 1rem; text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th { background: var(--bg-tertiary); color: var(--primary); font-weight: 600; }
+    td { color: var(--text-secondary); }
+
+    /* Variant cards */
+    .variant-card {
+      background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.5rem; margin: 1.5rem 0; transition: border-color 0.3s;
+    }
+    .variant-card:hover { border-color: var(--primary); }
+    .variant-card h4 { color: var(--text); margin: 0 0 0.3rem; font-size: 1.1rem; }
+    .variant-card .year { color: var(--primary); font-size: 0.8rem; font-weight: 600; }
+    .variant-card .key-idea {
+      background: var(--bg-tertiary); border-left: 3px solid var(--primary);
+      padding: 0.5rem 0.75rem; margin-top: 0.75rem; border-radius: 0 6px 6px 0;
+      font-size: 0.9rem; color: var(--text-secondary);
+    }
+    .variant-card p { margin: 0.5rem 0; font-size: 0.92rem; }
+
+    .analogy-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--primary); border-radius: 12px;
+      padding: 1.5rem; margin: 2rem 0;
+    }
+    .analogy-box h4 { color: var(--primary); margin: 0 0 0.5rem; }
+    .analogy-box p { color: var(--text-secondary); margin: 0; }
+
+    /* Comparison interactive */
+    .compare-controls {
+      display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center;
+    }
+    .compare-controls select {
+      padding: 0.5rem 0.75rem; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--bg-secondary);
+      color: var(--text); font-family: var(--font-sans); font-size: 0.9rem;
+    }
+    .compare-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    }
+    .compare-col {
+      background: var(--bg-tertiary); border-radius: 10px; padding: 1rem;
+    }
+    .compare-col h4 { color: var(--primary); margin: 0 0 0.5rem; font-size: 1rem; }
+    .compare-col dl { margin: 0; }
+    .compare-col dt { color: var(--text); font-weight: 600; font-size: 0.85rem; margin-top: 0.5rem; }
+    .compare-col dd { color: var(--text-secondary); font-size: 0.85rem; margin: 0.15rem 0 0; }
+
+    /* Reference list */
+    .ref-list { list-style: decimal; padding-left: 2rem; }
+    .ref-list li {
+      margin: 0.6rem 0; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;
+    }
+    .ref-list li a { color: var(--primary); word-break: break-all; }
+
+    .chapter-nav {
+      display: flex; justify-content: space-between;
+      margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);
+    }
+    .chapter-nav a {
+      color: var(--primary); text-decoration: none; font-weight: 600; transition: color 0.2s;
+    }
+    .chapter-nav a:hover { color: var(--primary-dark, #6b8cff); }
+
+    @media (max-width: 600px) {
+      .compare-grid { grid-template-columns: 1fr; }
+      .compare-controls { flex-direction: column; }
+      .challenge-grid { grid-template-columns: 1fr !important; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav"><div class="nav-inner"><a href="index.html" class="nav-brand">从零到 UNet</a><ul class="nav-links"><li><a href="ch01-what-is-dl.html">Ch1</a></li><li><a href="ch02-perceptron.html">Ch2</a></li><li><a href="ch03-mlp.html">Ch3</a></li><li><a href="ch04-activation.html">Ch4</a></li><li><a href="ch05-loss.html">Ch5</a></li><li><a href="ch06-optimization.html">Ch6</a></li><li><a href="ch07-backprop.html">Ch7</a></li><li><a href="ch08-cnn.html">Ch8</a></li><li><a href="ch09-encoder-decoder.html">Ch9</a></li><li><a href="ch10-unet.html">Ch10</a></li><li><a href="ch11-practice.html">Ch11</a></li><li><a href="ch12-unet-variants.html" class="active">Ch12</a></li></ul></div></nav>
+
+  <div class="content-wrap">
+    <header class="chapter-header">
+      <div class="chapter-num">Chapter 12</div>
+      <h1>第 12 章 &middot; UNet 的应用与变体</h1>
+    </header>
+
+    <!-- ===== SECTION 1: Intro ===== -->
+    <h2>一、从分割到生成 —— UNet 的跨界之旅</h2>
+    <p>UNet 最初是为<strong>生物医学图像分割</strong>而设计的（Ronneberger et al., 2015），但其编码器-解码器 + 跳跃连接的架构设计展现出了惊人的通用性。从医学影像到自动驾驶，再到如今最炙手可热的<strong>生成式 AI</strong>（Stable Diffusion、DALL-E 2 等），UNet 的身影无处不在。</p>
+    <p>为什么 UNet 如此万能？核心在于三个设计优势：</p>
+    <ul>
+      <li><strong>多尺度特征融合</strong>：编码器逐层提取从低级纹理到高级语义的多层次特征，解码器逐步恢复空间细节</li>
+      <li><strong>跳跃连接保留细节</strong>：直接传递编码器的空间信息，避免下采样导致的信息丢失</li>
+      <li><strong>灵活的条件注入</strong>：编码器-解码器的对称结构天然支持各种条件信号（文本嵌入、时间步、类别标签）的注入</li>
+    </ul>
+    <p>本章将带你走进 UNet 的变体世界，看看这个经典架构如何在不同领域中不断进化。</p>
+
+    <!-- ===== SECTION 2: Evolution Tree ===== -->
+    <h2>二、UNet 变体进化树</h2>
+    <p>从 2015 年的原始 UNet 出发，研究者们从不同方向对其进行了改进和扩展。下面的交互式进化树展示了主要的变体脉络：</p>
+
+    <div class="demo-box">
+      <h3>UNet 变体进化树</h3>
+      <canvas id="tree-canvas" width="860" height="600"></canvas>
+      <p class="hint">将鼠标悬停在节点上查看论文信息</p>
+      <div id="tree-tooltip" style="display:none; position:fixed; background:var(--bg-tertiary); border:1px solid var(--primary); border-radius:8px; padding:0.75rem 1rem; font-size:0.85rem; color:var(--text); pointer-events:none; z-index:999; max-width:300px; box-shadow:0 4px 20px rgba(0,0,0,0.4);"></div>
+    </div>
+
+    <!-- ===== SECTION 3: Structural Variants ===== -->
+    <h2>三、结构改进变体</h2>
+    <p>这些变体在 UNet 的基础架构上进行了创新性的结构改进，提升了分割精度和特征利用效率。</p>
+
+    <h3>3.1 UNet++（Nested U-Net）</h3>
+    <div class="variant-card">
+      <h4>UNet++ <span class="year">2018 · Zhou et al.</span></h4>
+      <p>UNet++ 引入了<strong>密集跳跃路径（Dense Skip Pathways）</strong>，在编码器和解码器之间构建了嵌套的子网络。不同于原始 UNet 的直接跳跃连接，UNet++ 在每一层都加入了卷积层来逐步缩小编码器和解码器特征之间的<strong>语义差距</strong>。</p>
+      <div class="key-idea">
+        <strong>核心思想：</strong>编码器的浅层特征（低级语义）和解码器的深层特征（高级语义）之间存在语义鸿沟。UNet++ 通过密集嵌套的卷积路径，让跳跃连接中的特征逐步融合，弥合这一差距。
+      </div>
+    </div>
+
+    <figure class="figure"><img src="https://raw.githubusercontent.com/MrGiovanni/UNetPlusPlus/master/Figures/fig_UNet++.png" alt="UNet++ 嵌套 U-Net 架构图" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;"><figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">图: UNet++ 通过密集嵌套的跳跃路径连接编码器和解码器，逐步融合不同层级的特征。来源: <a href="https://github.com/MrGiovanni/UNetPlusPlus" target="_blank">Zhou et al., UNet++ GitHub</a></figcaption></figure>
+
+    <h3>3.2 Attention U-Net</h3>
+    <div class="variant-card">
+      <h4>Attention U-Net <span class="year">2018 · Oktay et al.</span></h4>
+      <p>Attention U-Net 在跳跃连接中加入了<strong>注意力门控（Attention Gates）</strong>。这些门控模块学会了"该关注哪里"——它们会对编码器传来的特征图进行加权，突出与任务相关的区域，抑制无关背景信息。</p>
+      <div class="key-idea">
+        <strong>核心思想：</strong>不是所有编码器特征都同等重要。注意力门控让模型自动学习聚焦于关键区域（如器官边界、肿瘤位置），忽略不相关的背景噪声。
+      </div>
+    </div>
+
+    <figure class="figure"><img src="https://raw.githubusercontent.com/ozan-oktay/Attention-Gated-Networks/master/figures/figure1.png" alt="Attention U-Net 注意力门控机制" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;"><figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">图: Attention U-Net 的注意力门控模块，自动学习聚焦于关键区域。来源: <a href="https://github.com/ozan-oktay/Attention-Gated-Networks" target="_blank">Oktay et al., Attention-Gated-Networks GitHub</a></figcaption></figure>
+
+    <h3>3.3 nnU-Net</h3>
+    <div class="variant-card">
+      <h4>nnU-Net <span class="year">2021 · Isensee et al.</span></h4>
+      <p>nnU-Net 并不是一个新的网络架构，而是一个<strong>自适应框架</strong>。它根据数据集的属性（图像尺寸、体素间距、类别数量等）自动配置整个训练流程——包括网络结构（2D/3D/cascade）、预处理、训练策略、后处理等。</p>
+      <div class="key-idea">
+        <strong>核心思想：</strong>精心的工程和自动化的流程配置，比架构创新更重要。nnU-Net 在多个医学分割基准上持续取得最优结果，证明了"数据自适应"比"花式架构"更有效。
+      </div>
+    </div>
+
+    <!-- ===== SECTION 4: 3D Extensions ===== -->
+    <h2>四、3D 扩展</h2>
+    <p>医学影像数据（CT、MRI）本质上是<strong>三维体积数据</strong>。将 2D UNet 逐层切片处理会丢失层间（轴向）的上下文信息，因此 3D 扩展势在必行。</p>
+
+    <div class="analogy-box">
+      <h4>为什么 3D 很重要？</h4>
+      <p>想象你在看一本厚厚的解剖学图谱。如果每次只看一页（2D 切片），你会失去前后页之间的连续性信息。3D UNet 就像同时翻阅整本书，能理解器官的立体形状和空间关系。一个肿瘤可能在单张切片上看起来很小，但在 3D 视角下它已经侵袭了周围组织。</p>
+    </div>
+
+    <div class="variant-card">
+      <h4>3D U-Net <span class="year">2016 &Ccedil;i&ccedil;ek et al.</span></h4>
+      <p>将原始 UNet 的所有 2D 操作（卷积、池化、上采样）替换为对应的 3D 版本。输入是整个体积数据而非单张切片，能够直接学习三维空间中的特征表示。</p>
+      <div class="key-idea">
+        <strong>核心思想：</strong>直接在体积数据上进行端到端学习，利用层间上下文信息，提升分割的空间一致性。
+      </div>
+    </div>
+
+    <figure class="figure"><img src="https://raw.githubusercontent.com/mattmacy/vnet.pytorch/master/images/diagram.png" alt="3D U-Net / V-Net 体积分割架构图" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;"><figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">图: 3D 体积分割网络架构示意——将所有 2D 操作替换为 3D 版本，在体积数据上进行端到端学习。来源: <a href="https://arxiv.org/abs/1606.06650" target="_blank">Çiçek et al., 2016</a></figcaption></figure>
+
+    <div class="variant-card">
+      <h4>V-Net <span class="year">2016 · Milletari et al.</span></h4>
+      <p>V-Net 在 3D UNet 的基础上引入了两个关键改进：<strong>残差连接（Residual Connections）</strong>和 <strong>Dice Loss</strong>。残差连接缓解了深层网络的梯度消失问题，Dice Loss 直接优化分割评估指标，对类别不平衡更鲁棒。</p>
+      <div class="key-idea">
+        <strong>核心思想：</strong>残差学习 + 直接优化 Dice 指标，使 3D 分割训练更稳定、结果更准确。
+      </div>
+    </div>
+
+    <figure class="figure"><img src="https://raw.githubusercontent.com/mattmacy/vnet.pytorch/master/images/diagram.png" alt="V-Net 架构图" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;"><figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">图: V-Net 架构——在 3D UNet 基础上引入残差连接和 Dice Loss。来源: <a href="https://github.com/mattmacy/vnet.pytorch" target="_blank">Milletari et al., V-Net PyTorch</a></figcaption></figure>
+
+    <!-- ===== SECTION 5: Transformer Era ===== -->
+    <h2>五、Transformer 时代</h2>
+    <p>2020 年以来，Transformer 架构席卷计算机视觉领域。研究者们开始探索将 Transformer 与 UNet 结合，试图融合两者的优势：</p>
+    <ul>
+      <li><strong>CNN</strong>：擅长捕获局部特征（纹理、边缘），归纳偏置强（平移不变性）</li>
+      <li><strong>Transformer</strong>：擅长捕获全局上下文（自注意力机制），长距离依赖建模能力强</li>
+    </ul>
+
+    <div class="variant-card">
+      <h4>TransUNet <span class="year">2021 · Chen et al.</span></h4>
+      <p>TransUNet 采用<strong>混合架构</strong>：用 Vision Transformer（ViT）作为编码器提取全局特征，用 CNN 解码器逐步恢复空间分辨率。跳跃连接仍然保留，将 ViT 中间层的特征传递给解码器。</p>
+      <div class="key-idea">
+        <strong>核心思想：</strong>Transformer 编码器捕获全局语义，CNN 解码器恢复局部细节，两者互补。
+      </div>
+    </div>
+
+    <figure class="figure"><img src="https://raw.githubusercontent.com/tamasino52/UNETR/main/Arche.JPG" alt="TransUNet 架构图" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;"><figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">图: TransUNet 混合架构——ViT 编码器提取全局特征，CNN 解码器恢复空间细节。来源: <a href="https://arxiv.org/abs/2102.04306" target="_blank">Chen et al., 2021</a></figcaption></figure>
+
+    <div class="variant-card">
+      <h4>Swin-UNet <span class="year">2022 · Cao et al.</span></h4>
+      <p>Swin-UNet 是第一个<strong>纯 Transformer UNet</strong>——编码器和解码器都基于 Swin Transformer，完全不使用 CNN。Swin Transformer 的窗口注意力机制使其能够高效处理高分辨率图像。</p>
+      <div class="key-idea">
+        <strong>核心思想：</strong>证明纯 Transformer 也能构建有效的 U 形分割架构，窗口注意力实现了计算效率和全局建模的平衡。
+      </div>
+    </div>
+
+    <figure class="figure"><img src="https://raw.githubusercontent.com/Project-MONAI/research-contributions/main/SwinUNETR/BTCV/assets/swin_unetr.png" alt="Swin-UNet / Swin-UNETR 架构图" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;"><figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">图: Swin-UNet / Swin-UNETR——基于 Swin Transformer 的 U 形分割架构，使用窗口注意力机制。来源: <a href="https://github.com/Project-MONAI/research-contributions/tree/main/SwinUNETR" target="_blank">MONAI SwinUNETR</a></figcaption></figure>
+
+    <div class="variant-card">
+      <h4>UNETR <span class="year">2022 · Hatamizadeh et al.</span></h4>
+      <p>UNETR 将 ViT 作为编码器，通过跳跃连接与 CNN 解码器相连，专门为<strong>3D 医学图像分割</strong>设计。它将 ViT 的输出 reshape 回 3D 空间维度，与解码器的多尺度特征融合。</p>
+      <div class="key-idea">
+        <strong>核心思想：</strong>将 Transformer 的全局建模能力引入 3D 医学分割，在多个基准上刷新了最佳记录。
+      </div>
+    </div>
+
+    <figure class="figure"><img src="https://raw.githubusercontent.com/tamasino52/UNETR/main/Arche.JPG" alt="UNETR 架构图" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;"><figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">图: UNETR——将 ViT 作为编码器，通过跳跃连接与 CNN 解码器相连，专为 3D 医学图像分割设计。来源: <a href="https://github.com/tamasino52/UNETR" target="_blank">Hatamizadeh et al., UNETR</a></figcaption></figure>
+
+    <!-- ===== SECTION 6: Generative Models ===== -->
+    <h2>六、UNet 在生成模型中的应用</h2>
+    <p>这是 UNet 最令人兴奋的应用方向。<strong>扩散模型（Diffusion Models）</strong>将 UNet 作为核心去噪网络，驱动了 Stable Diffusion、DALL-E 2、Imagen 等划时代的图像生成系统。</p>
+
+    <h3>6.1 扩散模型基础</h3>
+    <p>扩散模型的核心思想非常优雅：</p>
+    <ul>
+      <li><strong>前向过程（加噪）</strong>：逐步向图像添加高斯噪声，直到图像变成纯噪声</li>
+      <li><strong>反向过程（去噪）</strong>：训练 UNet 学习在每一步去除噪声，从纯噪声恢复出清晰图像</li>
+    </ul>
+
+    <figure class="figure"><img src="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/DDPM.png" alt="DDPM 扩散模型架构图" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;"><figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">图: 去噪扩散概率模型（DDPM）——UNet 学习在每一步预测并去除噪声，从纯噪声逐步恢复出清晰图像。来源: <a href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/" target="_blank">Lilian Weng, What are Diffusion Models?</a></figcaption></figure>
+
+    <div class="math-block">
+      <div class="label">扩散过程</div>
+      $$q(x_t | x_{t-1}) = \mathcal{N}(x_t; \sqrt{1-\beta_t}\,x_{t-1},\, \beta_t \mathbf{I})$$
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.8rem;">每一步添加少量噪声，$\beta_t$ 为噪声调度参数</p>
+    </div>
+
+    <div class="math-block">
+      <div class="label">去噪目标</div>
+      $$\mathcal{L} = \mathbb{E}_{t, x_0, \epsilon}\left[\|\epsilon - \epsilon_\theta(x_t, t)\|^2\right]$$
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.8rem;">UNet $\epsilon_\theta$ 学习预测噪声 $\epsilon$，从而从 $x_t$ 恢复 $x_0$</p>
+    </div>
+
+    <h3>6.2 为什么选择 UNet？</h3>
+    <ul>
+      <li><strong>多尺度特征</strong>：噪声在不同尺度上有不同的表现，UNet 的编码器-解码器能逐层处理</li>
+      <li><strong>跳跃连接保留细节</strong>：生成图像需要精确的纹理和边缘信息，跳跃连接确保这些细节不被丢失</li>
+      <li><strong>灵活的条件注入</strong>：时间步 $t$ 可以通过编码器注入，文本嵌入可以通过交叉注意力层注入</li>
+      <li><strong>成熟的训练范式</strong>：分割任务中的训练技巧（数据增强、学习率调度等）可以直接迁移</li>
+    </ul>
+
+    <h3>6.3 Stable Diffusion 中的 UNet</h3>
+    <p>Stable Diffusion 不直接在像素空间操作，而是在<strong>潜空间（Latent Space）</strong>中进行扩散。这大大降低了计算成本：</p>
+    <ul>
+      <li>先用 VAE 编码器将图像压缩到低维潜空间</li>
+      <li>在潜空间中运行扩散过程（UNet 去噪）</li>
+      <li>最后用 VAE 解码器将潜表示恢复为图像</li>
+    </ul>
+    <p>Stable Diffusion 中的 UNet 包含约 <strong>860M 参数</strong>，包含 ResNet 块、自注意力层和交叉注意力层（用于文本条件注入）。</p>
+
+    <figure class="figure"><img src="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/latent-diffusion-arch.png" alt="潜空间扩散模型架构图" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;"><figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">图: 潜空间扩散模型（Latent Diffusion）架构——先用 VAE 编码到潜空间，在潜空间中用 UNet 去噪，再用 VAE 解码恢复图像。来源: <a href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/" target="_blank">Lilian Weng, What are Diffusion Models?</a></figcaption></figure>
+
+    <!-- Diffusion animation -->
+    <div class="demo-box">
+      <h3>扩散过程可视化</h3>
+      <canvas id="diffusion-canvas" width="860" height="220"></canvas>
+      <div style="display:flex; justify-content:center; gap:1rem; margin-top:1rem; flex-wrap:wrap;">
+        <button class="btn" id="btn-add-noise" style="padding:0.5rem 1.2rem; border:1px solid var(--border); border-radius:8px; background:var(--bg-secondary); color:var(--text-secondary); cursor:pointer; font-family:var(--font-sans); font-size:0.9rem; font-weight:600;">添加噪声 (前向)</button>
+        <button class="btn" id="btn-denoise" style="padding:0.5rem 1.2rem; border:1px solid var(--border); border-radius:8px; background:var(--bg-secondary); color:var(--text-secondary); cursor:pointer; font-family:var(--font-sans); font-size:0.9rem; font-weight:600;">UNet 去噪 (反向)</button>
+        <button class="btn" id="btn-reset-diff" style="padding:0.5rem 1.2rem; border:1px solid var(--border); border-radius:8px; background:var(--bg-secondary); color:var(--text-secondary); cursor:pointer; font-family:var(--font-sans); font-size:0.9rem; font-weight:600;">重置</button>
+      </div>
+      <p class="hint">观察前向过程如何逐步添加噪声，以及反向过程如何逐步恢复图像</p>
+    </div>
+
+    <!-- ===== SECTION 7: Medical Imaging ===== -->
+    <h2>七、医学影像分割 —— UNet 的核心战场</h2>
+    <p>UNet 最初就是为<strong>医学影像分割</strong>而生的。虽然它已经在生成式 AI 等领域大放异彩，但医学影像分割始终是 UNet 最重要、最经典的应用场景。可以说，医学影像分割是 UNet 的"主场"——几乎所有 UNet 变体的改进，都首先在医学分割基准上得到验证。</p>
+
+    <!-- 7.1 Why it matters -->
+    <h3>7.1 为什么医学影像分割如此重要</h3>
+    <p>医学影像分割是指将医学图像中的每个像素（或体素）分类为不同的解剖结构或病变区域。这项技术在临床实践中有着深远的影响：</p>
+
+    <div class="variant-card">
+      <h4>早期疾病检测 <span class="year">肿瘤分割</span></h4>
+      <p>精确的肿瘤分割是癌症诊断的第一步。通过自动勾画肿瘤边界，AI 可以帮助放射科医生发现早期微小病灶，量化肿瘤体积变化，监测治疗效果。例如，在脑胶质瘤（Glioma）分割中，模型需要区分肿瘤核心、水肿区域和增强肿瘤三个子区域。</p>
+    </div>
+
+    <div class="variant-card">
+      <h4>治疗计划 <span class="year">放射治疗靶区勾画</span></h4>
+      <p>在放射治疗中，医生需要精确勾画<strong>靶区（Target Volume）</strong>和<strong>危及器官（Organs at Risk, OAR）</strong>。传统手工勾画耗时数小时，且不同医生之间的一致性较差。自动分割可以将勾画时间缩短到分钟级别，同时提高一致性和精确度。</p>
+    </div>
+
+    <div class="variant-card">
+      <h4>手术导航 <span class="year">实时器官边界检测</span></h4>
+      <p>在机器人辅助手术和微创手术中，实时器官分割可以帮助外科医生准确定位手术区域，避开重要血管和神经。这对分割算法的<strong>推理速度</strong>提出了极高要求——通常需要在毫秒级完成推理。</p>
+    </div>
+
+    <div class="variant-card">
+      <h4>药物研发 <span class="year">显微镜细胞分析</span></h4>
+      <p>在药物筛选实验中，研究人员需要从大量显微镜图像中自动识别和计数细胞，分析细胞形态变化。这正是 UNet 最初的设计目标——<strong>ISBI Cell Tracking Challenge</strong> 中的细胞分割任务。</p>
+    </div>
+
+    <div class="analogy-box">
+      <h4>类比：医学影像分割就像给每一块"拼图"贴标签</h4>
+      <p>想象一张 CT 扫描图像是一幅复杂的拼图，里面有骨头、肌肉、器官、血管、脂肪……医学影像分割的任务就是给每一个像素贴上正确的标签——"这是肝脏"、"这是肾脏"、"这是肿瘤"。UNet 的编码器-解码器结构就像一个经验丰富的放射科医生：先从远处看整体轮廓（编码器提取全局特征），再仔细辨认每个区域的边界（解码器恢复空间细节）。</p>
+    </div>
+
+    <!-- 7.2 Classic Datasets -->
+    <h3>7.2 经典医学影像数据集</h3>
+    <p>以下数据集是医学影像分割领域最重要的基准（Benchmarks），也是 UNet 及其变体论文中常见的"考场"：</p>
+
+    <table>
+      <thead>
+        <tr><th>数据集</th><th>模态</th><th>分割目标</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>ISBI Cell Tracking</strong></td>
+          <td>显微镜</td>
+          <td>细胞实例分割</td>
+          <td>UNet 的诞生地。在相差显微镜和微分干涉相差显微镜下追踪细胞运动</td>
+        </tr>
+        <tr>
+          <td><strong>ISBI 2012 EM Segmentation</strong></td>
+          <td>电子显微镜</td>
+          <td>神经元结构</td>
+          <td>原始 UNet 论文使用的基准数据集。分割果蝇幼虫神经元的连续切片电镜图像</td>
+        </tr>
+        <tr>
+          <td><strong>Synapse Multi-organ CT</strong></td>
+          <td>CT</td>
+          <td>腹部多器官</td>
+          <td>包含 30 例腹部 CT 扫描，标注了主动脉、胆囊、脾脏、左肾、右肾、肝脏、胰腺、胃等 8 个器官。TransUNet 和 Swin-UNet 的常用基准</td>
+        </tr>
+        <tr>
+          <td><strong>ACDC</strong></td>
+          <td>MRI</td>
+          <td>心脏结构</td>
+          <td>自动心脏诊断挑战赛数据集。分割左心室、右心室和心肌三个结构。包含 100 例心脏 MRI，涵盖多种心脏疾病</td>
+        </tr>
+        <tr>
+          <td><strong>BTCV</strong></td>
+          <td>CT</td>
+          <td>腹部 13 个器官</td>
+          <td>Beyond The Cranial Vault 数据集，标注了脾脏、右肾、左肾、胆囊、食管、肝脏、胃、主动脉、下腔静脉、门静脉和脾静脉、胰腺、左肾上腺、右肾上腺共 13 个器官。UNETR 的主要基准</td>
+        </tr>
+        <tr>
+          <td><strong>LiTS</strong></td>
+          <td>CT</td>
+          <td>肝脏和肝肿瘤</td>
+          <td>Liver Tumor Segmentation Challenge。包含 131 例增强 CT 扫描，同时标注肝脏和肝肿瘤。肿瘤的大小、数量和位置变化极大</td>
+        </tr>
+        <tr>
+          <td><strong>BraTS</strong></td>
+          <td>MRI（多模态）</td>
+          <td>脑胶质瘤</td>
+          <td>Brain Tumor Segmentation Challenge。使用 T1、T1ce、T2、FLAIR 四种 MRI 序列，分割增强肿瘤（ET）、肿瘤核心（TC）和整体肿瘤（WT）三个区域</td>
+        </tr>
+        <tr>
+          <td><strong>KITS</strong></td>
+          <td>CT</td>
+          <td>肾脏和肾肿瘤</td>
+          <td>Kidney Tumor Segmentation Challenge。包含 300 例 CT 扫描，标注肾脏和肾肿瘤。肿瘤可能包含囊性成分和实性成分</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 7.3 Different Modalities -->
+    <h3>7.3 UNet 在不同医学模态中的应用</h3>
+    <p>医学影像涵盖多种成像模态，每种模态都有其独特的特性和挑战。UNet 及其变体在各个模态中都展现了出色的分割能力：</p>
+
+    <div class="variant-card">
+      <h4>CT 扫描（Computed Tomography）</h4>
+      <p><strong>器官分割</strong>：肝脏、肾脏、肺部等器官的精确体积测量。CT 图像是三维体积数据（通常 512x512xN 层），天然适合 3D U-Net 和 V-Net 处理。</p>
+      <p><strong>肿瘤检测</strong>：肺结节筛查、肝肿瘤分割、肾脏肿瘤分割。CT 值（Hounsfield Unit）提供了组织密度信息，有助于区分不同组织类型。</p>
+      <div class="key-idea">
+        <strong>关键挑战：</strong>CT 扫描层间距和分辨率因设备和扫描协议不同而变化很大，nnU-Net 通过自动配置体素间距归一化来应对这一问题。
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <h4>MRI（Magnetic Resonance Imaging）</h4>
+      <p><strong>脑肿瘤分割（BraTS）</strong>：多序列 MRI（T1、T1ce、T2、FLAIR）提供互补信息，模型需要融合多种对比度进行分割。</p>
+      <p><strong>心脏分割（ACDC）</strong>：在心脏 MRI 短轴切片上分割左心室腔、右心室腔和心肌，用于评估心功能参数（射血分数、心肌质量等）。</p>
+      <p><strong>前列腺分割</strong>：在 T2 加权 MRI 上精确勾画前列腺边界，辅助前列腺癌的诊断和放疗计划。</p>
+      <div class="key-idea">
+        <strong>关键挑战：</strong>MRI 信号强度不标准化（不同设备、不同序列的灰度分布差异大），需要进行强度归一化预处理。
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <h4>X 射线（X-ray）</h4>
+      <p><strong>胸部 X 光分析</strong>：肺野分割、心脏轮廓检测、胸腔积液识别。2D UNet 在胸部 X 光分割任务上表现优异。</p>
+      <p><strong>骨折检测</strong>：骨骼区域分割辅助骨折定位，特别是细微的应力性骨折。</p>
+      <div class="key-idea">
+        <strong>关键优势：</strong>X 射线是最普及的医学影像检查，UNet 的轻量化变体可以在移动设备上运行，适用于资源匮乏地区。
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <h4>超声（Ultrasound）</h4>
+      <p><strong>胎儿测量</strong>：自动测量胎儿双顶径（BPD）、头围（HC）、腹围（AC）等关键指标，评估胎儿发育状况。</p>
+      <p><strong>心脏超声</strong>：在超声心动图中分割心腔，计算射血分数等心脏功能参数。超声图像噪声大、对比度低，对分割算法提出挑战。</p>
+      <div class="key-idea">
+        <strong>关键挑战：</strong>超声图像质量受操作者手法影响大，存在大量散斑噪声和伪影，需要鲁棒的分割模型。
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <h4>病理切片（Histopathology）</h4>
+      <p><strong>全切片图像分析（WSI）</strong>：病理切片的数字扫描图像分辨率极高（可达 100,000 x 100,000 像素），需要分块处理后用 UNet 进行语义分割。</p>
+      <p><strong>细胞检测与分类</strong>：在 H&E 染色切片中检测癌细胞、免疫细胞，进行细胞核实例分割。这是 UNet 最初设计的应用场景之一。</p>
+      <div class="key-idea">
+        <strong>关键挑战：</strong>染色一致性差异大（不同实验室、不同染色批次），需要染色归一化或域适应技术。
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <h4>内窥镜（Endoscopy）</h4>
+      <p><strong>息肉检测</strong>：在结肠镜视频中自动检测和分割息肉，辅助内镜医生进行筛查，降低漏检率。</p>
+      <p><strong>手术器械分割</strong>：在腹腔镜手术中实时分割手术器械，为机器人辅助手术提供视觉反馈。</p>
+      <div class="key-idea">
+        <strong>关键挑战：</strong>内窥镜图像光照不均匀、存在大量反光和烟雾，且需要实时推理（通常要求 &lt;30ms 延迟）。
+      </div>
+    </div>
+
+    <div class="variant-card">
+      <h4>眼底照片（Fundus Photography）</h4>
+      <p><strong>视网膜血管分割</strong>：从眼底照片中提取视网膜血管网络，辅助青光眼、糖尿病视网膜病变等疾病的早期诊断。</p>
+      <p><strong>糖尿病视网膜病变检测</strong>：分割微动脉瘤、出血点、渗出物等病变区域，是 UNet 在眼科的经典应用。</p>
+      <div class="key-idea">
+        <strong>关键挑战：</strong>血管结构细小且对比度低，需要模型具有极强的细粒度特征捕获能力——这正是 UNet 跳跃连接的优势所在。
+      </div>
+    </div>
+
+    <!-- Summary image -->
+    <div style="text-align:center; margin:2rem 0;">
+      <img src="https://github.com/ellisdg/3DUnetCNN/raw/master/doc/viz/tumor_segmentation_illusatration.gif"
+           alt="3D U-Net 脑肿瘤分割可视化 — BraTS 数据集上的分割结果"
+           style="max-width:100%; border-radius:12px; border:1px solid var(--border);">
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">3D U-Net 在 BraTS 数据集上的脑肿瘤分割结果（来源：3DUnetCNN 项目）</p>
+    </div>
+
+    <!-- 7.4 Challenges -->
+    <h3>7.4 医学影像分割的特殊挑战</h3>
+    <p>与自然图像分割不同，医学影像分割面临着一系列独特的难题，也正是这些难题推动了 UNet 变体的不断创新：</p>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1.5rem 0;">
+      <div class="variant-card" style="margin:0;">
+        <h4>标注成本极高</h4>
+        <p>医学图像标注需要<strong>专业医生</strong>参与，标注一张 CT 扫描可能需要数小时。一个包含数百例的数据集可能需要数月的标注时间和数十万元的标注成本。这使得<strong>半监督学习</strong>和<strong>少样本学习</strong>在医学领域尤为重要。</p>
+      </div>
+      <div class="variant-card" style="margin:0;">
+        <h4>严重的类别不平衡</h4>
+        <p>病灶区域（如肿瘤）通常只占图像的<strong>极小比例</strong>（有时不到 1%）。标准交叉熵损失会被大量背景像素主导，导致模型忽略小目标。这催生了 Dice Loss、Focal Loss 等专门的损失函数。</p>
+      </div>
+      <div class="variant-card" style="margin:0;">
+        <h4>数据隐私</h4>
+        <p>医学影像包含<strong>敏感个人信息</strong>，受 HIPAA、GDPR 等法规保护。不同医院之间难以直接共享数据。联邦学习（Federated Learning）和差分隐私（Differential Privacy）成为解决数据孤岛问题的关键技术。</p>
+      </div>
+      <div class="variant-card" style="margin:0;">
+        <h4>3D 体积数据</h4>
+        <p>CT 和 MRI 扫描是<strong>三维体积数据</strong>，包含数百个切片。逐张 2D 分割会丢失层间上下文信息，而直接 3D 分割面临巨大的<strong>显存压力</strong>。这推动了 3D U-Net、V-Net 以及各种内存高效 3D 架构的发展。</p>
+      </div>
+      <div class="variant-card" style="margin:0; grid-column:1/-1;">
+        <h4>领域迁移</h4>
+        <p>不同医院的设备型号、扫描参数、重建算法各不相同，导致图像的<strong>分布差异</strong>很大。在 A 医院训练的模型直接用在 B 医院，性能可能大幅下降。域适应（Domain Adaptation）和测试时增强（Test-Time Augmentation）是应对这一问题的常用策略。nnU-Net 通过自动配置预处理流程来缓解这一问题。</p>
+      </div>
+    </div>
+
+    <!-- 7.5 Solutions -->
+    <h3>7.5 从变体中寻找解决方案</h3>
+    <p>前面介绍的各种 UNet 变体，几乎都是为了应对上述挑战而提出的。下面总结了不同挑战对应的解决方案：</p>
+
+    <table>
+      <thead>
+        <tr><th>挑战</th><th>解决方案</th><th>对应变体/技术</th><th>章节</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>训练数据不足</strong></td>
+          <td>弹性变形数据增强</td>
+          <td>原始 UNet 的创新——通过对训练图像进行随机弹性变形，从少量标注数据中生成大量增强样本</td>
+          <td>三</td>
+        </tr>
+        <tr>
+          <td><strong>类别不平衡</strong></td>
+          <td>Dice Loss / 加权交叉熵</td>
+          <td>V-Net 提出的 Dice Loss 直接优化分割评估指标，对前景占比极小的场景更鲁棒</td>
+          <td>四</td>
+        </tr>
+        <tr>
+          <td><strong>3D 体积数据</strong></td>
+          <td>3D 卷积 + 残差连接</td>
+          <td>3D U-Net 和 V-Net 将 2D 操作扩展到三维，直接在体积数据上进行端到端学习</td>
+          <td>四</td>
+        </tr>
+        <tr>
+          <td><strong>流程配置复杂</strong></td>
+          <td>自动化配置</td>
+          <td>nnU-Net 根据数据集属性自动选择 2D/3D/cascade 架构，配置预处理和训练策略</td>
+          <td>三</td>
+        </tr>
+        <tr>
+          <td><strong>全局上下文缺失</strong></td>
+          <td>Transformer 注意力机制</td>
+          <td>TransUNet、Swin-UNet、UNETR 引入自注意力建模长距离依赖，捕获全局语义信息</td>
+          <td>五</td>
+        </tr>
+        <tr>
+          <td><strong>编码器-解码器语义差距</strong></td>
+          <td>密集跳跃路径</td>
+          <td>UNet++ 通过嵌套卷积路径逐步融合多尺度特征</td>
+          <td>三</td>
+        </tr>
+        <tr>
+          <td><strong>无关背景干扰</strong></td>
+          <td>注意力门控</td>
+          <td>Attention U-Net 在跳跃连接中引入注意力门控，自动聚焦于关键区域</td>
+          <td>三</td>
+        </tr>
+        <tr>
+          <td><strong>域迁移</strong></td>
+          <td>自适应预处理 + TTA</td>
+          <td>nnU-Net 的自动体素间距归一化 + 测试时数据增强（TTA）提升跨域泛化能力</td>
+          <td>三</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 7.6 Clinical Applications -->
+    <h3>7.6 临床应用案例</h3>
+    <p>基于 UNet 的医学图像分割技术已经从实验室走向临床，以下是几个具有代表性的实际应用场景：</p>
+
+    <div class="variant-card">
+      <h4>放射治疗计划中的靶区勾画</h4>
+      <p>在头颈部癌症放疗中，医生需要精确勾画<strong>数十个危及器官</strong>（脊髓、脑干、腮腺、视神经等）和肿瘤靶区。传统手工勾画需要 2-4 小时，而基于 UNet 的自动勾画系统可以在 <strong>1 分钟内</strong>完成初步勾画，医生只需进行微调。研究表明，AI 辅助勾画的精度已接近甚至超过初级放射科医生的水平。</p>
+    </div>
+
+    <div class="variant-card">
+      <h4>手术机器人中的实时器官分割</h4>
+      <p>达芬奇（da Vinci）手术机器人系统正在集成基于 UNet 的实时组织分割模块。在腹腔镜胆囊切除术中，模型需要在 <strong>30fps</strong> 的视频流上实时分割胆囊、胆管和周围组织，帮助外科医生识别关键解剖结构，降低手术风险。这对模型的推理速度提出了严格要求，通常使用轻量化的 2D UNet 变体。</p>
+    </div>
+
+    <div class="variant-card">
+      <h4>病理 AI 辅助诊断</h4>
+      <p>在数字病理学中，UNet 被用于全切片图像（WSI）的癌细胞检测和组织区域分割。例如，在乳腺癌淋巴结转移检测中，模型需要在 <strong>100,000 x 100,000 像素</strong>的超大图像上定位微转移灶（可能只有几个像素大小）。Paige.AI 等公司已经获得了 FDA 批准的基于 AI 的病理诊断产品。</p>
+    </div>
+
+    <div class="variant-card">
+      <h4>COVID-19 肺部 CT 分析</h4>
+      <p>在 COVID-19 疫情期间，基于 UNet 的肺部感染区域分割系统被快速开发并部署。这些系统可以从胸部 CT 中自动分割<strong>磨玻璃影（GGO）</strong>和<strong>实变区域</strong>，量化感染程度，辅助医生进行快速诊断和病情评估。多个研究表明，AI 系统可以在 <strong>10 秒内</strong>完成一例 CT 的分析，而人工评估需要 15-30 分钟。</p>
+    </div>
+
+    <div class="analogy-box">
+      <h4>从实验室到临床的"最后一公里"</h4>
+      <p>虽然 UNet 在学术基准上已经取得了极高的精度（Dice 系数常超过 0.9），但将其部署到真正的临床环境中仍面临诸多挑战：<strong>鲁棒性</strong>（面对罕见病例是否可靠）、<strong>可解释性</strong>（医生需要理解模型的判断依据）、<strong>监管审批</strong>（FDA/NMPA 等医疗器械认证）、<strong>工作流集成</strong>（与 PACS 系统无缝对接）。这些工程和监管问题，是 AI 医学影像产品化过程中不可忽视的关键环节。</p>
+    </div>
+
+    <!-- ===== SECTION 8: Other Applications ===== -->
+    <h2>八、其他应用领域</h2>
+    <p>UNet 的影响力远远超出了医学影像。以下是其在各个领域的应用概览：</p>
+
+    <table>
+      <thead>
+        <tr><th>领域</th><th>应用</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>医学影像</strong></td><td>器官分割、肿瘤检测</td><td>原始应用场景，如细胞、肝脏、心脏分割</td></tr>
+        <tr><td><strong>自动驾驶</strong></td><td>道路场景分割</td><td>Cityscapes 数据集上的语义分割基准</td></tr>
+        <tr><td><strong>卫星遥感</strong></td><td>土地利用分类、建筑检测</td><td>高分辨率遥感图像的像素级理解</td></tr>
+        <tr><td><strong>工业检测</strong></td><td>缺陷检测</td><td>制造业质量控制中的表面缺陷定位</td></tr>
+        <tr><td><strong>图像修复</strong></td><td>缺失区域填充</td><td>Inpainting：根据周围内容生成缺失部分</td></tr>
+        <tr><td><strong>超分辨率</strong></td><td>图像增强</td><td>SR3 等扩散模型实现高保真上采样</td></tr>
+        <tr><td><strong>视频生成</strong></td><td>时序扩散</td><td>Stable Video Diffusion：图像到视频生成</td></tr>
+        <tr><td><strong>音频生成</strong></td><td>波形/频谱图合成</td><td>Audio Diffusion：在频谱图上进行扩散生成</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ===== Variant Comparison Interactive ===== -->
+    <h2>九、变体对比工具</h2>
+    <p>选择两个变体，查看它们的详细对比：</p>
+
+    <div class="demo-box">
+      <h3>变体对比</h3>
+      <div class="compare-controls">
+        <label style="font-size:0.9rem; color:var(--text-secondary);">变体 A：
+          <select id="compare-a">
+            <option value="unet">UNet (2015)</option>
+            <option value="unetpp">UNet++ (2018)</option>
+            <option value="attunet">Attention U-Net (2018)</option>
+            <option value="nnunet">nnU-Net (2021)</option>
+            <option value="3dunet">3D U-Net (2016)</option>
+            <option value="vnet">V-Net (2016)</option>
+            <option value="transunet">TransUNet (2021)</option>
+            <option value="swinunet">Swin-UNet (2022)</option>
+            <option value="unetr">UNETR (2022)</option>
+          </select>
+        </label>
+        <label style="font-size:0.9rem; color:var(--text-secondary);">变体 B：
+          <select id="compare-b">
+            <option value="unet">UNet (2015)</option>
+            <option value="unetpp" selected>UNet++ (2018)</option>
+            <option value="attunet">Attention U-Net (2018)</option>
+            <option value="nnunet">nnU-Net (2021)</option>
+            <option value="3dunet">3D U-Net (2016)</option>
+            <option value="vnet">V-Net (2016)</option>
+            <option value="transunet">TransUNet (2021)</option>
+            <option value="swinunet">Swin-UNet (2022)</option>
+            <option value="unetr">UNETR (2022)</option>
+          </select>
+        </label>
+      </div>
+      <div class="compare-grid" id="compare-result"></div>
+    </div>
+
+    <!-- ===== SECTION 8: Summary + References ===== -->
+    <hr style="border:none; border-top:1px solid var(--border); margin:3rem 0;">
+
+    <h2>十、本章小结</h2>
+    <ul>
+      <li><strong>UNet 的通用性</strong>：编码器-解码器 + 跳跃连接的设计使其适用于分割、生成、修复等多种任务</li>
+      <li><strong>结构改进</strong>：UNet++ 通过密集跳跃路径弥合语义差距，Attention U-Net 通过注意力门控聚焦关键区域</li>
+      <li><strong>自动化</strong>：nnU-Net 证明了自适应流程配置比架构创新更有效</li>
+      <li><strong>3D 扩展</strong>：3D U-Net 和 V-Net 将 UNet 推向体积医学数据</li>
+      <li><strong>Transformer 融合</strong>：TransUNet、Swin-UNet、UNETR 结合了全局建模和局部细节的优势</li>
+      <li><strong>生成式 AI</strong>：UNet 是 Stable Diffusion 等扩散模型的核心去噪网络，在潜空间中进行高效的图像生成</li>
+      <li><strong>医学影像核心战场</strong>：UNet 诞生于医学影像分割，在 CT、MRI、超声、病理、内窥镜、眼底等多个模态中广泛应用；面对标注成本高、类别不平衡、3D 数据、域迁移等挑战，各种变体分别提供了针对性解决方案</li>
+      <li><strong>广泛应用</strong>：从医学影像到自动驾驶、卫星遥感、工业检测、视频生成、音频合成</li>
+    </ul>
+
+    <h2>参考文献</h2>
+    <ol class="ref-list">
+      <li>Ronneberger, O., Fischer, P., &amp; Brox, T. (2015). <strong>U-Net: Convolutional Networks for Biomedical Image Segmentation.</strong> <a href="https://arxiv.org/abs/1505.04597" target="_blank">arXiv:1505.04597</a></li>
+      <li>&Ccedil;i&ccedil;ek, O., Abdulkadir, A., Lienkamp, S. S., Brox, T., &amp; Ronneberger, O. (2016). <strong>3D U-Net: Learning Dense Volumetric Segmentation from Sparse Annotation.</strong> <a href="https://arxiv.org/abs/1606.06650" target="_blank">arXiv:1606.06650</a></li>
+      <li>Milletari, F., Navab, N., &amp; Ahmadi, S. A. (2016). <strong>V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation.</strong> <a href="https://arxiv.org/abs/1606.04797" target="_blank">arXiv:1606.04797</a></li>
+      <li>Zhou, Z., Rahman Siddiquee, M. M., Tajbakhsh, N., &amp; Liang, J. (2018). <strong>UNet++: A Nested U-Net Architecture for Medical Image Segmentation.</strong> <a href="https://arxiv.org/abs/1807.10165" target="_blank">arXiv:1807.10165</a></li>
+      <li>Oktay, O., Schlemper, J., Folgoc, L. L., et al. (2018). <strong>Attention U-Net: Learning Where to Look for the Pancreas.</strong> <a href="https://arxiv.org/abs/1804.03999" target="_blank">arXiv:1804.03999</a></li>
+      <li>Isensee, F., Jaeger, P. F., Kohl, S. A., Petersen, J., &amp; Maier-Hein, K. H. (2021). <strong>nnU-Net: A self-configuring method for deep learning-based biomedical image segmentation.</strong> <a href="https://arxiv.org/abs/1809.10486" target="_blank">arXiv:1809.10486</a></li>
+      <li>Chen, J., Lu, Y., Yu, Q., et al. (2021). <strong>TransUNet: Transformers Make Strong Encoders for Medical Image Segmentation.</strong> <a href="https://arxiv.org/abs/2102.04306" target="_blank">arXiv:2102.04306</a></li>
+      <li>Cao, H., Wang, Y., Chen, J., et al. (2022). <strong>Swin-Unet: Unet-like Pure Transformer for Medical Image Segmentation.</strong> <a href="https://arxiv.org/abs/2105.05537" target="_blank">arXiv:2105.05537</a></li>
+      <li>Hatamizadeh, A., Tang, Y., Nath, V., et al. (2022). <strong>UNETR: Transformers for 3D Medical Image Segmentation.</strong> <a href="https://arxiv.org/abs/2103.10504" target="_blank">arXiv:2103.10504</a></li>
+      <li>Ho, J., Jain, A., &amp; Abbeel, P. (2020). <strong>Denoising Diffusion Probabilistic Models.</strong> <a href="https://arxiv.org/abs/2006.11239" target="_blank">arXiv:2006.11239</a></li>
+      <li>Rombach, R., Blattmann, A., Lorenz, D., Esser, P., &amp; Ommer, B. (2022). <strong>High-Resolution Image Synthesis with Latent Diffusion Models.</strong> <a href="https://arxiv.org/abs/2112.10752" target="_blank">arXiv:2112.10752</a></li>
+      <li>Ramesh, A., Dhariwal, P., Nichol, A., Chu, C., &amp; Chen, M. (2022). <strong>Hierarchical Text-Conditional Image Generation with CLIP Latents.</strong> <a href="https://arxiv.org/abs/2204.06125" target="_blank">arXiv:2204.06125</a></li>
+      <li>Saharia, C., Chan, W., Saxena, S., et al. (2022). <strong>Photorealistic Text-to-Image Diffusion Models with Deep Language Understanding.</strong> <a href="https://arxiv.org/abs/2205.11487" target="_blank">arXiv:2205.11487</a></li>
+      <li>Blattmann, A., Dockhorn, T., Kulal, S., et al. (2023). <strong>Stable Video Diffusion: Scaling Latent Video Diffusion Models to Large Datasets.</strong> <a href="https://arxiv.org/abs/2311.15127" target="_blank">arXiv:2311.15127</a></li>
+      <li>Ronneberger, O., et al. (2015). <strong>U-Net: Convolutional Networks for Biomedical Image Segmentation.</strong> MICCAI 2015. <a href="https://doi.org/10.1007/978-3-319-24574-4_28" target="_blank">DOI:10.1007/978-3-319-24574-4_28</a></li>
+    </ol>
+
+    <div class="chapter-nav">
+      <a href="ch11-practice.html">&larr; 上一章：动手实践</a>
+      <a href="index.html">返回课程首页 &rarr;</a>
+    </div>
+  </div>
+
+  <script src="assets/js/common.js"></script>
+  <script>if(typeof renderMathInElement==='function')renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}]});</script>
+
+  <script>
+  // Theme color helper
+  function tc(varName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  }
+
+  // ============================================================
+  // DEMO 1: Evolution Tree
+  // ============================================================
+  (function() {
+    var canvas = document.getElementById('tree-canvas');
+    var ctx = canvas.getContext('2d');
+    var W = 860, H = 600;
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+
+    // Node data
+    var nodes = [
+      // Root
+      { id: 'unet', x: 430, y: 50, label: 'UNet', year: '2015', color: '#4a6cf7', r: 32,
+        info: '<strong>U-Net</strong> (Ronneberger et al., 2015)<br>原始 UNet：编码器-解码器 + 跳跃连接<br>用于生物医学图像分割' },
+      // Branch 1: 3D
+      { id: '3dunet', x: 130, y: 170, label: '3D U-Net', year: '2016', color: '#06b6d4', r: 26,
+        info: '<strong>3D U-Net</strong> (&Ccedil;i&ccedil;ek et al., 2016)<br>将 UNet 扩展到 3D 卷积<br>适用于体积医学数据（CT/MRI）' },
+      { id: 'vnet', x: 290, y: 170, label: 'V-Net', year: '2016', color: '#06b6d4', r: 26,
+        info: '<strong>V-Net</strong> (Milletari et al., 2016)<br>3D UNet + 残差连接 + Dice Loss<br>前列腺分割基准' },
+      // Branch 2: Structural
+      { id: 'unetpp', x: 450, y: 170, label: 'UNet++', year: '2018', color: '#22c55e', r: 26,
+        info: '<strong>UNet++</strong> (Zhou et al., 2018)<br>密集跳跃路径，嵌套子网络<br>弥合编码器-解码器语义差距' },
+      { id: 'attunet', x: 600, y: 170, label: 'Attn U-Net', year: '2018', color: '#22c55e', r: 26,
+        info: '<strong>Attention U-Net</strong> (Oktay et al., 2018)<br>注意力门控，聚焦关键区域<br>抑制无关特征' },
+      // Branch 3: Automation
+      { id: 'nnunet', x: 750, y: 170, label: 'nnU-Net', year: '2021', color: '#f59e0b', r: 26,
+        info: '<strong>nnU-Net</strong> (Isensee et al., 2021)<br>自适应框架，自动配置训练流程<br>多个基准 SOTA' },
+      // Branch 4: Transformer
+      { id: 'transunet', x: 200, y: 320, label: 'TransUNet', year: '2021', color: '#c084fc', r: 26,
+        info: '<strong>TransUNet</strong> (Chen et al., 2021)<br>ViT 编码器 + CNN 解码器混合<br>全局+局部特征融合' },
+      { id: 'swinunet', x: 430, y: 320, label: 'Swin-UNet', year: '2022', color: '#c084fc', r: 26,
+        info: '<strong>Swin-UNet</strong> (Cao et al., 2022)<br>纯 Transformer UNet<br>窗口注意力机制' },
+      { id: 'unetr', x: 660, y: 320, label: 'UNETR', year: '2022', color: '#c084fc', r: 26,
+        info: '<strong>UNETR</strong> (Hatamizadeh et al., 2022)<br>ViT 编码器用于 3D 医学分割<br>多尺度特征融合' },
+      // Branch 5: Generative
+      { id: 'sd', x: 280, y: 470, label: 'Stable Diff.', year: '2022', color: '#ef4444', r: 26,
+        info: '<strong>Stable Diffusion</strong> (Rombach et al., 2022)<br>潜空间扩散模型<br>UNet 作为去噪骨干网络' },
+      { id: 'dalle2', x: 430, y: 470, label: 'DALL-E 2', year: '2022', color: '#ef4444', r: 26,
+        info: '<strong>DALL-E 2</strong> (Ramesh et al., 2022)<br>CLIP 条件 + 扩散解码<br>文本到图像生成' },
+      { id: 'imagen', x: 580, y: 470, label: 'Imagen', year: '2022', color: '#ef4444', r: 26,
+        info: '<strong>Imagen</strong> (Saharia et al., 2022)<br>大语言模型编码文本 + 级联扩散<br>高保真文本到图像' }
+    ];
+
+    // Connections
+    var edges = [
+      { from: 'unet', to: '3dunet' }, { from: 'unet', to: 'vnet' },
+      { from: 'unet', to: 'unetpp' }, { from: 'unet', to: 'attunet' },
+      { from: 'unet', to: 'nnunet' },
+      { from: 'unet', to: 'transunet' }, { from: 'unet', to: 'swinunet' }, { from: 'unet', to: 'unetr' },
+      { from: 'unet', to: 'sd' }, { from: 'unet', to: 'dalle2' }, { from: 'unet', to: 'imagen' }
+    ];
+
+    // Branch labels
+    var branchLabels = [
+      { x: 70, y: 135, text: '3D 扩展', color: '#06b6d4' },
+      { x: 520, y: 135, text: '结构改进', color: '#22c55e' },
+      { x: 750, y: 135, text: '自动化', color: '#f59e0b' },
+      { x: 430, y: 280, text: 'Transformer 融合', color: '#c084fc' },
+      { x: 430, y: 430, text: '生成模型', color: '#ef4444' }
+    ];
+
+    function nodeById(id) {
+      for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].id === id) return nodes[i];
+      }
+      return null;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Draw edges
+      for (var i = 0; i < edges.length; i++) {
+        var from = nodeById(edges[i].from);
+        var to = nodeById(edges[i].to);
+        if (!from || !to) continue;
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y + from.r);
+        // Bezier curve for nice routing
+        var midY = (from.y + from.r + to.y - to.r) / 2;
+        ctx.bezierCurveTo(from.x, midY, to.x, midY, to.x, to.y - to.r);
+        ctx.strokeStyle = 'rgba(100,120,160,0.25)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // Draw branch labels
+      ctx.font = '600 12px Inter';
+      ctx.textAlign = 'center';
+      for (var i = 0; i < branchLabels.length; i++) {
+        var bl = branchLabels[i];
+        ctx.fillStyle = bl.color;
+        ctx.fillText(bl.text, bl.x, bl.y);
+      }
+
+      // Draw nodes
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        // Circle
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+        ctx.fillStyle = n.color + '22';
+        ctx.fill();
+        ctx.strokeStyle = n.color;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Label
+        ctx.fillStyle = tc('--text');
+        ctx.font = (n.id === 'unet' ? '700' : '600') + ' ' + (n.id === 'unet' ? '12' : '10') + 'px Inter';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(n.label, n.x, n.y - 4);
+
+        // Year
+        ctx.fillStyle = tc('--text-muted');
+        ctx.font = '400 9px JetBrains Mono';
+        ctx.fillText(n.year, n.x, n.y + 10);
+      }
+    }
+
+    draw();
+
+    // Tooltip
+    var tooltip = document.getElementById('tree-tooltip');
+    var hoverNode = null;
+
+    function getHoveredNode(mx, my) {
+      for (var i = 0; i < nodes.length; i++) {
+        var n = nodes[i];
+        var dx = mx - n.x, dy = my - n.y;
+        if (dx * dx + dy * dy <= n.r * n.r) return n;
+      }
+      return null;
+    }
+
+    canvas.addEventListener('mousemove', function(e) {
+      var rect = canvas.getBoundingClientRect();
+      var mx = (e.clientX - rect.left) * (W / rect.width);
+      var my = (e.clientY - rect.top) * (H / rect.height);
+      var node = getHoveredNode(mx, my);
+      if (node) {
+        if (!hoverNode || hoverNode.id !== node.id) {
+          hoverNode = node;
+          draw();
+          // Highlight hovered node
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, node.r + 3, 0, Math.PI * 2);
+          ctx.strokeStyle = tc('--text');
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          tooltip.innerHTML = node.info;
+          tooltip.style.display = 'block';
+        }
+        tooltip.style.left = (e.clientX + 15) + 'px';
+        tooltip.style.top = (e.clientY - 10) + 'px';
+      } else if (hoverNode) {
+        hoverNode = null;
+        draw();
+        tooltip.style.display = 'none';
+      }
+    });
+
+    canvas.addEventListener('mouseleave', function() {
+      hoverNode = null;
+      draw();
+      tooltip.style.display = 'none';
+    });
+  })();
+
+  // ============================================================
+  // DEMO 2: Diffusion Process Visualization
+  // ============================================================
+  (function() {
+    var canvas = document.getElementById('diffusion-canvas');
+    var ctx = canvas.getContext('2d');
+    var W = 860, H = 220;
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+
+    var steps = 7;
+    var imgSize = 120;
+    var margin = 20;
+    var totalW = steps * (imgSize + margin) - margin;
+    var startX = (W - totalW) / 2;
+
+    // Generate a simple "image" pattern (heart shape on grid)
+    var gridN = 24;
+    var baseImage = [];
+    for (var r = 0; r < gridN; r++) {
+      baseImage[r] = [];
+      for (var c = 0; c < gridN; c++) {
+        // Heart shape
+        var nx = (c - gridN/2) / (gridN/3);
+        var ny = (r - gridN/2) / (gridN/3) - 0.3;
+        var heartEq = Math.pow(nx*nx + ny*ny - 1, 3) - nx*nx * ny*ny*ny;
+        baseImage[r][c] = heartEq < 0 ? 1 : 0;
+      }
+    }
+
+    // State: noiseLevel 0 = clean, 1 = pure noise
+    var currentNoise = 0;
+    var targetNoise = 0;
+    var animating = false;
+    var animDir = 0; // 1 = add noise, -1 = denoise
+
+    function generateNoisyImage(noiseLevel) {
+      var result = [];
+      // Use seeded random for consistency at same noise level
+      var seed = Math.floor(noiseLevel * 1000);
+      function seededRandom() {
+        seed = (seed * 9301 + 49297) % 233280;
+        return seed / 233280;
+      }
+      for (var r = 0; r < gridN; r++) {
+        result[r] = [];
+        for (var c = 0; c < gridN; c++) {
+          var clean = baseImage[r][c];
+          var noise = seededRandom();
+          result[r][c] = clean * (1 - noiseLevel) + noise * noiseLevel;
+        }
+      }
+      return result;
+    }
+
+    function drawImage(ctx, x, y, size, grid, label, noiseLevel, isUNet) {
+      var cellSize = size / gridN;
+      for (var r = 0; r < gridN; r++) {
+        for (var c = 0; c < gridN; c++) {
+          var v = grid[r][c];
+          var gray = Math.floor(v * 200 + 25);
+          ctx.fillStyle = 'rgb(' + gray + ',' + gray + ',' + gray + ')';
+          ctx.fillRect(x + c * cellSize, y + r * cellSize, cellSize - 0.5, cellSize - 0.5);
+        }
+      }
+
+      // Border
+      ctx.strokeStyle = isUNet ? '#4a6cf7' : tc('--border');
+      ctx.lineWidth = isUNet ? 2.5 : 1.5;
+      ctx.strokeRect(x, y, size, size);
+
+      // UNet icon
+      if (isUNet) {
+        ctx.fillStyle = '#4a6cf7';
+        ctx.font = '600 10px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText('UNet', x + size/2, y + size + 14);
+      }
+
+      // Step label
+      ctx.fillStyle = tc('--text-muted');
+      ctx.font = '400 10px JetBrains Mono';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x + size/2, y - 8);
+
+      // Noise level indicator
+      var pct = Math.round(noiseLevel * 100);
+      ctx.fillStyle = noiseLevel > 0.5 ? '#ef4444' : noiseLevel > 0 ? '#f59e0b' : '#22c55e';
+      ctx.font = '500 9px JetBrains Mono';
+      ctx.fillText(pct + '%', x + size/2, y + size + 28);
+    }
+
+    function drawArrow(x1, y1, x2, y2, color) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      var angle = Math.atan2(y2 - y1, x2 - x1);
+      var hl = 6;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - hl * Math.cos(angle - 0.4), y2 - hl * Math.sin(angle - 0.4));
+      ctx.lineTo(x2 - hl * Math.cos(angle + 0.4), y2 - hl * Math.sin(angle + 0.4));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      var midY = H / 2 + 5;
+
+      // Title
+      ctx.fillStyle = tc('--text-muted');
+      ctx.font = '600 12px Inter';
+      ctx.textAlign = 'center';
+      ctx.fillText(currentNoise < 0.5 ? '前向过程（加噪）' : currentNoise > 0.5 ? '反向过程（去噪）' : '扩散过程', W/2, 16);
+
+      // Draw images at each step
+      for (var i = 0; i < steps; i++) {
+        var stepNoise = currentNoise * (i / (steps - 1));
+        // For denoise: reverse
+        if (animDir === -1) {
+          stepNoise = currentNoise * (1 - i / (steps - 1));
+        }
+        var x = startX + i * (imgSize + margin);
+        var grid = generateNoisyImage(stepNoise);
+        var isUNet = (i > 0 && i < steps - 1 && currentNoise > 0.1);
+        var label = i === 0 ? (animDir === -1 ? 'x_t' : 'x_0 (原始)') :
+                    i === steps - 1 ? (animDir === -1 ? 'x_0 (恢复)' : 'x_T (噪声)') :
+                    't=' + i;
+        drawImage(ctx, x, midY - imgSize/2, imgSize, grid, label, stepNoise, isUNet);
+
+        // Arrows between images
+        if (i < steps - 1) {
+          var arrowX1 = x + imgSize + 3;
+          var arrowX2 = x + imgSize + margin - 3;
+          drawArrow(arrowX1, midY, arrowX2, midY, animDir === -1 ? '#22c55e' : '#ef4444');
+        }
+      }
+
+      // Labels
+      var firstX = startX + imgSize/2;
+      var lastX = startX + (steps-1) * (imgSize + margin) + imgSize/2;
+      ctx.font = '400 10px Inter';
+      ctx.fillStyle = '#22c55e';
+      ctx.fillText('清晰', firstX, midY + imgSize/2 + 38);
+      ctx.fillStyle = '#ef4444';
+      ctx.fillText('噪声', lastX, midY + imgSize/2 + 38);
+    }
+
+    draw();
+
+    var animTimer = null;
+
+    function animateTo(target, dir) {
+      if (animTimer) clearInterval(animTimer);
+      targetNoise = target;
+      animDir = dir;
+      animating = true;
+      animTimer = setInterval(function() {
+        if (dir === 1) {
+          currentNoise += 0.02;
+          if (currentNoise >= target) { currentNoise = target; clearInterval(animTimer); animating = false; }
+        } else {
+          currentNoise -= 0.02;
+          if (currentNoise <= target) { currentNoise = target; clearInterval(animTimer); animating = false; }
+        }
+        draw();
+      }, 40);
+    }
+
+    document.getElementById('btn-add-noise').addEventListener('click', function() {
+      animateTo(1, 1);
+    });
+
+    document.getElementById('btn-denoise').addEventListener('click', function() {
+      if (currentNoise < 0.1) currentNoise = 1;
+      animateTo(0, -1);
+    });
+
+    document.getElementById('btn-reset-diff').addEventListener('click', function() {
+      if (animTimer) clearInterval(animTimer);
+      currentNoise = 0;
+      animDir = 0;
+      animating = false;
+      draw();
+    });
+  })();
+
+  // ============================================================
+  // DEMO 3: Variant Comparison
+  // ============================================================
+  (function() {
+    var variants = {
+      unet: {
+        name: 'UNet (2015)',
+        arch: 'CNN 编码器-解码器',
+        skip: '直接跳跃连接（Concatenation）',
+        innovation: 'U 形架构 + 跳跃连接',
+        use: '生物医学图像分割',
+        dim: '2D',
+        params: '~31M'
+      },
+      unetpp: {
+        name: 'UNet++ (2018)',
+        arch: '嵌套 CNN 编码器-解码器',
+        skip: '密集跳跃路径（多层卷积）',
+        innovation: '弥合编码器-解码器语义差距',
+        use: '医学图像分割',
+        dim: '2D',
+        params: '~9M（可剪枝）'
+      },
+      attunet: {
+        name: 'Attention U-Net (2018)',
+        arch: 'CNN + 注意力门控',
+        skip: '注意力加权跳跃连接',
+        innovation: '注意力门控聚焦关键区域',
+        use: '器官/胰腺分割',
+        dim: '2D',
+        params: '~35M'
+      },
+      nnunet: {
+        name: 'nnU-Net (2021)',
+        arch: '自适应（2D/3D/cascade）',
+        skip: '标准跳跃连接',
+        innovation: '自动配置整个训练流程',
+        use: '通用医学分割基准',
+        dim: '自适应',
+        params: '可变'
+      },
+      '3dunet': {
+        name: '3D U-Net (2016)',
+        arch: '3D CNN 编码器-解码器',
+        skip: '3D 跳跃连接',
+        innovation: '扩展到 3D 体积数据',
+        use: 'CT/MRI 体积分割',
+        dim: '3D',
+        params: '~15M'
+      },
+      vnet: {
+        name: 'V-Net (2016)',
+        arch: '3D CNN + 残差连接',
+        skip: '残差跳跃连接',
+        innovation: '残差学习 + Dice Loss',
+        use: '前列腺/器官分割',
+        dim: '3D',
+        params: '~30M'
+      },
+      transunet: {
+        name: 'TransUNet (2021)',
+        arch: 'ViT 编码器 + CNN 解码器',
+        skip: 'CNN 跳跃连接 + ViT 特征',
+        innovation: 'Transformer + CNN 混合',
+        use: '多器官分割',
+        dim: '2D',
+        params: '~105M'
+      },
+      swinunet: {
+        name: 'Swin-UNet (2022)',
+        arch: '纯 Swin Transformer',
+        skip: 'Transformer 跳跃连接',
+        innovation: '纯 Transformer U 形架构',
+        use: '医学图像分割',
+        dim: '2D',
+        params: '~27M'
+      },
+      unetr: {
+        name: 'UNETR (2022)',
+        arch: 'ViT 编码器 + CNN 解码器',
+        skip: '多尺度 Transformer 特征',
+        innovation: 'Transformer 用于 3D 分割',
+        use: '3D 医学分割（BTCV）',
+        dim: '3D',
+        params: '~102M'
+      }
+    };
+
+    var fields = [
+      { key: 'arch', label: '架构类型' },
+      { key: 'skip', label: '跳跃连接方式' },
+      { key: 'innovation', label: '核心创新' },
+      { key: 'use', label: '典型应用' },
+      { key: 'dim', label: '维度' },
+      { key: 'params', label: '参数量' }
+    ];
+
+    function renderComparison() {
+      var keyA = document.getElementById('compare-a').value;
+      var keyB = document.getElementById('compare-b').value;
+      var a = variants[keyA], b = variants[keyB];
+      var html = '';
+      for (var i = 0; i < fields.length; i++) {
+        var f = fields[i];
+        html += '<div class="compare-col">' +
+          '<h4>' + a.name + '</h4>' +
+          '<dl><dt>' + f.label + '</dt><dd>' + a[f.key] + '</dd></dl>' +
+          '</div>' +
+          '<div class="compare-col">' +
+          '<h4>' + b.name + '</h4>' +
+          '<dl><dt>' + f.label + '</dt><dd>' + b[f.key] + '</dd></dl>' +
+          '</div>';
+      }
+      document.getElementById('compare-result').innerHTML = html;
+    }
+
+    document.getElementById('compare-a').addEventListener('change', renderComparison);
+    document.getElementById('compare-b').addEventListener('change', renderComparison);
+    renderComparison();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNet 架构 - 从零到 UNet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    .content-wrap {
+      max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem;
+    }
+    .chapter-header { text-align: center; padding: 3rem 0 2rem; }
+    .chapter-header .chapter-num {
+      font-size: 0.85rem; color: var(--primary);
+      text-transform: uppercase; letter-spacing: 3px; margin-bottom: 0.5rem;
+    }
+    .chapter-header h1 { font-size: 2.2rem; font-weight: 700; color: var(--text); margin: 0; }
+    h2 {
+      font-size: 1.5rem; font-weight: 600; color: var(--text);
+      margin-top: 2.5rem; margin-bottom: 1rem;
+      border-left: 4px solid var(--primary); padding-left: 0.75rem;
+    }
+    h3 { font-size: 1.15rem; font-weight: 600; color: var(--primary); margin-top: 1.5rem; }
+    p { margin: 1rem 0; color: var(--text-secondary); }
+    strong { color: var(--text); }
+    ul { padding-left: 1.5rem; }
+    ul li { margin: 0.5rem 0; color: var(--text-secondary); }
+    ul li strong { color: var(--text); }
+
+    .demo-box {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem; margin: 2rem 0;
+    }
+    .demo-box h3 { color: var(--primary); font-size: 1rem; margin: 0 0 1rem; }
+    .demo-box canvas { display: block; margin: 0 auto; max-width: 100%; border-radius: 8px; }
+
+    .btn-row { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+    .btn {
+      padding: 0.55rem 1.2rem; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--bg-secondary); color: var(--text-secondary); cursor: pointer;
+      font-family: var(--font-sans); font-size: 0.9rem; font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn:hover { border-color: var(--primary); color: var(--text); }
+    .btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .hint { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
+
+    table {
+      width: 100%; border-collapse: collapse; margin: 1.5rem 0;
+      font-size: 0.9rem; background: var(--bg-secondary); border-radius: 10px; overflow: hidden;
+    }
+    th, td {
+      padding: 0.6rem 1rem; text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th { background: var(--bg-tertiary); color: var(--primary); font-weight: 600; }
+    td { color: var(--text-secondary); }
+
+    .math-block {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem; margin: 2rem 0;
+      text-align: center; font-size: 1.2rem;
+    }
+    .math-block .label {
+      font-size: 0.85rem; color: var(--primary); margin-bottom: 0.5rem;
+    }
+
+    .analogy-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--primary); border-radius: 12px;
+      padding: 1.5rem; margin: 2rem 0;
+    }
+    .analogy-box h4 { color: var(--primary); margin: 0 0 0.5rem; }
+    .analogy-box p { color: var(--text-secondary); margin: 0; }
+
+    .variant-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem; margin: 1.5rem 0;
+    }
+    .variant-card {
+      background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.2rem; transition: border-color 0.3s;
+    }
+    .variant-card:hover { border-color: var(--primary); }
+    .variant-card .name { color: var(--text); font-weight: 600; font-size: 0.95rem; }
+    .variant-card .desc { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem; }
+
+    .app-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem; margin: 1.5rem 0;
+    }
+    .app-card {
+      background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.2rem; text-align: center; transition: border-color 0.3s;
+    }
+    .app-card:hover { border-color: var(--primary); }
+    .app-card .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .app-card .name { color: var(--text); font-weight: 600; font-size: 0.9rem; }
+    .app-card .desc { color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem; }
+
+    .chapter-nav {
+      display: flex; justify-content: space-between;
+      margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);
+    }
+    .chapter-nav a {
+      color: var(--primary); text-decoration: none; font-weight: 600; transition: color 0.2s;
+    }
+    .chapter-nav a:hover { color: var(--primary-dark, #6b8cff); }
+
+    @media (max-width: 600px) {
+      .variant-grid, .app-grid { grid-template-columns: 1fr 1fr; }
+      .btn-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav"><div class="nav-inner"><a href="index.html" class="nav-brand">从零到 UNet</a><ul class="nav-links"><li><a href="ch01-what-is-dl.html">Ch1</a></li><li><a href="ch02-perceptron.html">Ch2</a></li><li><a href="ch03-mlp.html">Ch3</a></li><li><a href="ch04-activation.html">Ch4</a></li><li><a href="ch05-loss.html">Ch5</a></li><li><a href="ch06-optimization.html">Ch6</a></li><li><a href="ch07-backprop.html">Ch7</a></li><li><a href="ch08-cnn.html">Ch8</a></li><li><a href="ch09-encoder-decoder.html">Ch9</a></li><li><a href="ch10-unet.html" class="active">Ch10</a></li><li><a href="ch11-practice.html">Ch11</a></li><li><a href="ch12-unet-variants.html">Ch12</a></li></ul></div></nav>
+
+  <div class="content-wrap">
+    <header class="chapter-header">
+      <div class="chapter-num">Chapter 10</div>
+      <h1>第 10 章 &middot; UNet 架构</h1>
+    </header>
+
+    <p>2015 年，Olaf Ronneberger 等人发表了论文 <strong>"U-Net: Convolutional Networks for Biomedical Image Segmentation"</strong>，提出了一个优雅而强大的编码器-解码器架构。UNet 因其 U 形结构而得名，如今已成为图像分割领域最具影响力的架构之一。</p>
+
+    <figure class="figure">
+      <img src="https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/u-net-architecture.png" alt="U-Net架构图" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;">
+      <figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">
+        图: U-Net 架构（Ronneberger et al., 2015）——经典的 U 形编码器-解码器结构，蓝色箭头为跳跃连接。来源: <a href="https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/" target="_blank">Olaf Ronneberger et al., U-Net: Convolutional Networks for Biomedical Image Segmentation (2015)</a>
+      </figcaption>
+    </figure>
+
+    <!-- ===== INTERACTIVE DEMO 1: UNet Architecture ===== -->
+    <div class="demo-box">
+      <h3>UNet 架构全景图</h3>
+      <canvas id="unet-canvas" width="880" height="520"></canvas>
+      <div class="btn-row">
+        <button class="btn" id="btn-encoder">编码</button>
+        <button class="btn" id="btn-decoder">解码</button>
+        <button class="btn" id="btn-skip">跳跃连接</button>
+        <button class="btn" id="btn-reset">重置</button>
+      </div>
+      <p class="hint">将鼠标悬停在各个模块上查看详细信息</p>
+      <div id="unet-tooltip" style="display:none; position:fixed; background:var(--bg-tertiary); border:1px solid var(--primary); border-radius:8px; padding:0.75rem 1rem; font-size:0.85rem; color:var(--text); pointer-events:none; z-index:999; max-width:260px; box-shadow:0 4px 20px rgba(0,0,0,0.4);"></div>
+    </div>
+
+    <!-- ===== Text: U-shaped architecture ===== -->
+    <h2>U 形架构</h2>
+    <p>UNet 的整体结构呈字母 <strong>U</strong> 的形状。左侧是<strong>编码器（Contracting Path）</strong>，负责逐步提取高层次特征；右侧是<strong>解码器（Expansive Path）</strong>，负责逐步恢复空间分辨率；中间通过<strong>跳跃连接（Skip Connections）</strong>将编码器的细节信息传递给解码器。</p>
+
+    <!-- ===== Architecture dimensions table ===== -->
+    <h2>架构参数表</h2>
+    <table>
+      <thead>
+        <tr><th>层级</th><th>编码器输出</th><th>瓶颈层</th><th>解码器输出</th><th>跳跃连接</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Level 1</td><td>64 通道</td><td>-</td><td>64 通道</td><td style="color:#22c55e;">&#10003;</td></tr>
+        <tr><td>Level 2</td><td>128 通道</td><td>-</td><td>128 通道</td><td style="color:#22c55e;">&#10003;</td></tr>
+        <tr><td>Level 3</td><td>256 通道</td><td>-</td><td>256 通道</td><td style="color:#22c55e;">&#10003;</td></tr>
+        <tr><td>Level 4</td><td>512 通道</td><td>-</td><td>512 通道</td><td style="color:#22c55e;">&#10003;</td></tr>
+        <tr><td>Level 5 (瓶颈)</td><td>-</td><td>1024 通道</td><td>-</td><td style="color:var(--text-muted);">-</td></tr>
+      </tbody>
+    </table>
+
+    <h2>编码器路径</h2>
+    <p>编码器的每一层包含以下操作：</p>
+    <ul>
+      <li><strong>两次 3&times;3 卷积</strong> + ReLU 激活</li>
+      <li><strong>2&times;2 最大池化</strong>（stride=2），将空间尺寸减半</li>
+      <li>每次池化后通道数翻倍（64 &rarr; 128 &rarr; 256 &rarr; 512）</li>
+    </ul>
+    <p>编码器逐步压缩空间信息，提取越来越抽象的语义特征，但代价是丢失了精确的位置信息。</p>
+
+    <h2>解码器路径</h2>
+    <p>解码器的每一层包含以下操作：</p>
+    <ul>
+      <li><strong>2&times;2 上卷积（Up-convolution）</strong>，将空间尺寸翻倍，通道数减半</li>
+      <li><strong>拼接（Concatenation）</strong>来自编码器对应层的特征图（跳跃连接）</li>
+      <li><strong>两次 3&times;3 卷积</strong> + ReLU 激活</li>
+    </ul>
+    <p>解码器逐步恢复空间分辨率，同时利用跳跃连接弥补因下采样丢失的细节。</p>
+
+    <h2>跳跃连接</h2>
+    <p>跳跃连接是 UNet 的核心创新。它们将编码器在每个分辨率层级的特征图直接复制并拼接到解码器的对应层级。这样做有两个关键好处：</p>
+    <ul>
+      <li><strong>保留空间细节</strong>：编码器中早期层保留了精确的边缘和纹理信息，这些信息在深层被压缩丢失</li>
+      <li><strong>梯度直通</strong>：为梯度提供了从输出直接流向浅层编码器的捷径，有助于训练</li>
+    </ul>
+
+    <!-- ===== INTERACTIVE DEMO 2: Skip Connection Effect ===== -->
+    <div class="demo-box">
+      <h3>跳跃连接的效果对比</h3>
+      <div style="display:flex; gap:1.5rem; justify-content:center; flex-wrap:wrap;">
+        <div style="text-align:center;">
+          <canvas id="skip-off-canvas" width="260" height="260"></canvas>
+          <div style="font-size:0.85rem; color:#ef4444; margin-top:0.5rem; font-weight:600;">无跳跃连接</div>
+        </div>
+        <div style="text-align:center;">
+          <canvas id="skip-on-canvas" width="260" height="260"></canvas>
+          <div style="font-size:0.85rem; color:#22c55e; margin-top:0.5rem; font-weight:600;">有跳跃连接</div>
+        </div>
+      </div>
+      <p class="hint">观察左侧（无跳跃连接）丢失了边缘细节，右侧（有跳跃连接）保留了清晰的边缘</p>
+    </div>
+
+    <h2>拼接 vs 相加</h2>
+    <p>UNet 使用<strong>拼接（Concatenation）</strong>将编码器和解码器的特征图组合在一起，而 ResNet 使用<strong>相加（Element-wise Addition）</strong>。两种方式的区别：</p>
+    <ul>
+      <li><strong>拼接</strong>：保留所有信息，通道数增加，参数量更大</li>
+      <li><strong>相加</strong>：要求通道数相同，信息被压缩融合，参数量更少</li>
+    </ul>
+    <p>UNet 选择拼接是因为在分割任务中，精确的空间细节至关重要，不能被压缩。</p>
+
+    <h2>输出层</h2>
+    <p>在解码器的最后一层之后，UNet 使用一个 <strong>1&times;1 卷积</strong>将最终的 64 通道特征图映射到所需的类别数。对于二值分割，输出是 1 个通道，经过 Sigmoid 激活得到每个像素属于前景的概率。</p>
+
+    <div class="math-block">
+      <div class="label">输出映射</div>
+      $$\text{output} = \text{Sigmoid}(\text{Conv}_{1\times1}(F_{64})) \in \mathbb{R}^{1 \times H \times W}$$
+    </div>
+
+    <h2>应用场景</h2>
+    <div class="app-grid">
+      <div class="app-card">
+        <div class="icon">&#129657;</div>
+        <div class="name">医学影像</div>
+        <div class="desc">器官分割、肿瘤检测、细胞分析</div>
+      </div>
+      <div class="app-card">
+        <div class="icon">&#127758;</div>
+        <div class="name">卫星图像</div>
+        <div class="desc">土地利用分类、建筑物提取</div>
+      </div>
+      <div class="app-card">
+        <div class="icon">&#127912;</div>
+        <div class="name">Stable Diffusion</div>
+        <div class="desc">UNet 作为去噪网络核心</div>
+      </div>
+      <div class="app-card">
+        <div class="icon">&#128663;</div>
+        <div class="name">自动驾驶</div>
+        <div class="desc">道路分割、行人检测</div>
+      </div>
+    </div>
+
+    <h2>UNet 变体</h2>
+    <div class="variant-grid">
+      <div class="variant-card">
+        <div class="name">UNet++</div>
+        <div class="desc">密集跳跃连接，嵌套的编码器-解码器子网络</div>
+      </div>
+      <div class="variant-card">
+        <div class="name">Attention UNet</div>
+        <div class="desc">在跳跃连接中加入注意力门控，聚焦关键区域</div>
+      </div>
+      <div class="variant-card">
+        <div class="name">3D UNet</div>
+        <div class="desc">扩展到三维卷积，适用于体积医学数据（如 CT/MRI）</div>
+      </div>
+      <div class="variant-card">
+        <div class="name">nnU-Net</div>
+        <div class="desc">自适应框架，自动配置网络结构和训练策略</div>
+      </div>
+    </div>
+
+    <div class="analogy-box">
+      <h4>类比理解</h4>
+      <p>想象你有一张高分辨率照片，你先压缩成低分辨率版本以节省存储空间（编码器）。但压缩会丢失细节。跳跃连接就像在压缩时同时保留一份原始高分辨率照片的副本（在每个压缩级别），这样在解压时（解码器）可以随时参考原始照片来恢复细节。</p>
+    </div>
+
+    <div class="chapter-nav">
+      <a href="ch09-encoder-decoder.html">&larr; 上一章：编码器-解码器</a>
+      <a href="ch11-practice.html">下一章：动手实践 &rarr;</a>
+    </div>
+  </div>
+
+  <script src="assets/js/common.js"></script>
+  <script>if(typeof renderMathInElement==='function')renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}]});</script>
+
+  <script>
+  // Theme color helper — reads CSS variables so canvas adapts to light/dark mode
+  function tc(varName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  }
+
+  // ============================================================
+  // DEMO 1: UNet Architecture Diagram
+  // ============================================================
+  (function() {
+    var canvas = document.getElementById('unet-canvas');
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    var dpr = window.devicePixelRatio || 1;
+
+    // High-DPI setup
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+
+    var hoverBlock = null;
+    var animEncoder = -1;  // -1 = not animating, 0..3 = current step
+    var animDecoder = -1;
+    var animSkip = -1;
+    var animTimer = null;
+
+    // Layout parameters
+    var levels = [
+      { encX: 60,  decX: 700, w: 100, y: 40,  h: 70,  ch: 64,   spatial: '256', label: 'Level 1' },
+      { encX: 60,  decX: 700, w: 80,  y: 130, h: 60,  ch: 128,  spatial: '128', label: 'Level 2' },
+      { encX: 60,  decX: 700, w: 60,  y: 210, h: 50,  ch: 256,  spatial: '64',  label: 'Level 3' },
+      { encX: 60,  decX: 700, w: 40,  y: 280, h: 40,  ch: 512,  spatial: '32',  label: 'Level 4' }
+    ];
+    var bottle = { x: 340, y: 350, w: 200, h: 50, ch: 1024, spatial: '16' };
+
+    // Encoder blocks (each level has 2 conv blocks stacked)
+    function encBlock(i) {
+      var lv = levels[i];
+      return { x: lv.encX, y: lv.y, w: lv.w, h: lv.h };
+    }
+    function decBlock(i) {
+      var lv = levels[i];
+      return { x: lv.decX, y: lv.y, w: lv.w, h: lv.h };
+    }
+
+    function drawBlock(x, y, w, h, color, borderColor, highlight) {
+      ctx.fillStyle = highlight ? lighten(color, 0.3) : color;
+      ctx.strokeStyle = highlight ? tc('--text') : borderColor;
+      ctx.lineWidth = highlight ? 3 : 1.5;
+      roundRect(ctx, x, y, w, h, 6);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    function lighten(hex, amt) {
+      var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+      r = Math.min(255, r + Math.floor((255 - r) * amt));
+      g = Math.min(255, g + Math.floor((255 - g) * amt));
+      b = Math.min(255, b + Math.floor((255 - b) * amt));
+      return '#' + [r,g,b].map(function(v){ return v.toString(16).padStart(2,'0'); }).join('');
+    }
+
+    function drawArrow(x1, y1, x2, y2, color, dashed, lw) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lw || 2;
+      if (dashed) ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      // arrowhead
+      var angle = Math.atan2(y2 - y1, x2 - x1);
+      var hl = 8;
+      ctx.setLineDash([]);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - hl * Math.cos(angle - 0.4), y2 - hl * Math.sin(angle - 0.4));
+      ctx.lineTo(x2 - hl * Math.cos(angle + 0.4), y2 - hl * Math.sin(angle + 0.4));
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Title
+      ctx.font = '600 13px Inter';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = tc('--text-muted');
+      ctx.fillText('编码器 (Encoder)', 110, 20);
+      ctx.fillText('瓶颈层 (Bottleneck)', bottle.x + bottle.w / 2, bottle.y - 12);
+      ctx.fillText('解码器 (Decoder)', 750, 20);
+
+      // Draw skip connection arrows (behind blocks)
+      var skipColors = ['#f59e0b', '#fb923c', '#f97316', '#ea580c'];
+      for (var i = 0; i < 4; i++) {
+        var lv = levels[i];
+        var ey = lv.y + lv.h / 2;
+        var isSkipHighlighted = (animSkip >= 0 && i <= animSkip);
+        var skipAlpha = (animSkip >= 0 && i > animSkip) ? 0.15 : 0.7;
+        ctx.globalAlpha = skipAlpha;
+        drawArrow(lv.encX + lv.w + 4, ey, lv.decX - 4, ey, skipColors[i], false, isSkipHighlighted ? 3 : 2);
+        ctx.globalAlpha = 1;
+      }
+
+      // Encoder blocks
+      var encColors = ['#1e3a5f', '#1e3a6f', '#1e3a7f', '#1e3a8f'];
+      var encBorders = ['#3b82f6', '#2563eb', '#1d4ed8', '#1e40af'];
+      for (var i = 0; i < 4; i++) {
+        var b = encBlock(i);
+        var isActive = (animEncoder >= 0 && i <= animEncoder);
+        var isDimmed = (animEncoder >= 0 && i > animEncoder);
+        ctx.globalAlpha = isDimmed ? 0.2 : 1;
+        drawBlock(b.x, b.y, b.w, b.h, encColors[i], encBorders[i], isActive && animEncoder === i);
+        // Label
+        ctx.fillStyle = isActive ? tc('--text') : '#93c5fd';
+        ctx.font = '500 11px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText(levels[i].ch + 'ch', b.x + b.w / 2, b.y + b.h / 2 - 5);
+        ctx.font = '400 10px Inter';
+        ctx.fillStyle = tc('--text-muted');
+        ctx.fillText(levels[i].spatial + 'x' + levels[i].spatial, b.x + b.w / 2, b.y + b.h / 2 + 10);
+        ctx.globalAlpha = 1;
+
+        // Pooling arrow (down)
+        if (i < 3) {
+          var cx = b.x + b.w / 2;
+          drawArrow(cx, b.y + b.h + 4, cx, levels[i+1].y - 4, '#3b82f6', false, 1.5);
+          ctx.font = '400 9px JetBrains Mono';
+          ctx.fillStyle = tc('--text-muted');
+          ctx.textAlign = 'center';
+          ctx.fillText('pool', cx + 22, b.y + b.h + (levels[i+1].y - b.y - b.h) / 2 + 3);
+        }
+      }
+
+      // Bottleneck
+      var isBottleActive = (animEncoder >= 3);
+      var isBottleDimmed = (animEncoder >= 0 && animEncoder < 3);
+      ctx.globalAlpha = isBottleDimmed ? 0.2 : 1;
+      drawBlock(bottle.x, bottle.y, bottle.w, bottle.h, '#2d1b69', '#7c3aed', isBottleActive);
+      ctx.fillStyle = '#c4b5fd';
+      ctx.font = '500 12px Inter';
+      ctx.textAlign = 'center';
+      ctx.fillText('1024ch', bottle.x + bottle.w / 2, bottle.y + bottle.h / 2 - 5);
+      ctx.font = '400 10px Inter';
+      ctx.fillStyle = tc('--text-muted');
+      ctx.fillText('16x16', bottle.x + bottle.w / 2, bottle.y + bottle.h / 2 + 10);
+      ctx.globalAlpha = 1;
+
+      // Arrows from encoder last to bottleneck and bottleneck to decoder first
+      var lastEnc = encBlock(3);
+      drawArrow(lastEnc.x + lastEnc.w / 2, lastEnc.y + lastEnc.h + 4, bottle.x + 40, bottle.y - 4, '#6366f1', false, 1.5);
+      drawArrow(bottle.x + bottle.w - 40, bottle.y + bottle.h + 4, decBlock(3).x + decBlock(3).w / 2, decBlock(3).y - 4, '#8b5cf6', false, 1.5);
+
+      // Decoder blocks
+      var decColors = ['#14532d', '#166534', '#15803d', '#16a34a'];
+      var decBorders = ['#22c55e', '#16a34a', '#15803d', '#166534'];
+      for (var i = 0; i < 4; i++) {
+        var b = decBlock(i);
+        var isActive = (animDecoder >= 0 && i <= animDecoder);
+        var isDimmed = (animDecoder >= 0 && i > animDecoder);
+        ctx.globalAlpha = isDimmed ? 0.2 : 1;
+        drawBlock(b.x, b.y, b.w, b.h, decColors[i], decBorders[i], isActive && animDecoder === i);
+        ctx.fillStyle = isActive ? tc('--text') : '#86efac';
+        ctx.font = '500 11px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText(levels[i].ch + 'ch', b.x + b.w / 2, b.y + b.h / 2 - 5);
+        ctx.font = '400 10px Inter';
+        ctx.fillStyle = tc('--text-muted');
+        ctx.fillText(levels[i].spatial + 'x' + levels[i].spatial, b.x + b.w / 2, b.y + b.h / 2 + 10);
+        ctx.globalAlpha = 1;
+
+        // Upconv arrow
+        if (i < 3) {
+          var cx = b.x + b.w / 2;
+          drawArrow(cx, b.y - 4, cx, levels[i+1].y + levels[i+1].h + 4, '#22c55e', false, 1.5);
+          ctx.font = '400 9px JetBrains Mono';
+          ctx.fillStyle = tc('--text-muted');
+          ctx.textAlign = 'center';
+          ctx.fillText('upconv', cx + 26, levels[i+1].y + levels[i+1].h + (b.y - levels[i+1].y - levels[i+1].h) / 2 + 3);
+        }
+      }
+
+      // 1x1 conv output
+      var lastDec = decBlock(0);
+      drawArrow(lastDec.x + lastDec.w / 2, lastDec.y + lastDec.h + 4, lastDec.x + lastDec.w / 2, lastDec.y + lastDec.h + 30, '#a78bfa', false, 1.5);
+      roundRect(ctx, lastDec.x + lastDec.w / 2 - 30, lastDec.y + lastDec.h + 32, 60, 22, 4);
+      ctx.fillStyle = '#312e81';
+      ctx.fill();
+      ctx.strokeStyle = '#a78bfa';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = '#c4b5fd';
+      ctx.font = '500 10px Inter';
+      ctx.textAlign = 'center';
+      ctx.fillText('1x1 conv', lastDec.x + lastDec.w / 2, lastDec.y + lastDec.h + 47);
+    }
+
+    draw();
+
+    // Hover detection
+    function getHoveredBlock(mx, my) {
+      for (var i = 0; i < 4; i++) {
+        var eb = encBlock(i);
+        if (mx >= eb.x && mx <= eb.x + eb.w && my >= eb.y && my <= eb.y + eb.h) return { type: 'enc', idx: i };
+        var db = decBlock(i);
+        if (mx >= db.x && mx <= db.x + db.w && my >= db.y && my <= db.y + db.h) return { type: 'dec', idx: i };
+      }
+      if (mx >= bottle.x && mx <= bottle.x + bottle.w && my >= bottle.y && my <= bottle.y + bottle.h) return { type: 'bottle', idx: 0 };
+      return null;
+    }
+
+    var tooltip = document.getElementById('unet-tooltip');
+    canvas.addEventListener('mousemove', function(e) {
+      var rect = canvas.getBoundingClientRect();
+      var mx = (e.clientX - rect.left) * (W / rect.width);
+      var my = (e.clientY - rect.top) * (H / rect.height);
+      var hov = getHoveredBlock(mx, my);
+      if (hov && (hoverBlock === null || hoverBlock.type !== hov.type || hoverBlock.idx !== hov.idx)) {
+        hoverBlock = hov;
+        draw();
+        var info = '';
+        if (hov.type === 'enc') {
+          var lv = levels[hov.idx];
+          info = '<strong>' + lv.label + ' 编码器</strong><br>通道: ' + lv.ch + '<br>空间: ' + lv.spatial + 'x' + lv.spatial + '<br>操作: Conv3x3 x2 + ReLU + MaxPool';
+        } else if (hov.type === 'dec') {
+          var lv = levels[hov.idx];
+          info = '<strong>' + lv.label + ' 解码器</strong><br>通道: ' + lv.ch + '<br>空间: ' + lv.spatial + 'x' + lv.spatial + '<br>操作: UpConv + Concat + Conv3x3 x2';
+        } else {
+          info = '<strong>瓶颈层</strong><br>通道: 1024<br>空间: 16x16<br>操作: Conv3x3 x2 + ReLU';
+        }
+        tooltip.innerHTML = info;
+        tooltip.style.display = 'block';
+      }
+      if (hov) {
+        tooltip.style.left = (e.clientX + 15) + 'px';
+        tooltip.style.top = (e.clientY - 10) + 'px';
+      }
+      if (!hov && hoverBlock) {
+        hoverBlock = null;
+        draw();
+        tooltip.style.display = 'none';
+      }
+    });
+    canvas.addEventListener('mouseleave', function() {
+      hoverBlock = null;
+      draw();
+      tooltip.style.display = 'none';
+    });
+
+    function clearAnim() {
+      if (animTimer) { clearInterval(animTimer); animTimer = null; }
+      animEncoder = -1; animDecoder = -1; animSkip = -1;
+      document.querySelectorAll('.btn-row .btn').forEach(function(b){ b.classList.remove('active'); });
+    }
+
+    document.getElementById('btn-encoder').addEventListener('click', function() {
+      clearAnim();
+      this.classList.add('active');
+      animEncoder = 0;
+      draw();
+      animTimer = setInterval(function() {
+        animEncoder++;
+        if (animEncoder > 3) { clearInterval(animTimer); animTimer = null; }
+        draw();
+      }, 600);
+    });
+
+    document.getElementById('btn-decoder').addEventListener('click', function() {
+      clearAnim();
+      this.classList.add('active');
+      animEncoder = 3; // show encoder fully
+      animDecoder = 0;
+      draw();
+      animTimer = setInterval(function() {
+        animDecoder++;
+        if (animDecoder > 3) { clearInterval(animTimer); animTimer = null; }
+        draw();
+      }, 600);
+    });
+
+    document.getElementById('btn-skip').addEventListener('click', function() {
+      clearAnim();
+      this.classList.add('active');
+      animEncoder = 3; animDecoder = 3;
+      animSkip = 0;
+      draw();
+      animTimer = setInterval(function() {
+        animSkip++;
+        if (animSkip > 3) { clearInterval(animTimer); animTimer = null; }
+        draw();
+      }, 600);
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', function() {
+      clearAnim();
+      draw();
+    });
+  })();
+
+  // ============================================================
+  // DEMO 2: Skip Connection Effect
+  // ============================================================
+  (function() {
+    var canvasOff = document.getElementById('skip-off-canvas');
+    var canvasOn = document.getElementById('skip-on-canvas');
+    var ctxOff = canvasOff.getContext('2d');
+    var ctxOn = canvasOn.getContext('2d');
+    var S = 260;
+    var gridSize = 26;
+    var cellSize = S / gridSize;
+
+    // Create a synthetic image: a cross/plus pattern
+    var image = [];
+    for (var r = 0; r < gridSize; r++) {
+      image[r] = [];
+      for (var c = 0; c < gridSize; c++) {
+        // Cross pattern
+        var isCross = (Math.abs(r - gridSize/2) < 3 && Math.abs(c - gridSize/2) < 8) ||
+                      (Math.abs(c - gridSize/2) < 3 && Math.abs(r - gridSize/2) < 8);
+        // Circle
+        var dx = c - gridSize/2, dy = r - gridSize/2;
+        var isCircle = Math.sqrt(dx*dx + dy*dy) < 7;
+        image[r][c] = (isCross || isCircle) ? 1 : 0;
+      }
+    }
+
+    // Simulate encoder-decoder WITHOUT skip connections: blur heavily
+    function blurImage(img, passes) {
+      var result = img.map(function(row) { return row.slice(); });
+      for (var p = 0; p < passes; p++) {
+        var temp = result.map(function(row) { return row.slice(); });
+        for (var r = 1; r < gridSize - 1; r++) {
+          for (var c = 1; c < gridSize - 1; c++) {
+            temp[r][c] = (result[r-1][c-1] + result[r-1][c] + result[r-1][c+1] +
+                          result[r][c-1] + result[r][c] + result[r][c+1] +
+                          result[r+1][c-1] + result[r+1][c] + result[r+1][c+1]) / 9;
+          }
+        }
+        result = temp;
+      }
+      return result;
+    }
+
+    // Simulate WITH skip: downsample then upsample and add original info
+    function simulateSkip(img) {
+      // Downsample to 13x13
+      var small = [];
+      for (var r = 0; r < Math.floor(gridSize/2); r++) {
+        small[r] = [];
+        for (var c = 0; c < Math.floor(gridSize/2); c++) {
+          small[r][c] = (img[r*2][c*2] + img[r*2][c*2+1] + img[r*2+1][c*2] + img[r*2+1][c*2+1]) / 4;
+        }
+      }
+      // Upsample back with interpolation
+      var upsampled = [];
+      for (var r = 0; r < gridSize; r++) {
+        upsampled[r] = [];
+        for (var c = 0; c < gridSize; c++) {
+          var sr = r / 2, sc = c / 2;
+          var sr0 = Math.floor(sr), sc0 = Math.floor(sc);
+          var sr1 = Math.min(sr0 + 1, Math.floor(gridSize/2) - 1);
+          var sc1 = Math.min(sc0 + 1, Math.floor(gridSize/2) - 1);
+          var fr = sr - sr0, fc = sc - sc0;
+          upsampled[r][c] = small[sr0][sc0] * (1-fr) * (1-fc) +
+                            small[sr0][sc1] * (1-fr) * fc +
+                            small[sr1][sc0] * fr * (1-fc) +
+                            small[sr1][sc1] * fr * fc;
+        }
+      }
+      // "Skip": average of upsampled and original (simulating concat + conv)
+      var result = [];
+      for (var r = 0; r < gridSize; r++) {
+        result[r] = [];
+        for (var c = 0; c < gridSize; c++) {
+          // Weighted: original edges get preserved via skip
+          var edge = Math.abs(img[r][c] - (r > 0 ? img[r-1][c] : 0)) +
+                     Math.abs(img[r][c] - (c > 0 ? img[r][c-1] : 0));
+          result[r][c] = upsampled[r][c] * 0.5 + img[r][c] * 0.5 + edge * 0.15;
+          result[r][c] = Math.min(1, Math.max(0, result[r][c]));
+        }
+      }
+      return result;
+    }
+
+    var blurred = blurImage(image, 5);
+    var withSkip = simulateSkip(image);
+
+    function drawGrid(ctx, grid, accentColor) {
+      for (var r = 0; r < gridSize; r++) {
+        for (var c = 0; c < gridSize; c++) {
+          var v = grid[r][c];
+          var gray = Math.floor(v * 200 + 20);
+          ctx.fillStyle = 'rgb(' + gray + ',' + gray + ',' + gray + ')';
+          ctx.fillRect(c * cellSize, r * cellSize, cellSize - 1, cellSize - 1);
+        }
+      }
+      // Draw border for clarity
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(0, 0, S, S);
+    }
+
+    drawGrid(ctxOff, blurred, '#ef4444');
+    drawGrid(ctxOn, withSkip, '#22c55e');
+
+    // Labels on canvases
+    ctxOff.font = '600 11px Inter';
+    ctxOff.fillStyle = '#ef4444';
+    ctxOff.textAlign = 'left';
+    ctxOff.fillText('边缘模糊', 8, 16);
+
+    ctxOn.font = '600 11px Inter';
+    ctxOn.fillStyle = '#22c55e';
+    ctxOn.textAlign = 'left';
+    ctxOn.fillText('边缘清晰', 8, 16);
+  })();
+  </script>
+</body>
+</html>

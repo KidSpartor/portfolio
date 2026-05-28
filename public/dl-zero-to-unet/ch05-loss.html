@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第 5 章 · 损失函数 - 从零到 UNet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<nav class="nav"><div class="nav-inner"><a href="index.html" class="nav-brand">从零到 UNet</a><ul class="nav-links"><li><a href="ch01-what-is-dl.html">Ch1</a></li><li><a href="ch02-perceptron.html">Ch2</a></li><li><a href="ch03-mlp.html">Ch3</a></li><li><a href="ch04-activation.html">Ch4</a></li><li><a href="ch05-loss.html">Ch5</a></li><li><a href="ch06-optimization.html">Ch6</a></li><li><a href="ch07-backprop.html">Ch7</a></li><li><a href="ch08-cnn.html">Ch8</a></li><li><a href="ch09-encoder-decoder.html">Ch9</a></li><li><a href="ch10-unet.html">Ch10</a></li><li><a href="ch11-practice.html">Ch11</a></li><li><a href="ch12-unet-variants.html">Ch12</a></li></ul></div></nav>
+
+<header class="chapter-header">
+  <div class="container">
+    <span class="chapter-number">Chapter 5</span>
+    <h1>第 5 章 · 损失函数</h1>
+    <p class="chapter-subtitle">衡量模型"错得有多离谱"的标尺</p>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ============ INTERACTIVE DEMO ============ -->
+  <section class="section">
+    <h2>交互实验：感受损失函数</h2>
+    <div class="demo-container">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+        <label style="font-weight:600;font-size:0.875rem;color:var(--text-secondary);">
+          损失类型：
+          <select id="loss-select" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.875rem;">
+            <option value="mse" selected>MSE Loss</option>
+            <option value="mae">MAE Loss</option>
+          </select>
+        </label>
+        <label style="font-size:0.875rem;color:var(--text-secondary);">
+          w = <span id="w-val" style="font-family:var(--font-mono);font-weight:600;">1.00</span>
+          <input type="range" id="w-slider" min="-3" max="5" step="0.05" value="1" style="width:120px;vertical-align:middle;accent-color:var(--primary);">
+        </label>
+        <label style="font-size:0.875rem;color:var(--text-secondary);">
+          b = <span id="b-val" style="font-family:var(--font-mono);font-weight:600;">0.00</span>
+          <input type="range" id="b-slider" min="-5" max="5" step="0.05" value="0" style="width:120px;vertical-align:middle;accent-color:var(--primary);">
+        </label>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
+        <canvas id="loss-canvas" width="520" height="380" style="display:block;border-radius:8px;background:var(--bg);flex:1;min-width:300px;"></canvas>
+        <div id="loss-display" style="min-width:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;background:var(--bg);border:1px solid var(--border);border-radius:12px;">
+          <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">损失值</div>
+          <div id="loss-value" style="font-size:2.5rem;font-weight:700;font-family:var(--font-mono);color:var(--primary);">0.00</div>
+          <div id="loss-type-label" style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">MSE Loss</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WHAT IS LOSS ============ -->
+  <section class="section">
+    <h2>什么是损失函数？</h2>
+    <p>损失函数（Loss Function）是一个<strong>单一数字</strong>，用来衡量模型预测值与真实值之间的差距。训练神经网络的目标就是<strong>最小化损失函数</strong>。</p>
+
+    <div class="info-box">
+      <h4>类比：高尔夫分数</h4>
+      <p>损失就像高尔夫的分数——<strong>越低越好</strong>。你的每一次挥杆（训练迭代）都试图让球更接近球洞（真实值），最终目标是以最少的杆数完成比赛。</p>
+    </div>
+
+    <p>没有损失函数，模型就不知道自己学得好不好、该往哪个方向调整。它是连接"预测"和"学习"的桥梁。</p>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ============ MSE ============ -->
+  <section class="section">
+    <h2>均方误差 (MSE)</h2>
+    <p>MSE 是回归任务中最常用的损失函数，计算预测值与真实值之差的平方的平均值。</p>
+    <p>$$L_{MSE} = \frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2$$</p>
+    <ul>
+      <li>平方操作让大误差被<strong>放大惩罚</strong>（对异常值敏感）</li>
+      <li>处处可微，优化方便</li>
+      <li>单位是目标变量的平方（量纲不直观）</li>
+    </ul>
+    <p>在上面的交互实验中，你可以看到 MSE 对偏离较远的点惩罚更大——误差被平方后，离得越远的点贡献的损失越多。</p>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ============ MAE ============ -->
+  <section class="section">
+    <h2>平均绝对误差 (MAE)</h2>
+    <p>MAE 计算预测值与真实值之差的绝对值的平均值。</p>
+    <p>$$L_{MAE} = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|$$</p>
+    <ul>
+      <li>对所有误差<strong>一视同仁</strong>（不放大异常值）</li>
+      <li>比 MSE 更鲁棒</li>
+      <li>在零点处不可微（实践中影响不大）</li>
+    </ul>
+    <p>在交互实验中切换 MSE 和 MAE，观察损失值的变化——MSE 对离群点更敏感。</p>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ============ CROSS-ENTROPY ============ -->
+  <section class="section">
+    <h2>交叉熵损失 (Cross-Entropy)</h2>
+    <p>交叉熵是分类任务的标准损失函数，衡量两个概率分布之间的差异。</p>
+
+    <h3>二元交叉熵（Binary Cross-Entropy）</h3>
+    <p>用于二分类问题，标签 $y_i \in \{0, 1\}$，预测概率 $\hat{y}_i \in (0, 1)$：</p>
+    <p>$$L_{BCE} = -\frac{1}{n}\sum_{i=1}^{n}\left[y_i\log(\hat{y}_i) + (1-y_i)\log(1-\hat{y}_i)\right]$$</p>
+
+    <h3>多类交叉熵（Categorical Cross-Entropy）</h3>
+    <p>用于多分类问题，$K$ 个类别，$y_{i,k}$ 为 one-hot 标签，$\hat{y}_{i,k}$ 为 softmax 输出概率：</p>
+    <p>$$L_{CE} = -\frac{1}{n}\sum_{i=1}^{n}\sum_{k=1}^{K} y_{i,k}\log(\hat{y}_{i,k})$$</p>
+
+    <div class="tip-box">
+      <h4>为什么分类不用 MSE？</h4>
+      <p>对于分类任务，MSE 的梯度在预测概率接近 0 或 1 时会非常小，导致学习缓慢。而交叉熵的梯度形式更简洁（$\hat{y} - y$），训练更高效。交叉熵源于信息论——它衡量用预测分布编码真实标签所需的额外信息量。</p>
+    </div>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ============ CHOOSING LOSS ============ -->
+  <section class="section">
+    <h2>如何选择损失函数？</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>任务类型</th>
+          <th>输出激活</th>
+          <th>损失函数</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>回归</td>
+          <td>Linear</td>
+          <td>MSE / MAE</td>
+          <td>MSE 更常用；若有异常值，MAE 更鲁棒</td>
+        </tr>
+        <tr>
+          <td>二分类</td>
+          <td>Sigmoid</td>
+          <td>Binary Cross-Entropy</td>
+          <td>输出为正类概率</td>
+        </tr>
+        <tr>
+          <td>多分类</td>
+          <td>Softmax</td>
+          <td>Categorical Cross-Entropy</td>
+          <td>输出为各类别概率分布</td>
+        </tr>
+        <tr>
+          <td>图像分割</td>
+          <td>Sigmoid/Softmax</td>
+          <td>Dice Loss / CE</td>
+          <td>后续 UNet 章节会详述</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="section-divider">
+
+  <!-- ============ LOSS LANDSCAPE ============ -->
+  <section class="section">
+    <h2>损失曲面（Loss Landscape）</h2>
+    <p>如果把模型的所有参数看作坐标轴，损失函数在每个参数组合下的值就构成了一个<strong>高维曲面</strong>。训练的过程就是在这个曲面上找到<strong>最低点</strong>（全局最小值或局部最小值）。</p>
+
+    <figure class="figure">
+      <img src="https://raw.githubusercontent.com/tomgoldstein/loss-landscape/master/doc/images/resnet56_small.jpg" alt="3D损失曲面可视化" style="max-width:100%; border-radius:8px; margin:16px 0; background:#fff; padding:16px;">
+      <figcaption style="font-size:0.85em; color:var(--text-muted); text-align:center; margin-top:8px;">
+        图: 损失函数的三维曲面——训练目标是找到曲面上的最低点。来源: <a href="https://d2l.ai/chapter_optimization/optimization-intro.html" target="_blank">Dive into Deep Learning (d2l.ai)</a>
+      </figcaption>
+    </figure>
+
+    <p>损失曲面的形状对训练难度有很大影响——平坦的区域学习慢，陡峭的区域可能出现梯度爆炸。下一章我们将深入探讨如何在损失曲面上高效地"下山"。</p>
+  </section>
+
+  <!-- ============ NAV ============ -->
+  <nav class="chapter-nav">
+    <a href="ch04-activation.html" class="prev">
+      <span class="label">上一章</span>
+      <span class="title">激活函数</span>
+    </a>
+    <a href="ch06-optimization.html" class="next">
+      <span class="label">下一章</span>
+      <span class="title">优化与梯度下降</span>
+    </a>
+  </nav>
+
+</main>
+
+<footer class="footer"><div class="container">从零到 UNet · 深度学习入门课程</div></footer>
+
+<script>
+// Theme color helper — reads CSS variables so canvas adapts to light/dark mode
+function tc(varName) {
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}
+
+// ============ Loss Function Interactive Demo ============
+(function() {
+  const canvas = document.getElementById('loss-canvas');
+  const ctx = canvas.getContext('2d');
+  const wSlider = document.getElementById('w-slider');
+  const bSlider = document.getElementById('b-slider');
+  const wVal = document.getElementById('w-val');
+  const bVal = document.getElementById('b-val');
+  const lossSelect = document.getElementById('loss-select');
+  const lossDisplay = document.getElementById('loss-value');
+  const lossTypeLabel = document.getElementById('loss-type-label');
+
+  const W = canvas.width, H = canvas.height;
+  const padL = 50, padR = 20, padT = 20, padB = 45;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  // Fixed data points (x, y) with a known linear relationship + noise
+  const points = [
+    { x: 0.5, y: 1.2 }, { x: 1.0, y: 2.1 }, { x: 1.5, y: 2.8 },
+    { x: 2.0, y: 4.3 }, { x: 2.5, y: 4.8 }, { x: 3.0, y: 6.1 },
+    { x: 3.5, y: 6.5 }, { x: 4.0, y: 8.2 }, { x: 4.5, y: 8.8 },
+    { x: 5.0, y: 10.5 }, { x: 1.2, y: 3.0 }, { x: 3.8, y: 7.0 }
+  ];
+
+  const xMin = 0, xMax = 6;
+  const yMin = -1, yMax = 14;
+
+  function xToCanvas(x) { return padL + (x - xMin) / (xMax - xMin) * plotW; }
+  function yToCanvas(y) { return padT + (1 - (y - yMin) / (yMax - yMin)) * plotH; }
+
+  function draw() {
+    const w = parseFloat(wSlider.value);
+    const b = parseFloat(bSlider.value);
+    const lossType = lossSelect.value;
+
+    wVal.textContent = w.toFixed(2);
+    bVal.textContent = b.toFixed(2);
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Background
+    ctx.fillStyle = tc('--bg');
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = tc('--border');
+    ctx.lineWidth = 0.5;
+    for (let xv = 0; xv <= 6; xv++) {
+      ctx.beginPath(); ctx.moveTo(xToCanvas(xv), padT); ctx.lineTo(xToCanvas(xv), padT + plotH); ctx.stroke();
+    }
+    for (let yv = 0; yv <= 12; yv += 2) {
+      ctx.beginPath(); ctx.moveTo(padL, yToCanvas(yv)); ctx.lineTo(padL + plotW, yToCanvas(yv)); ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = tc('--text-muted');
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT + plotH); ctx.lineTo(padL + plotW, padT + plotH); ctx.stroke();
+
+    // Axis labels
+    ctx.fillStyle = tc('--text-muted');
+    ctx.font = '11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    for (let xv = 0; xv <= 6; xv++) {
+      ctx.fillText(String(xv), xToCanvas(xv), padT + plotH + 18);
+    }
+    ctx.textAlign = 'right';
+    for (let yv = 0; yv <= 12; yv += 2) {
+      ctx.fillText(String(yv), padL - 8, yToCanvas(yv) + 4);
+    }
+    ctx.textAlign = 'center';
+    ctx.fillText('x', padL + plotW / 2, padT + plotH + 36);
+    ctx.save(); ctx.translate(14, padT + plotH / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('y', 0, 0); ctx.restore();
+
+    // Error bars (vertical lines from points to prediction)
+    let totalLoss = 0;
+    points.forEach(p => {
+      const predY = w * p.x + b;
+      const diff = p.y - predY;
+      if (lossType === 'mse') totalLoss += diff * diff;
+      else totalLoss += Math.abs(diff);
+
+      const px = xToCanvas(p.x);
+      const pyData = yToCanvas(p.y);
+      const pyPred = yToCanvas(predY);
+
+      // Error bar
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(px, pyData); ctx.lineTo(px, pyPred); ctx.stroke();
+
+      // Small square at error
+      const errSize = lossType === 'mse' ? Math.min(Math.abs(diff) * 3, 30) : 4;
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.15)';
+      if (lossType === 'mse') {
+        const top = Math.min(pyData, pyPred);
+        const left = px - errSize / 2;
+        ctx.fillRect(left, top, errSize, errSize);
+      }
+    });
+
+    // Data points
+    points.forEach(p => {
+      const px = xToCanvas(p.x);
+      const py = yToCanvas(p.y);
+      ctx.beginPath();
+      ctx.arc(px, py, 5, 0, Math.PI * 2);
+      ctx.fillStyle = tc('--text');
+      ctx.fill();
+    });
+
+    // Prediction line
+    const lx1 = xMin, ly1 = w * lx1 + b;
+    const lx2 = xMax, ly2 = w * lx2 + b;
+    ctx.strokeStyle = '#4a6cf7';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(xToCanvas(lx1), yToCanvas(ly1));
+    ctx.lineTo(xToCanvas(lx2), yToCanvas(ly2));
+    ctx.stroke();
+
+    // Equation label
+    ctx.fillStyle = '#4a6cf7';
+    ctx.font = 'bold 13px JetBrains Mono, monospace';
+    ctx.textAlign = 'left';
+    const sign = b >= 0 ? '+' : '-';
+    ctx.fillText(`y = ${w.toFixed(2)}x ${sign} ${Math.abs(b).toFixed(2)}`, padL + 10, padT + 20);
+
+    // Compute and display loss
+    totalLoss /= points.length;
+    lossDisplay.textContent = totalLoss.toFixed(3);
+    lossTypeLabel.textContent = lossType === 'mse' ? 'MSE Loss' : 'MAE Loss';
+
+    // Color the loss value based on magnitude
+    const maxLoss = lossType === 'mse' ? 15 : 5;
+    const ratio = Math.min(totalLoss / maxLoss, 1);
+    if (ratio < 0.3) lossDisplay.style.color = 'var(--success)';
+    else if (ratio < 0.6) lossDisplay.style.color = 'var(--warning)';
+    else lossDisplay.style.color = 'var(--danger)';
+  }
+
+  wSlider.addEventListener('input', draw);
+  bSlider.addEventListener('input', draw);
+  lossSelect.addEventListener('change', draw);
+
+  // Initial draw
+  draw();
+})();
+</script>
+
+<script src="assets/js/common.js"></script>
+<script>if(typeof renderMathInElement==='function')renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}]});</script>
+
+</body>
+</html>
