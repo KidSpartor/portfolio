@@ -1,48 +1,48 @@
 /* ============================================
    重返未来1999 — ART DECO / VINTAGE EUROPEAN
    Cinematic Studio — Tianyi Ma
+   Complete Rewrite
    ============================================ */
 
 /* --- Design Tokens --- */
 :root {
-  /* Deep navy base with warm undertones */
-  --bg: #12101C;
-  --bg-surface: #1A1726;
-  --bg-elevated: #221E30;
-  --bg-card: #1E1A2A;
-  --bg-warm: #1C1820;
+  /* Deep navy base */
+  --bg: #0A0E1A;
+  --bg-surface: #12162A;
+  --bg-elevated: #1A1E32;
+  --bg-card: #141828;
+  --bg-warm: #101420;
 
-  /* Warm cream text on dark */
-  --text: #F2E8D5;
+  /* Warm parchment text on dark */
+  --text: #F0E6D0;
   --text-muted: #A89878;
   --text-dim: #6B5E4D;
 
-  /* Rich gold accent system */
-  --accent: #D4A843;
-  --accent-bright: #E8C547;
-  --accent-dim: rgba(212, 168, 67, 0.15);
-  --accent-glow: rgba(212, 168, 67, 0.25);
+  /* Antique gold accent system */
+  --accent: #C8A84E;
+  --accent-bright: #E0C060;
+  --accent-warm: #D4AF37;
+  --accent-dim: rgba(200, 168, 78, 0.12);
+  --accent-glow: rgba(200, 168, 78, 0.25);
 
-  /* Secondary accents */
-  --accent-warm: #C45A3C;
-  --accent-deep: #8B2E3B;
-  --accent-rose: #C97B84;
-  --blue: #3D5A80;
-  --purple: #6A4C93;
+  /* Burgundy actions */
+  --burgundy: #6B1D2A;
+  --burgundy-light: #8B2E3B;
 
   /* Gold-tinted lines */
-  --line: rgba(212, 168, 67, 0.12);
-  --line-strong: rgba(212, 168, 67, 0.25);
-  --line-bright: rgba(232, 197, 71, 0.4);
+  --line: rgba(200, 168, 78, 0.12);
+  --line-strong: rgba(200, 168, 78, 0.25);
+  --line-bright: rgba(200, 168, 78, 0.4);
 
   /* Glass effect */
-  --glass: rgba(18, 16, 28, 0.85);
+  --glass: rgba(10, 14, 26, 0.9);
 
   /* Typography */
-  --font-display: "Playfair Display", Georgia, serif;
-  --font-serif: "Instrument Serif", Georgia, serif;
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Bodoni Moda", "Didot", "Georgia", serif;
+  --font-heading: "Cinzel", serif;
+  --font-body: "Cormorant Garamond", serif;
+  --font-label: "Cormorant SC", serif;
+  --font-mono: "Special Elite", cursive;
 
   /* Layout */
   --radius: 2px;
@@ -50,29 +50,27 @@
   --scene-pad: clamp(80px, 10vw, 160px);
 }
 
-/* Light theme — aged parchment */
+/* Light theme — aged parchment / cream */
 [data-theme="light"] {
-  --bg: #F5E6CA;
-  --bg-surface: #EFE0C8;
+  --bg: #F0E6D0;
+  --bg-surface: #EDE2CC;
   --bg-elevated: #FDF6E8;
-  --bg-card: #FDF6E8;
-  --bg-warm: #F0E4D0;
-  --text: #2A2420;
-  --text-muted: #6B5E50;
+  --bg-card: #F5EBDA;
+  --bg-warm: #EDE2CC;
+  --text: #2A2218;
+  --text-muted: #6B5E4D;
   --text-dim: #9A8B78;
   --accent: #8B6914;
   --accent-bright: #A07A1A;
+  --accent-warm: #9A7520;
   --accent-dim: rgba(139, 105, 20, 0.1);
   --accent-glow: rgba(139, 105, 20, 0.15);
-  --accent-warm: #A04030;
-  --accent-deep: #7A2838;
-  --accent-rose: #B06870;
-  --blue: #3A6A9A;
-  --purple: #5A3C7A;
-  --line: rgba(42, 36, 32, 0.12);
-  --line-strong: rgba(42, 36, 32, 0.22);
+  --burgundy: #8B2E3B;
+  --burgundy-light: #A04050;
+  --line: rgba(42, 34, 24, 0.12);
+  --line-strong: rgba(42, 34, 24, 0.22);
   --line-bright: rgba(139, 105, 20, 0.35);
-  --glass: rgba(245, 230, 202, 0.9);
+  --glass: rgba(240, 230, 208, 0.92);
 }
 
 /* --- Reset & Base --- */
@@ -85,10 +83,10 @@ html {
 }
 
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   font-weight: 400;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 18px;
+  line-height: 1.65;
   color: var(--text);
   background: var(--bg);
   overflow-x: hidden;
@@ -99,8 +97,352 @@ button { border: none; background: none; font: inherit; color: inherit; cursor: 
 img { max-width: 100%; display: block; }
 
 ::selection {
-  background: var(--accent);
-  color: var(--bg);
+  background: var(--burgundy);
+  color: var(--accent-bright);
+}
+
+/* ======================================
+   CSS TEXTURE: GOLD FOIL TEXT
+   ====================================== */
+.gold-foil {
+  background: linear-gradient(135deg, #C8A84E 0%, #E0C060 25%, #D4AF37 50%, #B8922E 75%, #C8A84E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: brightness(1.1);
+}
+
+[data-theme="light"] .gold-foil {
+  background: linear-gradient(135deg, #8B6914 0%, #A07A1A 25%, #9A7520 50%, #7A5A10 75%, #8B6914 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: brightness(1);
+}
+
+/* ======================================
+   CSS TEXTURE: PARCHMENT PANEL
+   ====================================== */
+.parchment {
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(200, 168, 78, 0.01) 2px, rgba(200, 168, 78, 0.01) 3px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(200, 168, 78, 0.01) 2px, rgba(200, 168, 78, 0.01) 3px),
+    radial-gradient(ellipse at 30% 40%, rgba(200, 168, 78, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 60%, rgba(107, 29, 42, 0.03) 0%, transparent 40%),
+    #141828;
+}
+
+[data-theme="light"] .parchment {
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(42, 34, 24, 0.01) 2px, rgba(42, 34, 24, 0.01) 3px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(42, 34, 24, 0.01) 2px, rgba(42, 34, 24, 0.01) 3px),
+    radial-gradient(ellipse at 30% 40%, rgba(139, 105, 20, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 60%, rgba(139, 46, 59, 0.02) 0%, transparent 40%),
+    #F5EBDA;
+}
+
+/* ======================================
+   CSS TEXTURE: EMBOSS / DEBOSS
+   ====================================== */
+.emboss {
+  text-shadow: 0 1px 1px rgba(0,0,0,0.5), 0 -1px 1px rgba(200, 168, 78, 0.1);
+}
+
+[data-theme="light"] .emboss {
+  text-shadow: 0 1px 1px rgba(255,255,255,0.6), 0 -1px 1px rgba(0, 0, 0, 0.08);
+}
+
+/* ======================================
+   CSS TEXTURE: ART DECO DOUBLE-LINE FRAME
+   ====================================== */
+.deco-frame {
+  border: 1px solid rgba(200, 168, 78, 0.25);
+  position: relative;
+}
+
+.deco-frame::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(200, 168, 78, 0.12);
+  pointer-events: none;
+}
+
+/* Corner ornaments — all 4 corners */
+.deco-frame::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  background:
+    /* top-left */
+    linear-gradient(rgba(200,168,78,0.6), rgba(200,168,78,0.6)) 0 0 / 24px 2px no-repeat,
+    linear-gradient(rgba(200,168,78,0.6), rgba(200,168,78,0.6)) 0 0 / 2px 24px no-repeat,
+    /* top-right */
+    linear-gradient(rgba(200,168,78,0.6), rgba(200,168,78,0.6)) 100% 0 / 24px 2px no-repeat,
+    linear-gradient(rgba(200,168,78,0.6), rgba(200,168,78,0.6)) 100% 0 / 2px 24px no-repeat,
+    /* bottom-left */
+    linear-gradient(rgba(200,168,78,0.6), rgba(200,168,78,0.6)) 0 100% / 24px 2px no-repeat,
+    linear-gradient(rgba(200,168,78,0.6), rgba(200,168,78,0.6)) 0 100% / 2px 24px no-repeat,
+    /* bottom-right */
+    linear-gradient(rgba(200,168,78,0.6), rgba(200,168,78,0.6)) 100% 100% / 24px 2px no-repeat,
+    linear-gradient(rgba(200,168,78,0.6), rgba(200,168,78,0.6)) 100% 100% / 2px 24px no-repeat;
+}
+
+[data-theme="light"] .deco-frame {
+  border-color: rgba(42, 34, 24, 0.2);
+}
+[data-theme="light"] .deco-frame::before {
+  border-color: rgba(42, 34, 24, 0.1);
+}
+[data-theme="light"] .deco-frame::after {
+  background:
+    linear-gradient(rgba(139,105,20,0.5), rgba(139,105,20,0.5)) 0 0 / 24px 2px no-repeat,
+    linear-gradient(rgba(139,105,20,0.5), rgba(139,105,20,0.5)) 0 0 / 2px 24px no-repeat,
+    linear-gradient(rgba(139,105,20,0.5), rgba(139,105,20,0.5)) 100% 0 / 24px 2px no-repeat,
+    linear-gradient(rgba(139,105,20,0.5), rgba(139,105,20,0.5)) 100% 0 / 2px 24px no-repeat,
+    linear-gradient(rgba(139,105,20,0.5), rgba(139,105,20,0.5)) 0 100% / 24px 2px no-repeat,
+    linear-gradient(rgba(139,105,20,0.5), rgba(139,105,20,0.5)) 0 100% / 2px 24px no-repeat,
+    linear-gradient(rgba(139,105,20,0.5), rgba(139,105,20,0.5)) 100% 100% / 24px 2px no-repeat,
+    linear-gradient(rgba(139,105,20,0.5), rgba(139,105,20,0.5)) 100% 100% / 2px 24px no-repeat;
+}
+
+/* ======================================
+   CSS TEXTURE: STEPPED ART DECO BORDER
+   ====================================== */
+.stepped-border {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-image: repeating-linear-gradient(
+    90deg,
+    #C8A84E 0px, #C8A84E 8px,
+    transparent 8px, transparent 12px
+  ) 1;
+}
+
+.stepped-bottom {
+  bottom: 0;
+}
+
+[data-theme="light"] .stepped-border {
+  border-image: repeating-linear-gradient(
+    90deg,
+    #8B6914 0px, #8B6914 8px,
+    transparent 8px, transparent 12px
+  ) 1;
+}
+
+/* Note cards stepped accent on left */
+.note-stepped-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  border-image: repeating-linear-gradient(
+    180deg,
+    #C8A84E 0px, #C8A84E 8px,
+    transparent 8px, transparent 12px
+  ) 1;
+  opacity: 0.5;
+  transition: opacity 0.4s var(--transition);
+}
+
+[data-theme="light"] .note-stepped-accent {
+  border-image: repeating-linear-gradient(
+    180deg,
+    #8B6914 0px, #8B6914 8px,
+    transparent 8px, transparent 12px
+  ) 1;
+}
+
+/* ======================================
+   CSS TEXTURE: WAX SEAL
+   ====================================== */
+.wax-seal {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #8B2E3B, #6B1D2A 60%, #4A1018);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.1);
+  display: grid;
+  place-items: center;
+  color: #D4AF37;
+  font-family: "Cinzel", serif;
+  font-weight: 700;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.wax-seal-sm {
+  width: 36px;
+  height: 36px;
+  font-size: 12px;
+}
+
+[data-theme="light"] .wax-seal {
+  background: radial-gradient(circle at 35% 35%, #A04050, #8B2E3B 60%, #6B1D2A);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.15);
+  color: #D4AF37;
+}
+
+/* ======================================
+   CSS TEXTURE: LINEN OVERLAY
+   ====================================== */
+.linen {
+  position: relative;
+}
+
+.linen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h1v1H0zm2 2h1v1H2zm4 0h1v1H6zM2 0h1v1H2zm4 2h1v1H6zM0 2h1v1H0zm4 4h1v1H4z' fill='%23C8A84E' fill-opacity='0.4'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ======================================
+   CSS TEXTURE: TRIPLE BORDER
+   ====================================== */
+.triple-border {
+  box-shadow:
+    0 0 0 1px rgba(200, 168, 78, 0.3),
+    0 0 0 4px #0A0E1A,
+    0 0 0 5px rgba(200, 168, 78, 0.15),
+    0 0 0 8px #0A0E1A,
+    0 0 0 9px rgba(200, 168, 78, 0.08);
+}
+
+/* ======================================
+   CSS TEXTURE: FILM GRAIN (SVG noise)
+   ====================================== */
+.grain {
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 512px 512px;
+  animation: grain-drift 0.5s steps(4) infinite;
+}
+
+[data-theme="light"] .grain { opacity: 0.025; }
+
+@keyframes grain-drift {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-2%, -4%); }
+  50% { transform: translate(4%, 2%); }
+  75% { transform: translate(-3%, 5%); }
+}
+
+/* ======================================
+   VIGNETTE + LIGHT LEAK
+   ====================================== */
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 30%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+}
+
+[data-theme="light"] .vignette {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(0, 0, 0, 0.08) 100%
+  );
+}
+
+/* Light leak — warm gold bleed at edges */
+.vignette::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(200, 168, 78, 0.05) 0%, transparent 40%),
+    radial-gradient(ellipse at 100% 100%, rgba(107, 29, 42, 0.03) 0%, transparent 35%);
+}
+
+/* Scanlines — more subtle */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.012) 3px,
+    rgba(0, 0, 0, 0.012) 6px
+  );
+}
+
+[data-theme="light"] body::before { display: none; }
+
+/* ======================================
+   LETTERBOX BARS — slightly thinner
+   ====================================== */
+.letterbox {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 5vh;
+  background: #000;
+  z-index: 9996;
+  pointer-events: none;
+  will-change: height;
+}
+
+.letterbox-top { top: 0; }
+.letterbox-bottom { bottom: 0; }
+
+[data-theme="light"] .letterbox {
+  background: #1A1408;
+}
+
+/* ======================================
+   AMBIENT CANVAS
+   ====================================== */
+#ambientCanvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ======================================
+   SCROLL PROGRESS — gold bar
+   ====================================== */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
+  z-index: 10001;
+  transition: width 0.1s linear;
+  pointer-events: none;
+  box-shadow: 0 0 10px rgba(200, 168, 78, 0.3);
 }
 
 /* ======================================
@@ -114,46 +456,30 @@ img { max-width: 100%; display: block; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 40px;
+  gap: 32px;
   background: var(--bg);
 }
 
-/* Outer ornamental circle */
-.preloader::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 180px;
-  height: 180px;
-  border: 1px solid var(--line-strong);
-  border-radius: 50%;
-  opacity: 0.3;
+.preloader-ornament {
+  opacity: 0;
+  transform: scale(0.8);
+  animation: ornament-spin 20s linear infinite;
 }
 
-/* Inner diamond */
-.preloader::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(45deg);
-  width: 100px;
-  height: 100px;
-  border: 2px solid var(--accent);
-  opacity: 0.2;
+@keyframes ornament-spin {
+  from { transform: scale(0.8) rotate(0deg); }
+  to { transform: scale(0.8) rotate(360deg); }
 }
 
 .preloader-mark {
   font-family: var(--font-display);
-  font-size: 100px;
-  font-weight: 400;
+  font-size: 96px;
+  font-weight: 900;
   color: var(--accent);
   opacity: 0;
   transform: translateY(20px);
   letter-spacing: 0.05em;
-  text-shadow: 0 0 40px rgba(212, 168, 67, 0.3);
+  text-shadow: 0 0 40px rgba(200, 168, 78, 0.25);
 }
 
 .preloader-bar {
@@ -185,140 +511,6 @@ img { max-width: 100%; display: block; }
 }
 
 /* ======================================
-   FILM GRAIN + VIGNETTE + OVERLAYS
-   ====================================== */
-.grain {
-  position: fixed;
-  inset: -50%;
-  width: 200%;
-  height: 200%;
-  z-index: 9998;
-  pointer-events: none;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
-  animation: grain-drift 0.4s steps(3) infinite;
-}
-
-[data-theme="light"] .grain { opacity: 0.03; }
-
-@keyframes grain-drift {
-  0%, 100% { transform: translate(0, 0); }
-  33% { transform: translate(-3%, -6%); }
-  66% { transform: translate(6%, 3%); }
-}
-
-/* Halftone dot pattern */
-.grain::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 9997;
-  pointer-events: none;
-  opacity: 0.015;
-  background-image: radial-gradient(circle, var(--accent) 1px, transparent 1px);
-  background-size: 6px 6px;
-}
-
-[data-theme="light"] .grain::after { opacity: 0.008; }
-
-.vignette {
-  position: fixed;
-  inset: 0;
-  z-index: 9997;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse at center,
-    transparent 30%,
-    rgba(0, 0, 0, 0.5) 100%
-  );
-}
-
-[data-theme="light"] .vignette {
-  background: radial-gradient(
-    ellipse at center,
-    transparent 50%,
-    rgba(0, 0, 0, 0.1) 100%
-  );
-}
-
-/* Light leak effect — warm gold bleed at edges */
-.vignette::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse at 0% 0%, rgba(212, 168, 67, 0.06) 0%, transparent 40%),
-    radial-gradient(ellipse at 100% 100%, rgba(196, 90, 60, 0.04) 0%, transparent 35%);
-}
-
-/* Scanlines */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.02) 2px,
-    rgba(0, 0, 0, 0.02) 4px
-  );
-}
-
-[data-theme="light"] body::before { display: none; }
-
-/* ======================================
-   LETTERBOX BARS
-   ====================================== */
-.letterbox {
-  position: fixed;
-  left: 0;
-  right: 0;
-  height: 8vh;
-  background: #000;
-  z-index: 9996;
-  pointer-events: none;
-  will-change: height;
-}
-
-.letterbox-top { top: 0; }
-.letterbox-bottom { bottom: 0; }
-
-/* ======================================
-   AMBIENT CANVAS
-   ====================================== */
-#ambientCanvas {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-/* ======================================
-   SCROLL PROGRESS — gold bar
-   ====================================== */
-.scroll-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 2px;
-  width: 0%;
-  background: linear-gradient(90deg, var(--accent), var(--accent-bright), var(--accent));
-  z-index: 10001;
-  transition: width 0.1s linear;
-  pointer-events: none;
-  box-shadow: 0 0 10px rgba(212, 168, 67, 0.3);
-}
-
-/* ======================================
    NAVIGATION — Art Deco styled
    ====================================== */
 .nav {
@@ -332,7 +524,7 @@ body::before {
   justify-content: space-between;
   padding: 20px clamp(24px, 4vw, 48px);
   background: transparent;
-  transition: background 0.4s ease, backdrop-filter 0.4s ease;
+  transition: background 0.5s var(--transition), backdrop-filter 0.5s ease;
   will-change: transform, opacity;
 }
 
@@ -341,7 +533,7 @@ body::before {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--line-strong);
-  box-shadow: 0 1px 0 0 rgba(212, 168, 67, 0.1);
+  box-shadow: 0 1px 0 0 rgba(200, 168, 78, 0.08);
 }
 
 .nav-brand {
@@ -350,30 +542,40 @@ body::before {
   gap: 12px;
 }
 
-/* Art Deco mark — gold circle with serif T */
+/* Wax-seal-style mark */
 .nav-mark {
   display: grid;
   place-items: center;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: transparent;
-  color: var(--accent);
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 600;
-  border: 2px solid var(--accent);
+  background: radial-gradient(circle at 35% 35%, #8B2E3B, #6B1D2A 60%, #4A1018);
+  color: #D4AF37;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
   box-shadow:
-    0 0 0 4px rgba(212, 168, 67, 0.08),
-    inset 0 0 10px rgba(212, 168, 67, 0.1);
-  transition: transform 0.3s var(--transition), box-shadow 0.3s ease;
+    0 2px 8px rgba(0,0,0,0.4),
+    inset 0 1px 2px rgba(255,255,255,0.1),
+    0 0 0 4px rgba(200, 168, 78, 0.12);
+  transition: transform 0.4s var(--transition), box-shadow 0.4s ease;
 }
 
 .nav-brand:hover .nav-mark {
   transform: scale(1.08);
   box-shadow:
-    0 0 0 4px rgba(212, 168, 67, 0.15),
-    0 0 20px rgba(212, 168, 67, 0.15);
+    0 4px 12px rgba(0,0,0,0.4),
+    inset 0 1px 2px rgba(255,255,255,0.1),
+    0 0 0 6px rgba(200, 168, 78, 0.2),
+    0 0 20px rgba(200, 168, 78, 0.1);
+}
+
+[data-theme="light"] .nav-mark {
+  background: radial-gradient(circle at 35% 35%, #A04050, #8B2E3B 60%, #6B1D2A);
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.15),
+    inset 0 1px 2px rgba(255,255,255,0.15),
+    0 0 0 4px rgba(139, 105, 20, 0.12);
 }
 
 .nav-links {
@@ -385,13 +587,13 @@ body::before {
 .nav-links a {
   padding: 8px 18px;
   border-radius: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-label);
   font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--text-muted);
-  transition: color 0.25s ease, background 0.25s ease;
+  transition: color 0.3s ease, background 0.3s ease;
   position: relative;
 }
 
@@ -403,7 +605,7 @@ body::before {
   width: 0;
   height: 1px;
   background: var(--accent);
-  transition: width 0.3s ease, left 0.3s ease;
+  transition: width 0.4s var(--transition), left 0.4s var(--transition);
 }
 
 .nav-links a:hover,
@@ -432,7 +634,7 @@ body::before {
   border-radius: 50%;
   color: var(--text-muted);
   border: 1px solid var(--line);
-  transition: color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+  transition: color 0.3s ease, border-color 0.3s ease, transform 0.3s var(--transition);
 }
 
 .nav-btn:hover {
@@ -445,8 +647,8 @@ body::before {
    MONO LABEL + PULSE DOT
    ====================================== */
 .mono-label {
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-family: var(--font-label);
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -460,12 +662,23 @@ body::before {
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 0 4px var(--accent-dim);
-  animation: pulse-glow 2.5s ease-in-out infinite;
+  animation: pulse-glow 3s ease-in-out infinite;
 }
 
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 0 4px var(--accent-dim); }
-  50% { box-shadow: 0 0 0 8px transparent; }
+  50% { box-shadow: 0 0 0 10px transparent; }
+}
+
+/* ======================================
+   SECTION ORNAMENTS (between sections)
+   ====================================== */
+.section-ornament {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+  position: relative;
+  z-index: 1;
 }
 
 /* ======================================
@@ -494,7 +707,7 @@ body::before {
     var(--line) 80%,
     transparent 100%
   );
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 .scene-header {
@@ -511,7 +724,7 @@ body::before {
   margin-bottom: 24px;
   border-top: 2px solid var(--accent);
   border-left: 2px solid var(--accent);
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 /* Gold accent line below header text */
@@ -525,28 +738,29 @@ body::before {
   opacity: 0.5;
 }
 
-/* Section title — Playfair Display, Art Deco serif */
+/* Section title — Cinzel, uppercase, tracked */
 .section-title {
-  font-family: var(--font-display);
-  font-size: clamp(36px, 5vw, 72px);
-  font-weight: 400;
-  line-height: 1.05;
-  letter-spacing: 0.02em;
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 4vw, 56px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   margin-top: 12px;
 }
 
 .section-title em {
   color: var(--accent);
   font-style: italic;
-  text-shadow: 0 0 30px rgba(212, 168, 67, 0.2);
+  text-shadow: 0 0 30px rgba(200, 168, 78, 0.2);
 }
 
 .section-desc {
   margin-top: 20px;
   color: var(--text-muted);
-  font-size: clamp(15px, 1.5vw, 18px);
+  font-size: clamp(16px, 1.5vw, 20px);
   max-width: 600px;
-  line-height: 1.7;
+  line-height: 1.75;
 }
 
 /* ======================================
@@ -569,16 +783,28 @@ body::before {
   overflow: hidden;
 }
 
-/* Rich warm gradient with gold/rose/blue undertones */
+/* Rich warm gradient with gold/rose undertones */
 .hero-gradient {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 15% 50%, rgba(212, 168, 67, 0.1) 0%, transparent 50%),
-    radial-gradient(ellipse at 85% 20%, rgba(61, 90, 128, 0.08) 0%, transparent 40%),
-    radial-gradient(ellipse at 50% 85%, rgba(139, 46, 59, 0.06) 0%, transparent 35%),
-    radial-gradient(ellipse at 50% 50%, rgba(106, 76, 147, 0.04) 0%, transparent 50%),
-    linear-gradient(180deg, var(--bg) 0%, rgba(18, 16, 28, 0.97) 100%);
+    radial-gradient(ellipse at 15% 50%, rgba(200, 168, 78, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 20%, rgba(107, 29, 42, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 85%, rgba(200, 168, 78, 0.04) 0%, transparent 35%),
+    radial-gradient(ellipse at 50% 50%, rgba(26, 30, 50, 0.6) 0%, transparent 60%),
+    linear-gradient(180deg, #0A0E1A 0%, rgba(10, 14, 26, 0.97) 100%);
+}
+
+/* Sunburst SVG behind hero */
+.hero-sunburst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(90vw, 900px);
+  height: min(90vw, 900px);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Art Deco ornamental frame around hero */
@@ -592,7 +818,7 @@ body::before {
   border: 1px solid var(--line);
   pointer-events: none;
   z-index: 1;
-  opacity: 0.4;
+  opacity: 0.35;
 }
 
 /* Corner flourishes on hero frame */
@@ -607,7 +833,7 @@ body::before {
   border-left: 3px solid var(--accent);
   pointer-events: none;
   z-index: 2;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .hero-content {
@@ -620,15 +846,23 @@ body::before {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
-/* Hero title — Playfair Display, dramatic serif */
+/* Wax seal in hero */
+.hero-seal {
+  margin-bottom: 28px;
+  width: 56px;
+  height: 56px;
+  font-size: 22px;
+}
+
+/* Hero title — Bodoni Moda, dramatic display */
 .hero-title {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 900;
   line-height: 0.95;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .hero-title-line {
@@ -638,9 +872,12 @@ body::before {
 }
 
 .hero-title-line em {
-  color: var(--accent);
+  background: linear-gradient(135deg, #C8A84E 0%, #E0C060 25%, #D4AF37 50%, #B8922E 75%, #C8A84E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-style: italic;
-  text-shadow: 0 0 40px rgba(212, 168, 67, 0.25);
+  filter: brightness(1.15);
 }
 
 /* Gold accent line under hero title */
@@ -651,18 +888,18 @@ body::before {
   height: 2px;
   background: linear-gradient(90deg, var(--accent), var(--accent-bright), transparent);
   margin-top: 32px;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .hero-subtitle {
   margin-top: 40px;
   max-width: 580px;
   color: var(--text-muted);
-  font-size: clamp(16px, 1.5vw, 20px);
-  line-height: 1.7;
+  font-size: clamp(17px, 1.5vw, 21px);
+  line-height: 1.75;
 }
 
-/* Hero statements — Art Deco framed cards */
+/* Hero statements — Art Deco framed cards with parchment */
 .hero-statements {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -672,50 +909,25 @@ body::before {
 
 .hero-statement {
   padding: 24px;
-  border: 1px solid var(--line-strong);
-  border-radius: 0;
   background: var(--bg-card);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  position: relative;
+  overflow: hidden;
 }
 
-/* Double-line Art Deco frame */
-.hero-statement::before {
-  content: "";
-  position: absolute;
-  inset: 4px;
-  border: 1px solid var(--line);
-  pointer-events: none;
-  opacity: 0.4;
-}
-
-/* Gold corner accent */
-.hero-statement::after {
-  content: "";
-  position: absolute;
-  top: -1px;
-  left: -1px;
-  width: 16px;
-  height: 16px;
-  border-top: 2px solid var(--accent);
-  border-left: 2px solid var(--accent);
-  opacity: 0.5;
+.hero-statement span:last-of-type {
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.7;
 }
 
 .statement-num {
-  font-family: var(--font-display);
-  font-size: 12px;
+  font-family: var(--font-heading);
+  font-size: 11px;
   font-weight: 600;
   color: var(--accent);
   letter-spacing: 0.15em;
-}
-
-.hero-statement span:last-child {
-  color: var(--text-muted);
-  font-size: 14px;
-  line-height: 1.6;
 }
 
 .hero-scroll-cue {
@@ -741,7 +953,7 @@ body::before {
   width: 100%;
   height: 100%;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  animation: scroll-cue 2s ease-in-out infinite;
+  animation: scroll-cue 2.5s ease-in-out infinite;
 }
 
 @keyframes scroll-cue {
@@ -760,7 +972,7 @@ body::before {
   font-size: 14px;
   letter-spacing: 0.25em;
   color: var(--accent);
-  opacity: 0.4;
+  opacity: 0.35;
 }
 
 /* ======================================
@@ -777,32 +989,37 @@ body::before {
   will-change: transform;
 }
 
-/* Showcase card — Art Deco double-border frame */
+/* Showcase card — parchment background, deco frame */
 .showcase-card {
   flex: 0 0 clamp(340px, 40vw, 520px);
   border: 2px solid var(--line-strong);
   border-radius: 0;
-  background: var(--bg-card);
   overflow: hidden;
-  transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.4s var(--transition), transform 0.5s var(--transition), box-shadow 0.4s ease;
   position: relative;
 }
 
 .showcase-card:hover {
   border-color: var(--accent);
   transform: translateY(-6px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 30px rgba(212, 168, 67, 0.05);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 0 40px rgba(200, 168, 78, 0.06),
+    inset 0 0 60px rgba(200, 168, 78, 0.03);
 }
 
-/* Inner Art Deco frame */
-.showcase-card::after {
-  content: "";
+/* Stamp motif on card */
+.card-stamp {
   position: absolute;
-  inset: 8px;
-  border: 1px solid var(--line);
-  pointer-events: none;
-  opacity: 0.3;
-  z-index: 2;
+  top: 16px;
+  right: 16px;
+  z-index: 3;
+  opacity: 0.6;
+  transition: opacity 0.4s ease;
+}
+
+.showcase-card:hover .card-stamp {
+  opacity: 1;
 }
 
 .card-visual {
@@ -814,8 +1031,8 @@ body::before {
 
 .card-visual-systems {
   background:
-    linear-gradient(135deg, rgba(61, 90, 128, 0.12), transparent 50%),
-    linear-gradient(45deg, rgba(212, 168, 67, 0.08), transparent 48%),
+    linear-gradient(135deg, rgba(107, 29, 42, 0.1), transparent 50%),
+    linear-gradient(45deg, rgba(200, 168, 78, 0.06), transparent 48%),
     var(--bg-surface);
 }
 
@@ -850,7 +1067,7 @@ body::before {
   gap: 8px;
   padding: 24px;
   background:
-    linear-gradient(160deg, rgba(212, 168, 67, 0.08), transparent 60%),
+    linear-gradient(160deg, rgba(200, 168, 78, 0.06), transparent 60%),
     var(--bg-surface);
 }
 
@@ -863,7 +1080,7 @@ body::before {
   opacity: 0.3;
   transform: scaleY(var(--i));
   transform-origin: bottom;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.5s var(--transition);
 }
 
 .showcase-card:hover .rhythm-bars span {
@@ -893,12 +1110,13 @@ body::before {
   padding: 0 14px;
   border: 1px solid var(--line-strong);
   border-radius: 0;
+  font-family: var(--font-label);
   font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
   background: var(--bg-elevated);
-  letter-spacing: 0.05em;
-  transition: border-color 0.3s ease, color 0.3s ease;
+  letter-spacing: 0.08em;
+  transition: border-color 0.4s var(--transition), color 0.4s ease;
 }
 
 .showcase-card:hover .token {
@@ -910,12 +1128,12 @@ body::before {
   position: absolute;
   bottom: 16px;
   right: 20px;
-  font-family: var(--font-display);
-  font-size: 14px;
+  font-family: var(--font-heading);
+  font-size: 13px;
   font-weight: 600;
   color: var(--accent);
   letter-spacing: 0.15em;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 .card-body {
@@ -923,18 +1141,19 @@ body::before {
 }
 
 .card-body h3 {
-  font-family: var(--font-display);
-  font-size: clamp(24px, 3vw, 34px);
-  font-weight: 400;
+  font-family: var(--font-heading);
+  font-size: clamp(22px, 2.5vw, 32px);
+  font-weight: 700;
   line-height: 1.1;
   margin-bottom: 16px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .card-body p {
   color: var(--text-muted);
-  font-size: 14px;
-  line-height: 1.7;
+  font-size: 16px;
+  line-height: 1.75;
 }
 
 .tag-row {
@@ -951,9 +1170,9 @@ body::before {
   padding: 0 12px;
   border: 1px solid var(--line-strong);
   border-radius: 0;
-  font-family: var(--font-display);
+  font-family: var(--font-label);
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--accent);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -976,45 +1195,26 @@ body::before {
   overflow: hidden;
 }
 
-/* Art Deco ornamental border frame */
-.story-pin::before {
-  content: "";
+/* SVG ornamental frame */
+.story-frame-svg {
   position: absolute;
-  top: 30px;
-  left: 30px;
-  right: 30px;
-  bottom: 30px;
-  border: 1px solid var(--line-strong);
+  inset: 20px;
+  width: calc(100% - 40px);
+  height: calc(100% - 40px);
   pointer-events: none;
   z-index: 0;
-  opacity: 0.4;
-}
-
-/* Ornamental corner mark */
-.story-pin::after {
-  content: "";
-  position: absolute;
-  top: 26px;
-  left: 26px;
-  width: 28px;
-  height: 28px;
-  border-top: 3px solid var(--accent);
-  border-left: 3px solid var(--accent);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.5;
 }
 
 .story-bg-text {
   position: absolute;
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: clamp(120px, 20vw, 320px);
-  font-weight: 700;
+  font-weight: 900;
   color: var(--line);
   letter-spacing: 0.15em;
   user-select: none;
   white-space: nowrap;
-  opacity: 0.2;
+  opacity: 0.15;
   text-transform: uppercase;
 }
 
@@ -1026,7 +1226,7 @@ body::before {
 }
 
 .story-block {
-  margin-bottom: 60px;
+  margin-bottom: 48px;
 }
 
 .story-block:last-child {
@@ -1036,21 +1236,24 @@ body::before {
 .bio-text {
   font-family: var(--font-display);
   font-size: clamp(28px, 4vw, 52px);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.1;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .bio-text em {
-  color: var(--accent);
+  background: linear-gradient(135deg, #C8A84E 0%, #E0C060 25%, #D4AF37 50%, #B8922E 75%, #C8A84E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-style: italic;
-  text-shadow: 0 0 30px rgba(212, 168, 67, 0.2);
+  filter: brightness(1.15);
 }
 
 .story-principles {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 0;
 }
 
 .principle {
@@ -1059,13 +1262,27 @@ body::before {
   align-items: flex-start;
   padding: 20px;
   border-left: 2px solid var(--accent);
-  background: linear-gradient(90deg, rgba(212, 168, 67, 0.03) 0%, transparent 100%);
+  background: linear-gradient(90deg, rgba(200, 168, 78, 0.025) 0%, transparent 100%);
+}
+
+/* Wax seal divider between principles */
+.wax-seal-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
 }
 
 .principle-num {
   flex-shrink: 0;
-  font-family: var(--font-display);
-  font-size: 14px;
+  font-family: var(--font-heading);
+  font-size: 12px;
   font-weight: 600;
   color: var(--accent);
   letter-spacing: 0.15em;
@@ -1074,17 +1291,18 @@ body::before {
 
 .principle strong {
   display: block;
-  font-family: var(--font-display);
-  font-size: clamp(18px, 2vw, 22px);
-  font-weight: 600;
+  font-family: var(--font-heading);
+  font-size: clamp(16px, 2vw, 20px);
+  font-weight: 700;
   margin-bottom: 8px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .principle p {
   color: var(--text-muted);
-  font-size: 15px;
-  line-height: 1.7;
+  font-size: 16px;
+  line-height: 1.75;
 }
 
 /* ======================================
@@ -1097,35 +1315,36 @@ body::before {
   max-width: 1200px;
 }
 
-/* Desk card — Art Deco frame */
+/* Desk card — Art Deco frame with inner glow on hover */
 .desk-card {
   padding: 32px 28px;
   border: 1px solid var(--line-strong);
   border-radius: 0;
   background: var(--bg-card);
-  transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.4s var(--transition), transform 0.5s var(--transition), box-shadow 0.4s ease;
   position: relative;
+  overflow: hidden;
 }
 
-/* Double-line inner frame */
+/* Warm amber inner glow on hover */
 .desk-card::before {
   content: "";
   position: absolute;
-  inset: 5px;
-  border: 1px solid var(--line);
-  pointer-events: none;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(200, 168, 78, 0.06) 0%, transparent 70%);
   opacity: 0;
-  transition: opacity 0.4s ease;
+  pointer-events: none;
+  transition: opacity 0.5s var(--transition);
 }
 
 .desk-card:hover {
   border-color: var(--accent);
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), 0 0 30px rgba(200, 168, 78, 0.04);
 }
 
 .desk-card:hover::before {
-  opacity: 0.3;
+  opacity: 1;
 }
 
 /* Gold accent line at bottom on hover */
@@ -1138,7 +1357,7 @@ body::before {
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.5s var(--transition);
 }
 
 .desk-card:hover::after {
@@ -1155,24 +1374,26 @@ body::before {
   color: var(--accent);
   margin-bottom: 28px;
   border: 1px solid var(--line);
+  font-size: 24px;
 }
 
-.desk-card:nth-child(2) .desk-icon { background: rgba(61, 90, 128, 0.15); color: var(--blue); border-color: rgba(61, 90, 128, 0.2); }
-.desk-card:nth-child(3) .desk-icon { background: rgba(196, 90, 60, 0.15); color: var(--accent-warm); border-color: rgba(196, 90, 60, 0.2); }
-.desk-card:nth-child(4) .desk-icon { background: rgba(106, 76, 147, 0.15); color: var(--purple); border-color: rgba(106, 76, 147, 0.2); }
+.desk-card:nth-child(2) .desk-icon { background: rgba(107, 29, 42, 0.15); color: var(--burgundy-light); border-color: rgba(107, 29, 42, 0.2); }
+.desk-card:nth-child(3) .desk-icon { background: rgba(200, 168, 78, 0.08); color: var(--accent-bright); border-color: rgba(200, 168, 78, 0.15); }
+.desk-card:nth-child(4) .desk-icon { background: rgba(107, 29, 42, 0.1); color: var(--accent-warm); border-color: rgba(200, 168, 78, 0.12); }
 
 .desk-card h3 {
-  font-family: var(--font-display);
-  font-size: clamp(22px, 2.5vw, 30px);
-  font-weight: 400;
+  font-family: var(--font-heading);
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 700;
   margin-bottom: 12px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .desk-card p {
   color: var(--text-muted);
-  font-size: 14px;
-  line-height: 1.7;
+  font-size: 16px;
+  line-height: 1.75;
 }
 
 /* ======================================
@@ -1185,7 +1406,7 @@ body::before {
   max-width: 1100px;
 }
 
-/* Note card — Art Deco with gold left accent */
+/* Note card — stepped gold left accent */
 .note-card {
   display: flex;
   flex-direction: column;
@@ -1194,36 +1415,39 @@ body::before {
   border-radius: 0;
   background: var(--bg-card);
   min-height: 320px;
-  transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.4s var(--transition), transform 0.5s var(--transition), box-shadow 0.4s ease;
   position: relative;
+  overflow: hidden;
 }
 
-/* Gold left accent bar */
-.note-card::after {
+/* Warm amber inner glow on hover */
+.note-card::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 3px;
-  height: 100%;
-  background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+  inset: 0;
+  background: radial-gradient(ellipse at 0% 50%, rgba(200, 168, 78, 0.05) 0%, transparent 60%);
   opacity: 0;
-  transition: opacity 0.4s ease;
+  pointer-events: none;
+  transition: opacity 0.5s var(--transition);
 }
 
 .note-card:hover {
   border-color: var(--accent);
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), 0 0 30px rgba(200, 168, 78, 0.04);
 }
 
-.note-card:hover::after {
-  opacity: 0.6;
+.note-card:hover::before {
+  opacity: 1;
+}
+
+.note-card:hover .note-stepped-accent {
+  opacity: 1;
 }
 
 .note-num {
-  font-family: var(--font-display);
-  font-size: 11px;
+  font-family: var(--font-heading);
+  font-size: 10px;
   font-weight: 600;
   color: var(--accent);
   letter-spacing: 0.15em;
@@ -1232,18 +1456,19 @@ body::before {
 }
 
 .note-card h3 {
-  font-family: var(--font-display);
-  font-size: clamp(24px, 3vw, 34px);
-  font-weight: 400;
+  font-family: var(--font-heading);
+  font-size: clamp(20px, 2.5vw, 28px);
+  font-weight: 700;
   line-height: 1.1;
   margin-bottom: 16px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .note-card p {
   color: var(--text-muted);
-  font-size: 14px;
-  line-height: 1.7;
+  font-size: 16px;
+  line-height: 1.75;
   flex: 1;
 }
 
@@ -1266,27 +1491,14 @@ body::before {
   max-width: 1100px;
 }
 
-/* Contact main — Art Deco framed panel */
+/* Contact main — full deco-frame treatment */
 .contact-main {
   padding: clamp(40px, 5vw, 72px);
-  border: 2px solid var(--line-strong);
-  border-radius: 0;
   background: var(--bg-elevated);
   min-height: 400px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  position: relative;
-}
-
-/* Double-line inner frame */
-.contact-main::after {
-  content: "";
-  position: absolute;
-  inset: 10px;
-  border: 1px solid var(--line);
-  pointer-events: none;
-  opacity: 0.25;
 }
 
 .contact-main .section-title {
@@ -1296,9 +1508,9 @@ body::before {
 
 .contact-desc {
   color: var(--text-muted);
-  font-size: 16px;
+  font-size: 17px;
   max-width: 480px;
-  line-height: 1.7;
+  line-height: 1.75;
 }
 
 .contact-actions {
@@ -1308,29 +1520,35 @@ body::before {
   margin-top: 40px;
 }
 
-/* Contact link — Art Deco button style */
+/* Contact link — burgundy buttons with gold border */
 .contact-link {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   height: 48px;
-  padding: 0 24px;
-  border: 2px solid var(--line-strong);
+  padding: 0 28px;
+  border: 1px solid var(--accent);
   border-radius: 0;
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text);
-  transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  color: var(--accent-bright);
+  background: var(--burgundy);
+  transition: background 0.35s var(--transition), transform 0.35s var(--transition), box-shadow 0.35s ease, border-color 0.35s ease;
 }
 
 .contact-link:hover {
-  border-color: var(--accent);
-  background: var(--accent-dim);
+  background: var(--burgundy-light);
+  border-color: var(--accent-bright);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 24px rgba(107, 29, 42, 0.3), 0 0 20px rgba(200, 168, 78, 0.08);
+}
+
+[data-theme="light"] .contact-link {
+  background: var(--burgundy);
+  color: #D4AF37;
 }
 
 .contact-side {
@@ -1346,47 +1564,48 @@ body::before {
   background: var(--bg-card);
   flex: 1;
   position: relative;
+  transition: border-color 0.3s ease;
+}
+
+.contact-panel:hover {
+  border-color: rgba(200, 168, 78, 0.35);
 }
 
 .contact-panel h3 {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 400;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
   margin-bottom: 12px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .contact-panel p {
   color: var(--text-muted);
-  font-size: 14px;
-  line-height: 1.7;
+  font-size: 15px;
+  line-height: 1.75;
 }
 
 /* ======================================
    FOOTER — Art Deco styled
    ====================================== */
 .footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 40px clamp(24px, 4vw, 48px);
+  padding: 0 clamp(24px, 4vw, 48px);
   color: var(--text-dim);
   font-size: 13px;
-  border-top: 1px solid var(--line-strong);
   position: relative;
 }
 
-/* Gold accent line at top of footer */
-.footer::before {
-  content: "";
-  position: absolute;
-  top: -1px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 2px;
-  background: var(--accent);
-  opacity: 0.4;
+.footer-ornament {
+  display: block;
+  margin-bottom: 24px;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 40px;
 }
 
 /* ======================================
@@ -1455,7 +1674,7 @@ body::before {
   border: 2px solid var(--accent);
   background: var(--bg);
   z-index: 2;
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 /* ======================================
@@ -1502,7 +1721,7 @@ body::before {
   }
 
   .letterbox {
-    height: 4vh;
+    height: 3vh;
   }
 
   .scene-hero::before,
@@ -1510,9 +1729,28 @@ body::before {
     display: none;
   }
 
-  .story-pin::before,
-  .story-pin::after {
+  .story-frame-svg {
     display: none;
+  }
+
+  .hero-seal {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  .wax-seal-divider {
+    padding: 12px 0;
+  }
+
+  .section-title {
+    letter-spacing: 0.04em;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
   }
 }
 
@@ -1528,4 +1766,5 @@ body::before {
 
   .grain { display: none; }
   .letterbox { display: none; }
+  .preloader-ornament { animation: none; }
 }

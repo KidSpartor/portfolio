@@ -4,18 +4,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Tianyi Ma — builder of interfaces that reward repeated use. Software, systems, taste.">
-  <meta name="theme-color" content="#0a0908">
+  <meta name="theme-color" content="#0A0E1A">
   <title>Tianyi Ma | Studio</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%230a0908'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Georgia,serif' font-size='34' fill='%23e8e0d4'%3ET%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%236B1D2A'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-family='Georgia,serif' font-size='34' font-weight='700' fill='%23D4AF37'%3ET%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,600;0,6..96,700;0,6..96,800;0,6..96,900;1,6..96,400;1,6..96,500;1,6..96,700&family=Cinzel:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Cormorant+SC:wght@300;400;500;600;700&family=Special+Elite&display=swap" rel="stylesheet">
   <script type="module" src="/src/main.js"></script>
 </head>
 <body>
 
   <!-- Preloader -->
   <div class="preloader" id="preloader">
+    <svg class="preloader-ornament" width="160" height="160" viewBox="0 0 160 160" fill="none" aria-hidden="true">
+      <!-- Outer ring -->
+      <circle cx="80" cy="80" r="76" stroke="rgba(200,168,78,0.15)" stroke-width="1"/>
+      <circle cx="80" cy="80" r="68" stroke="rgba(200,168,78,0.08)" stroke-width="1"/>
+      <!-- Radiating lines -->
+      <line x1="80" y1="8" x2="80" y2="28" stroke="rgba(200,168,78,0.3)" stroke-width="1.5"/>
+      <line x1="80" y1="132" x2="80" y2="152" stroke="rgba(200,168,78,0.3)" stroke-width="1.5"/>
+      <line x1="8" y1="80" x2="28" y2="80" stroke="rgba(200,168,78,0.3)" stroke-width="1.5"/>
+      <line x1="132" y1="80" x2="152" y2="80" stroke="rgba(200,168,78,0.3)" stroke-width="1.5"/>
+      <!-- Diagonal radiating lines -->
+      <line x1="29" y1="29" x2="41" y2="41" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+      <line x1="119" y1="29" x2="131" y2="41" stroke="rgba(200,168,78,0.2)" stroke-width="1" transform="rotate(90 125 35)"/>
+      <line x1="29" y1="131" x2="41" y2="119" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+      <line x1="131" y1="131" x2="119" y2="119" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+      <!-- Inner diamond -->
+      <rect x="60" y="60" width="40" height="40" transform="rotate(45 80 80)" stroke="rgba(200,168,78,0.25)" stroke-width="1.5" fill="none"/>
+      <!-- Center small diamond -->
+      <rect x="72" y="72" width="16" height="16" transform="rotate(45 80 80)" stroke="rgba(200,168,78,0.4)" stroke-width="1" fill="rgba(200,168,78,0.05)"/>
+      <!-- Corner Art Deco fans -->
+      <path d="M4 4 L28 4 L4 28 Z" fill="rgba(200,168,78,0.06)" stroke="rgba(200,168,78,0.15)" stroke-width="0.5"/>
+      <path d="M156 4 L132 4 L156 28 Z" fill="rgba(200,168,78,0.06)" stroke="rgba(200,168,78,0.15)" stroke-width="0.5"/>
+      <path d="M4 156 L28 156 L4 132 Z" fill="rgba(200,168,78,0.06)" stroke="rgba(200,168,78,0.15)" stroke-width="0.5"/>
+      <path d="M156 156 L132 156 L156 132 Z" fill="rgba(200,168,78,0.06)" stroke="rgba(200,168,78,0.15)" stroke-width="0.5"/>
+    </svg>
     <div class="preloader-mark">T</div>
     <div class="preloader-bar"><div class="preloader-fill"></div></div>
   </div>
@@ -66,11 +90,33 @@
     <div class="scene-bg">
       <div class="hero-gradient"></div>
     </div>
+    <!-- Art Deco radiating sunburst SVG -->
+    <svg class="hero-sunburst" viewBox="0 0 800 800" fill="none" aria-hidden="true">
+      <g opacity="0.06">
+        <line x1="400" y1="0" x2="400" y2="800" stroke="#C8A84E" stroke-width="0.5"/>
+        <line x1="0" y1="400" x2="800" y2="400" stroke="#C8A84E" stroke-width="0.5"/>
+        <line x1="56" y1="56" x2="744" y2="744" stroke="#C8A84E" stroke-width="0.5"/>
+        <line x1="744" y1="56" x2="56" y2="744" stroke="#C8A84E" stroke-width="0.5"/>
+        <line x1="400" y1="0" x2="200" y2="800" stroke="#C8A84E" stroke-width="0.3"/>
+        <line x1="400" y1="0" x2="600" y2="800" stroke="#C8A84E" stroke-width="0.3"/>
+        <line x1="0" y1="400" x2="800" y2="200" stroke="#C8A84E" stroke-width="0.3"/>
+        <line x1="0" y1="400" x2="800" y2="600" stroke="#C8A84E" stroke-width="0.3"/>
+        <line x1="56" y1="56" x2="400" y2="800" stroke="#C8A84E" stroke-width="0.3"/>
+        <line x1="744" y1="56" x2="400" y2="800" stroke="#C8A84E" stroke-width="0.3"/>
+        <line x1="56" y1="744" x2="400" y2="0" stroke="#C8A84E" stroke-width="0.3"/>
+        <line x1="744" y1="744" x2="400" y2="0" stroke="#C8A84E" stroke-width="0.3"/>
+        <circle cx="400" cy="400" r="300" stroke="#C8A84E" stroke-width="0.5"/>
+        <circle cx="400" cy="400" r="200" stroke="#C8A84E" stroke-width="0.3"/>
+        <circle cx="400" cy="400" r="100" stroke="#C8A84E" stroke-width="0.5"/>
+      </g>
+    </svg>
     <div class="scene-content hero-content">
       <div class="hero-eyebrow">
         <span class="pulse-dot"></span>
         <span class="mono-label">Studio index — 2026</span>
       </div>
+      <!-- Wax seal with T -->
+      <div class="wax-seal hero-seal" aria-hidden="true">T</div>
       <h1 class="hero-title" data-split>
         <span class="hero-title-line">Tianyi Ma</span>
         <span class="hero-title-line">keeps useful things</span>
@@ -78,17 +124,21 @@
       </h1>
       <p class="hero-subtitle">Software, systems, instruments, prototypes, and the kind of interface details that make an idea feel alive without announcing the trick.</p>
       <div class="hero-statements">
-        <div class="hero-statement">
+        <div class="hero-statement deco-frame">
           <span class="statement-num">01</span>
           <span>Build interfaces that reward repeated use, not just first impressions.</span>
+          <!-- Stepped zigzag border at bottom -->
+          <div class="stepped-border stepped-bottom" aria-hidden="true"></div>
         </div>
-        <div class="hero-statement">
+        <div class="hero-statement deco-frame">
           <span class="statement-num">02</span>
           <span>Turn rough ideas into working objects before they become too precious.</span>
+          <div class="stepped-border stepped-bottom" aria-hidden="true"></div>
         </div>
-        <div class="hero-statement">
+        <div class="hero-statement deco-frame">
           <span class="statement-num">03</span>
           <span>Let the system show its intelligence through behavior, restraint, and rhythm.</span>
+          <div class="stepped-border stepped-bottom" aria-hidden="true"></div>
         </div>
       </div>
       <div class="hero-scroll-cue">
@@ -101,18 +151,34 @@
     </div>
   </section>
 
+  <!-- Section divider ornament -->
+  <div class="section-ornament" aria-hidden="true">
+    <svg width="240" height="32" viewBox="0 0 240 32" fill="none">
+      <line x1="0" y1="16" x2="90" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+      <rect x="108" y="4" width="12" height="12" transform="rotate(45 114 10)" fill="none" stroke="rgba(200,168,78,0.5)" stroke-width="1.5"/>
+      <rect x="116" y="12" width="8" height="8" transform="rotate(45 120 16)" fill="rgba(200,168,78,0.15)" stroke="rgba(200,168,78,0.3)" stroke-width="0.5"/>
+      <line x1="150" y1="16" x2="240" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+    </svg>
+  </div>
+
   <!-- ============================== -->
   <!-- ACT II : WORK — THE SHOWCASE   -->
   <!-- ============================== -->
   <section class="scene scene-work" id="work">
     <div class="scene-header">
       <span class="mono-label">Selected directions</span>
-      <h2 class="section-title" data-split>A portfolio can be a cabinet, not a trophy shelf.</h2>
+      <h2 class="section-title gold-foil" data-split>A portfolio can be a cabinet, not a trophy shelf.</h2>
       <p class="section-desc">The work is organized by what it teaches: systems, instruments, playful models, and public thinking.</p>
     </div>
 
     <div class="showcase-track" id="showcaseTrack">
-      <div class="showcase-card" data-card>
+      <div class="showcase-card parchment" data-card>
+        <!-- Stamp motif -->
+        <svg class="card-stamp" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <circle cx="24" cy="24" r="20" stroke="rgba(200,168,78,0.15)" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <circle cx="24" cy="24" r="14" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+          <text x="24" y="28" text-anchor="middle" font-family="Cinzel,serif" font-size="10" fill="rgba(200,168,78,0.3)" font-weight="600">SYS</text>
+        </svg>
         <div class="card-visual card-visual-systems">
           <div class="node-orbit">
             <span class="node" style="--size:90px;--x:15%;--y:20%"></span>
@@ -132,7 +198,12 @@
         </div>
       </div>
 
-      <div class="showcase-card" data-card>
+      <div class="showcase-card parchment" data-card>
+        <svg class="card-stamp" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <circle cx="24" cy="24" r="20" stroke="rgba(200,168,78,0.15)" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <circle cx="24" cy="24" r="14" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+          <text x="24" y="28" text-anchor="middle" font-family="Cinzel,serif" font-size="10" fill="rgba(200,168,78,0.3)" font-weight="600">INS</text>
+        </svg>
         <div class="card-visual card-visual-rhythm">
           <div class="rhythm-bars">
             <span style="--i:.15"></span><span style="--i:.35"></span><span style="--i:.55"></span>
@@ -152,7 +223,12 @@
         </div>
       </div>
 
-      <div class="showcase-card" data-card>
+      <div class="showcase-card parchment" data-card>
+        <svg class="card-stamp" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <circle cx="24" cy="24" r="20" stroke="rgba(200,168,78,0.15)" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <circle cx="24" cy="24" r="14" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+          <text x="24" y="28" text-anchor="middle" font-family="Cinzel,serif" font-size="10" fill="rgba(200,168,78,0.3)" font-weight="600">LAB</text>
+        </svg>
         <div class="card-visual card-visual-proto">
           <div class="token-cloud">
             <span class="token">game feel</span>
@@ -177,16 +253,49 @@
     </div>
   </section>
 
+  <!-- Section divider ornament -->
+  <div class="section-ornament" aria-hidden="true">
+    <svg width="240" height="32" viewBox="0 0 240 32" fill="none">
+      <line x1="0" y1="16" x2="90" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+      <rect x="108" y="4" width="12" height="12" transform="rotate(45 114 10)" fill="none" stroke="rgba(200,168,78,0.5)" stroke-width="1.5"/>
+      <rect x="116" y="12" width="8" height="8" transform="rotate(45 120 16)" fill="rgba(200,168,78,0.15)" stroke="rgba(200,168,78,0.3)" stroke-width="0.5"/>
+      <line x1="150" y1="16" x2="240" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+    </svg>
+  </div>
+
   <!-- ============================== -->
   <!-- ACT III : STORY — THE NARRATIVE -->
   <!-- ============================== -->
   <section class="scene scene-story" id="story">
     <div class="story-pin" id="storyPin">
       <div class="story-bg-text" aria-hidden="true">STUDIO</div>
+      <!-- Full ornamental frame with 4 corner flourishes -->
+      <svg class="story-frame-svg" viewBox="0 0 1000 600" fill="none" preserveAspectRatio="none" aria-hidden="true">
+        <!-- Outer border -->
+        <rect x="2" y="2" width="996" height="596" stroke="rgba(200,168,78,0.12)" stroke-width="1" fill="none"/>
+        <!-- Inner border -->
+        <rect x="10" y="10" width="980" height="580" stroke="rgba(200,168,78,0.08)" stroke-width="1" fill="none"/>
+        <!-- Top-left corner fan -->
+        <path d="M2 50 L2 2 L50 2" stroke="rgba(200,168,78,0.5)" stroke-width="2.5" fill="none"/>
+        <path d="M2 2 L18 18" stroke="rgba(200,168,78,0.35)" stroke-width="1.5"/>
+        <path d="M2 30 L30 2" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+        <!-- Top-right corner fan -->
+        <path d="M998 50 L998 2 L950 2" stroke="rgba(200,168,78,0.5)" stroke-width="2.5" fill="none"/>
+        <path d="M998 2 L982 18" stroke="rgba(200,168,78,0.35)" stroke-width="1.5"/>
+        <path d="M998 30 L970 2" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+        <!-- Bottom-left corner fan -->
+        <path d="M2 550 L2 598 L50 598" stroke="rgba(200,168,78,0.5)" stroke-width="2.5" fill="none"/>
+        <path d="M2 598 L18 582" stroke="rgba(200,168,78,0.35)" stroke-width="1.5"/>
+        <path d="M2 570 L30 598" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+        <!-- Bottom-right corner fan -->
+        <path d="M998 550 L998 598 L950 598" stroke="rgba(200,168,78,0.5)" stroke-width="2.5" fill="none"/>
+        <path d="M998 598 L982 582" stroke="rgba(200,168,78,0.35)" stroke-width="1.5"/>
+        <path d="M998 570 L970 598" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+      </svg>
       <div class="story-content">
         <div class="story-block" data-story>
           <span class="mono-label">About</span>
-          <h2 class="section-title">Taste is a technical constraint.</h2>
+          <h2 class="section-title gold-foil">Taste is a technical constraint.</h2>
         </div>
         <div class="story-block" data-story>
           <p class="bio-text">I like building things that feel <em>inhabited</em>: clear enough to use, specific enough to belong to someone, and weird enough to keep thinking about.</p>
@@ -199,12 +308,23 @@
               <p>A page can look beautiful in a screenshot and still be inert. The better question is what it does when someone returns.</p>
             </div>
           </div>
+          <!-- Wax seal divider between principles -->
+          <div class="wax-seal-divider" aria-hidden="true">
+            <span class="divider-line"></span>
+            <div class="wax-seal wax-seal-sm">II</div>
+            <span class="divider-line"></span>
+          </div>
           <div class="principle">
             <span class="principle-num">02</span>
             <div>
               <strong>Make the invisible legible.</strong>
               <p>State, rhythm, constraints, and affordances should be felt through the interface before they need to be explained.</p>
             </div>
+          </div>
+          <div class="wax-seal-divider" aria-hidden="true">
+            <span class="divider-line"></span>
+            <div class="wax-seal wax-seal-sm">III</div>
+            <span class="divider-line"></span>
           </div>
           <div class="principle">
             <span class="principle-num">03</span>
@@ -218,39 +338,49 @@
     </div>
   </section>
 
+  <!-- Section divider ornament -->
+  <div class="section-ornament" aria-hidden="true">
+    <svg width="240" height="32" viewBox="0 0 240 32" fill="none">
+      <line x1="0" y1="16" x2="90" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+      <rect x="108" y="4" width="12" height="12" transform="rotate(45 114 10)" fill="none" stroke="rgba(200,168,78,0.5)" stroke-width="1.5"/>
+      <rect x="116" y="12" width="8" height="8" transform="rotate(45 120 16)" fill="rgba(200,168,78,0.15)" stroke="rgba(200,168,78,0.3)" stroke-width="0.5"/>
+      <line x1="150" y1="16" x2="240" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+    </svg>
+  </div>
+
   <!-- ============================== -->
   <!-- ACT IV : DESK — THE INTERESTS  -->
   <!-- ============================== -->
   <section class="scene scene-desk" id="desk">
     <div class="scene-header">
       <span class="mono-label">Desk</span>
-      <h2 class="section-title" data-split>Things worth keeping open.</h2>
+      <h2 class="section-title gold-foil" data-split>Things worth keeping open.</h2>
       <p class="section-desc">Interests, shelves, and recurring obsessions that can grow into future pages.</p>
     </div>
     <div class="desk-grid">
       <article class="desk-card" data-reveal>
-        <div class="desk-icon">
+        <div class="desk-icon emboss">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
         </div>
         <h3>Reading shelf</h3>
         <p>Interface history, systems thinking, game design, human-computer interaction, fiction that understands machines, and essays about attention.</p>
       </article>
       <article class="desk-card" data-reveal>
-        <div class="desk-icon">
+        <div class="desk-icon emboss">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
         </div>
         <h3>Listening desk</h3>
         <p>Music tools, metadata, album art, lyrics, and the way personal libraries become emotional infrastructure.</p>
       </article>
       <article class="desk-card" data-reveal>
-        <div class="desk-icon">
+        <div class="desk-icon emboss">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/><path d="M17 12h.01"/><path d="M7 12h.01"/></svg>
         </div>
         <h3>Play lab</h3>
         <p>Small rule systems: cards, physics, resource loops, NPC behavior, and the satisfying moment when a mechanic starts teaching itself.</p>
       </article>
       <article class="desk-card" data-reveal>
-        <div class="desk-icon">
+        <div class="desk-icon emboss">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
         </div>
         <h3>Tool room</h3>
@@ -259,29 +389,42 @@
     </div>
   </section>
 
+  <!-- Section divider ornament -->
+  <div class="section-ornament" aria-hidden="true">
+    <svg width="240" height="32" viewBox="0 0 240 32" fill="none">
+      <line x1="0" y1="16" x2="90" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+      <rect x="108" y="4" width="12" height="12" transform="rotate(45 114 10)" fill="none" stroke="rgba(200,168,78,0.5)" stroke-width="1.5"/>
+      <rect x="116" y="12" width="8" height="8" transform="rotate(45 120 16)" fill="rgba(200,168,78,0.15)" stroke="rgba(200,168,78,0.3)" stroke-width="0.5"/>
+      <line x1="150" y1="16" x2="240" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+    </svg>
+  </div>
+
   <!-- ============================== -->
   <!-- ACT V : NOTES — THE WRITING    -->
   <!-- ============================== -->
   <section class="scene scene-notes" id="notes">
     <div class="scene-header">
       <span class="mono-label">Notes</span>
-      <h2 class="section-title" data-split>Drafts for future pages.</h2>
+      <h2 class="section-title gold-foil" data-split>Drafts for future pages.</h2>
       <p class="section-desc">Deliberately written like doors, not summaries. A personal site gets better when it has places to wander.</p>
     </div>
     <div class="notes-grid">
       <article class="note-card" data-reveal>
+        <div class="note-stepped-accent" aria-hidden="true"></div>
         <span class="note-num">NOTE 01</span>
         <h3>Interfaces as furniture</h3>
         <p>Some tools should be impressive once. The best ones become part of the room: sturdy, quiet, close at hand.</p>
         <span class="tag">Essay seed</span>
       </article>
       <article class="note-card" data-reveal>
+        <div class="note-stepped-accent" aria-hidden="true"></div>
         <span class="note-num">NOTE 02</span>
         <h3>Why tiny apps matter</h3>
         <p>Small software lets you practice judgment quickly: scope, defaults, naming, failure states, and the feeling of the first click.</p>
         <span class="tag">Build log</span>
       </article>
       <article class="note-card" data-reveal>
+        <div class="note-stepped-accent" aria-hidden="true"></div>
         <span class="note-num">NOTE 03</span>
         <h3>The useful uncanny</h3>
         <p>There is a sweet spot between utility and strangeness where people remember what they used and want to touch it again.</p>
@@ -290,14 +433,24 @@
     </div>
   </section>
 
+  <!-- Section divider ornament -->
+  <div class="section-ornament" aria-hidden="true">
+    <svg width="240" height="32" viewBox="0 0 240 32" fill="none">
+      <line x1="0" y1="16" x2="90" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+      <rect x="108" y="4" width="12" height="12" transform="rotate(45 114 10)" fill="none" stroke="rgba(200,168,78,0.5)" stroke-width="1.5"/>
+      <rect x="116" y="12" width="8" height="8" transform="rotate(45 120 16)" fill="rgba(200,168,78,0.15)" stroke="rgba(200,168,78,0.3)" stroke-width="0.5"/>
+      <line x1="150" y1="16" x2="240" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
+    </svg>
+  </div>
+
   <!-- ============================== -->
   <!-- ACT VI : CONTACT — THE CLOSE   -->
   <!-- ============================== -->
   <section class="scene scene-contact" id="contact">
     <div class="contact-frame">
-      <div class="contact-main">
+      <div class="contact-main deco-frame linen">
         <span class="mono-label">Contact</span>
-        <h2 class="section-title">Bring a rough idea.<br>I like rough ideas.</h2>
+        <h2 class="section-title gold-foil">Bring a rough idea.<br>I like rough ideas.</h2>
         <p class="contact-desc">For prototypes, experiments, collaboration, or a stronger version of this site, start with the fastest available channel.</p>
         <div class="contact-actions">
           <a class="contact-link" href="mailto:KidSpartor@users.noreply.github.com">
@@ -325,8 +478,18 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <span>Designed and built for Tianyi Ma.</span>
-    <span class="mono-label">Studio — always in motion.</span>
+    <!-- Art Deco ornamental footer divider -->
+    <svg class="footer-ornament" width="100%" height="24" viewBox="0 0 1200 24" preserveAspectRatio="none" aria-hidden="true">
+      <line x1="0" y1="12" x2="500" y2="12" stroke="rgba(200,168,78,0.12)" stroke-width="1"/>
+      <rect x="588" y="0" width="12" height="12" transform="rotate(45 594 6)" fill="none" stroke="rgba(200,168,78,0.4)" stroke-width="1.5"/>
+      <rect x="592" y="4" width="4" height="4" transform="rotate(45 594 6)" fill="rgba(200,168,78,0.15)"/>
+      <rect x="600" y="0" width="12" height="12" transform="rotate(45 606 6)" fill="none" stroke="rgba(200,168,78,0.25)" stroke-width="1"/>
+      <line x1="700" y1="12" x2="1200" y2="12" stroke="rgba(200,168,78,0.12)" stroke-width="1"/>
+    </svg>
+    <div class="footer-content">
+      <span>Designed and built for Tianyi Ma.</span>
+      <span class="mono-label">Studio — always in motion.</span>
+    </div>
   </footer>
 
 </body>

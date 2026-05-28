@@ -1,4 +1,4 @@
-// Main entry point — Cinematic Studio
+// Main entry point — 重返未来1999 Cinematic Studio
 import './styles/main.css'
 import { initScroll } from './animations/scroll.js'
 import { initPreloader } from './animations/preloader.js'
@@ -16,7 +16,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Register GSAP plugins
   const gsap = await import('gsap')
   const { ScrollTrigger } = await import('gsap/ScrollTrigger')
-  gsap.default.registerPlugin(ScrollTrigger)
+  const { SplitText } = await import('gsap/SplitText')
+  gsap.default.registerPlugin(ScrollTrigger, SplitText)
 
   // Initialize smooth scroll
   const lenis = initScroll(ScrollTrigger)
