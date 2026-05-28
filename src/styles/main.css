@@ -138,6 +138,85 @@ img { max-width: 100%; display: block; }
 }
 
 /* ======================================
+   CINEMATIC COLOR GRADE
+   One grade pulls all photographic imagery into the 1999 world:
+   desaturated, warm-sepia, darkened, low-key — like graded film footage.
+   ====================================== */
+:root {
+  --grade: saturate(0.8) contrast(1.04) brightness(0.92) sepia(0.18);
+  --grade-hover: saturate(0.92) contrast(1.06) brightness(1) sepia(0.12);
+}
+[data-theme="dark"] {
+  --grade: grayscale(0.2) sepia(0.42) saturate(0.7) contrast(1.06) brightness(0.6) hue-rotate(-6deg);
+  --grade-hover: grayscale(0.12) sepia(0.32) saturate(0.85) contrast(1.06) brightness(0.78) hue-rotate(-4deg);
+}
+
+@keyframes ken-burns {
+  0%   { transform: scale(1.06) translate(0, 0); }
+  100% { transform: scale(1.16) translate(-1.5%, -1.5%); }
+}
+
+/* Showcase card photos */
+.card-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: var(--grade);
+  transform: scale(1.04);
+  transition: filter 0.7s var(--transition), transform 0.9s var(--transition);
+}
+.showcase-card:hover .card-visual img {
+  filter: var(--grade-hover);
+  transform: scale(1.1);
+}
+
+/* Desk + note card photos */
+.desk-card-img,
+.note-card-img {
+  filter: var(--grade);
+  transition: filter 0.7s var(--transition), transform 0.9s var(--transition);
+}
+.desk-card:hover .desk-card-img,
+.note-card:hover .note-card-img {
+  filter: var(--grade-hover);
+}
+
+/* Full-bleed background images get the same grade + slow drift */
+.hero-bg-image,
+.story-bg-image,
+.contact-bg-image {
+  filter: var(--grade);
+  animation: ken-burns 28s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* Story + contact backgrounds were never positioned — surface them
+   behind content, dimmed, so the scenes read as graded film plates. */
+.scene-story,
+.scene-contact { position: relative; }
+
+.story-bg-image,
+.contact-bg-image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.story-pin,
+.contact-frame { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-bg-image,
+  .story-bg-image,
+  .contact-bg-image { animation: none; }
+}
+
+/* ======================================
    CARDS WITH IMAGE SUPPORT
    ====================================== */
 .card-with-image {
@@ -767,6 +846,14 @@ body::before {
   transform: scale(1.05);
 }
 
+.nav-btn.lang-btn .lang-label {
+  font-family: 'Cormorant SC', serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
 /* ======================================
    MONO LABEL + PULSE DOT
    ====================================== */
@@ -1004,8 +1091,16 @@ body::before {
 
 .hero-title-line {
   display: block;
-  font-size: clamp(48px, 9vw, 130px);
-  overflow: hidden;
+  font-size: clamp(38px, 7vw, 88px);
+  overflow: visible;
+  text-wrap: balance;
+}
+
+/* Word groups keep characters together so animated per-char spans
+   never break a word mid-way (e.g. "thin gs"). */
+.hero-title-line .word {
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .hero-title-line em {

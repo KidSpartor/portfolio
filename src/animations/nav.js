@@ -47,19 +47,14 @@ export function initNav() {
   const root = document.documentElement
 
   if (toggle) {
+    // 1999 dark is the default; "light" (cream) is the opt-in daylight mode.
     const saved = localStorage.getItem('theme')
-    if (saved === 'dark') {
-      root.dataset.theme = 'dark'
-    }
+    root.dataset.theme = saved === 'light' ? '' : 'dark'
 
     toggle.addEventListener('click', () => {
       const isDark = root.dataset.theme === 'dark'
       root.dataset.theme = isDark ? '' : 'dark'
-      if (isDark) {
-        localStorage.removeItem('theme')
-      } else {
-        localStorage.setItem('theme', 'dark')
-      }
+      localStorage.setItem('theme', isDark ? 'light' : 'dark')
     })
   }
 

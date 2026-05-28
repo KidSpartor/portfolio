@@ -156,20 +156,31 @@ export function initHero(gsap, ScrollTrigger) {
     function walkNodes(node, parent) {
       if (node.nodeType === 3) {
         // Text node — wrap each character
-        const chars = node.textContent.split('')
-        chars.forEach((char) => {
-          const span = document.createElement('span')
-          span.textContent = char === ' ' ? '\u00A0' : char
-          span.style.display = 'inline-block'
-          span.style.opacity = '0'
-          span.style.transform = 'rotateX(-15deg)'
-          span.style.transformOrigin = 'bottom center'
-          if (node.parentNode.tagName === 'EM') {
-            span.style.color = 'var(--accent)'
-            span.style.fontStyle = 'italic'
+        const isEm = node.parentNode.tagName === 'EM'
+        const tokens = node.textContent.split(/(\s+)/)
+        tokens.forEach((token) => {
+          if (token === '') return
+          if (/^\s+$/.test(token)) {
+            parent.appendChild(document.createTextNode(' '))
+            return
           }
-          parent.appendChild(span)
-          charSpans.push(span)
+          const word = document.createElement('span')
+          word.className = 'word'
+          token.split('').forEach((char) => {
+            const span = document.createElement('span')
+            span.textContent = char
+            span.style.display = 'inline-block'
+            span.style.opacity = '0'
+            span.style.transform = 'rotateX(-15deg)'
+            span.style.transformOrigin = 'bottom center'
+            if (isEm) {
+              span.style.color = 'var(--accent)'
+              span.style.fontStyle = 'italic'
+            }
+            word.appendChild(span)
+            charSpans.push(span)
+          })
+          parent.appendChild(word)
         })
       } else if (node.nodeType === 1) {
         // Element node — recurse
@@ -195,48 +206,6 @@ export function initHero(gsap, ScrollTrigger) {
       delay: 0.4 + lineIndex * 0.2,
     })
   })
-
-  // ── Gold wax seal "T" — scale in with bounce ──
-  const heroTitle = hero.querySelector('.hero-title')
-  if (heroTitle) {
-    const seal = document.createElement('div')
-    seal.className = 'hero-wax-seal'
-    seal.style.cssText = `
-      position: absolute;
-      top: -20px;
-      right: -40px;
-      width: 64px;
-      height: 64px;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(212,168,67,0.25), rgba(212,168,67,0.08));
-      border: 2px solid rgba(212,168,67,0.4);
-      box-shadow: 0 0 30px rgba(212,168,67,0.15), inset 0 0 15px rgba(212,168,67,0.1);
-      font-family: var(--font-display);
-      font-size: 28px;
-      font-weight: 600;
-      color: var(--accent);
-      pointer-events: none;
-      z-index: 5;
-    `
-    seal.textContent = 'T'
-    heroTitle.style.position = 'relative'
-    heroTitle.appendChild(seal)
-
-    gsap.fromTo(
-      seal,
-      { scale: 0, opacity: 0, rotation: -20 },
-      {
-        scale: 1,
-        opacity: 1,
-        rotation: 0,
-        duration: 0.8,
-        ease: 'back.out(2)',
-        delay: 1.0,
-      }
-    )
-  }
 
   // ── Subtitle — fade up ──
   const subtitle = hero.querySelector('.hero-subtitle')

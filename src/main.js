@@ -10,9 +10,13 @@ import { initCanvas, initMagneticHover } from './animations/effects.js'
 import { initAmbient } from './utils/ambient.js'
 import { initAudio } from './utils/audio.js'
 import { initNav } from './animations/nav.js'
+import { initI18n } from './utils/i18n.js'
 
 // Wait for DOM
 document.addEventListener('DOMContentLoaded', async () => {
+  // Apply language BEFORE any text-splitting animation reads the hero title.
+  initI18n()
+
   // Register GSAP plugins
   const gsap = await import('gsap')
   const { ScrollTrigger } = await import('gsap/ScrollTrigger')
