@@ -3,44 +3,54 @@
    Tianyi Ma — Film-inspired personal site
    ============================================ */
 
-/* --- Design Tokens --- */
+/* --- Design Tokens (重返未来1999 — Art Deco / Vintage European) --- */
 :root {
-  --bg: #0a0908;
-  --bg-surface: #141210;
-  --bg-elevated: #1c1a17;
-  --bg-card: #181614;
-  --text: #e8e0d4;
-  --text-muted: #8a8178;
-  --text-dim: #5a544d;
-  --accent: #c9a84c;
-  --accent-dim: rgba(201, 168, 76, 0.15);
-  --blue: #6b8db5;
-  --line: rgba(232, 224, 212, 0.08);
-  --line-strong: rgba(232, 224, 212, 0.14);
-  --glass: rgba(20, 18, 16, 0.72);
-  --radius: 6px;
+  --bg: #0D0B14;
+  --bg-surface: #16131E;
+  --bg-elevated: #1E1A28;
+  --bg-card: #1A1622;
+  --text: #F0E8D8;
+  --text-muted: #8B7E6A;
+  --text-dim: #5C5247;
+  --accent: #D4A843;
+  --accent-dim: rgba(212, 168, 67, 0.15);
+  --accent-warm: #C45A3C;
+  --accent-deep: #8B2E3B;
+  --blue: #3D5A80;
+  --purple: #6A4C93;
+  --line: rgba(212, 168, 67, 0.08);
+  --line-strong: rgba(212, 168, 67, 0.18);
+  --glass: rgba(13, 11, 20, 0.78);
+  --radius: 4px;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-serif: "Instrument Serif", Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --transition: cubic-bezier(0.25, 0.1, 0, 1);
   --scene-pad: clamp(60px, 8vw, 120px);
+  --gold-glow: rgba(212, 168, 67, 0.06);
+  --parchment: rgba(240, 232, 216, 0.03);
 }
 
-/* Light theme override */
+/* Light theme — warm parchment / aged paper */
 [data-theme="light"] {
-  --bg: #f4f0e8;
-  --bg-surface: #ebe6dc;
-  --bg-elevated: #fff;
-  --bg-card: #fff;
-  --text: #1a1714;
-  --text-muted: #6b6259;
-  --text-dim: #9a9188;
-  --accent: #8b6914;
+  --bg: #F5E6CA;
+  --bg-surface: #EFE0C8;
+  --bg-elevated: #FDF6E8;
+  --bg-card: #FDF6E8;
+  --text: #2A2420;
+  --text-muted: #6B5E50;
+  --text-dim: #9A8B78;
+  --accent: #8B6914;
   --accent-dim: rgba(139, 105, 20, 0.1);
-  --blue: #3a6a9a;
-  --line: rgba(26, 23, 20, 0.08);
-  --line-strong: rgba(26, 23, 20, 0.14);
-  --glass: rgba(244, 240, 232, 0.82);
+  --accent-warm: #A04030;
+  --accent-deep: #7A2838;
+  --blue: #3A6A9A;
+  --purple: #5A3C7A;
+  --line: rgba(42, 36, 32, 0.1);
+  --line-strong: rgba(42, 36, 32, 0.18);
+  --glass: rgba(245, 230, 202, 0.85);
+  --gold-glow: rgba(139, 105, 20, 0.06);
+  --parchment: rgba(42, 36, 32, 0.02);
 }
 
 /* --- Reset & Base --- */
@@ -212,6 +222,7 @@ img { max-width: 100%; display: block; }
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 0 0 rgba(212, 168, 67, 0.08);
 }
 
 .nav-brand {
@@ -338,6 +349,8 @@ img { max-width: 100%; display: block; }
   line-height: 1.05;
   letter-spacing: -0.01em;
   margin-top: 12px;
+  font-variation-settings: "wght" 400;
+  will-change: font-variation-settings;
 }
 
 .section-title em {
@@ -377,9 +390,10 @@ img { max-width: 100%; display: block; }
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 20% 50%, rgba(201, 168, 76, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(107, 141, 181, 0.04) 0%, transparent 40%),
-    linear-gradient(180deg, var(--bg) 0%, rgba(10, 9, 8, 0.95) 100%);
+    radial-gradient(ellipse at 20% 50%, rgba(212, 168, 67, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(61, 90, 128, 0.05) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 80%, rgba(139, 46, 59, 0.04) 0%, transparent 35%),
+    linear-gradient(180deg, var(--bg) 0%, rgba(13, 11, 20, 0.97) 100%);
 }
 
 .hero-content {
@@ -398,6 +412,8 @@ img { max-width: 100%; display: block; }
   font-weight: 400;
   line-height: 0.95;
   letter-spacing: -0.02em;
+  font-variation-settings: "wght" 400;
+  will-change: font-variation-settings, transform;
 }
 
 .hero-title-line {
@@ -525,8 +541,8 @@ img { max-width: 100%; display: block; }
 
 .card-visual-systems {
   background:
-    linear-gradient(135deg, rgba(107, 141, 181, 0.08), transparent 50%),
-    linear-gradient(45deg, rgba(201, 168, 76, 0.06), transparent 48%),
+    linear-gradient(135deg, rgba(61, 90, 128, 0.1), transparent 50%),
+    linear-gradient(45deg, rgba(212, 168, 67, 0.07), transparent 48%),
     var(--bg-surface);
 }
 
@@ -561,7 +577,7 @@ img { max-width: 100%; display: block; }
   gap: 8px;
   padding: 24px;
   background:
-    linear-gradient(160deg, rgba(201, 168, 76, 0.06), transparent 60%),
+    linear-gradient(160deg, rgba(212, 168, 67, 0.07), transparent 60%),
     var(--bg-surface);
 }
 
@@ -713,6 +729,8 @@ img { max-width: 100%; display: block; }
   font-size: clamp(28px, 4vw, 52px);
   font-weight: 400;
   line-height: 1.1;
+  font-variation-settings: "wght" 400;
+  will-change: font-variation-settings;
 }
 
 .bio-text em {
@@ -789,9 +807,9 @@ img { max-width: 100%; display: block; }
   margin-bottom: 28px;
 }
 
-.desk-card:nth-child(2) .desk-icon { background: rgba(107, 141, 181, 0.12); color: var(--blue); }
-.desk-card:nth-child(3) .desk-icon { background: rgba(180, 120, 60, 0.12); color: #b4783c; }
-.desk-card:nth-child(4) .desk-icon { background: rgba(140, 100, 180, 0.12); color: #8c64b4; }
+.desk-card:nth-child(2) .desk-icon { background: rgba(61, 90, 128, 0.15); color: var(--blue); }
+.desk-card:nth-child(3) .desk-icon { background: rgba(196, 90, 60, 0.15); color: var(--accent-warm); }
+.desk-card:nth-child(4) .desk-icon { background: rgba(106, 76, 147, 0.15); color: var(--purple); }
 
 .desk-card h3 {
   font-family: var(--font-serif);
@@ -1042,6 +1060,277 @@ body::before {
   position: relative;
   z-index: 1;
 }
+
+/* ======================
+   ART DECO ORNAMENTS & ANALOG TEXTURES
+   (重返未来1999 inspired)
+   ====================== */
+
+/* Art Deco corner ornaments on section headers */
+.scene-header::before {
+  content: "";
+  display: block;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 20px;
+  border-top: 2px solid var(--accent);
+  border-left: 2px solid var(--accent);
+  opacity: 0.5;
+}
+
+.scene-header::after {
+  content: "";
+  display: block;
+  width: 32px;
+  height: 1px;
+  background: var(--accent);
+  margin-top: 16px;
+  opacity: 0.4;
+}
+
+/* Art Deco decorative dividers between scenes — overrides base .scene::after */
+.scene:not(.scene-story):not(.scene-hero)::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--line) 15%,
+    var(--accent) 50%,
+    var(--line) 85%,
+    transparent 100%
+  );
+  height: 1px;
+  opacity: 0.35;
+}
+
+/* Ornamental diamond accent on scene dividers */
+.scene-work::before,
+.scene-story::before,
+.scene-desk::before,
+.scene-notes::before,
+.scene-contact::before {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--accent);
+  background: var(--bg);
+  z-index: 2;
+  opacity: 0.4;
+}
+
+/* Art Deco frame around showcase cards */
+.showcase-card {
+  border: 1px solid var(--line);
+  position: relative;
+}
+
+.showcase-card::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  pointer-events: none;
+  opacity: 0.3;
+  z-index: 2;
+}
+
+/* Art Deco frame around contact main */
+.contact-main {
+  position: relative;
+}
+
+.contact-main::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  pointer-events: none;
+  opacity: 0.25;
+}
+
+/* Parchment texture overlay on cards */
+.desk-card,
+.note-card,
+.contact-panel {
+  background-image:
+    radial-gradient(ellipse at 30% 20%, var(--gold-glow) 0%, transparent 60%),
+    linear-gradient(180deg, var(--parchment) 0%, transparent 100%);
+}
+
+/* Aged paper edge effect on hero */
+.scene-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, transparent 0%, transparent 85%, rgba(13, 11, 20, 0.6) 100%),
+    linear-gradient(0deg, transparent 0%, transparent 85%, rgba(13, 11, 20, 0.4) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Halftone dot pattern overlay (subtle) */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  pointer-events: none;
+  opacity: 0.012;
+  background-image: radial-gradient(circle, var(--text) 1px, transparent 1px);
+  background-size: 4px 4px;
+}
+
+[data-theme="light"] .grain::after {
+  opacity: 0.008;
+}
+
+/* Art Deco section number styling */
+.hero-counter .mono-label {
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  opacity: 0.5;
+}
+
+/* Gold accent line under hero title */
+.hero-title::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  margin-top: 24px;
+  opacity: 0.6;
+}
+
+/* Art Deco border pattern on story section */
+.story-pin::before {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  border: 1px solid var(--line);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.3;
+}
+
+/* Ornamental corner marks on story */
+.story-pin::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 24px;
+  height: 24px;
+  border-top: 2px solid var(--accent);
+  border-left: 2px solid var(--accent);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+}
+
+/* Art Deco accent on note cards */
+.note-card {
+  position: relative;
+}
+
+.note-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--accent), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  border-radius: 2px 0 0 2px;
+}
+
+.note-card:hover::after {
+  opacity: 0.5;
+}
+
+/* Art Deco accent on desk cards */
+.desk-card::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 2px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.desk-card:hover::after {
+  opacity: 0.4;
+}
+
+/* Gold shimmer on accent text */
+.section-title em,
+.hero-title-line em,
+.bio-text em {
+  text-shadow: 0 0 30px rgba(212, 168, 67, 0.15);
+}
+
+/* Preloader Art Deco styling */
+.preloader::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  opacity: 0.2;
+}
+
+.preloader::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 80px;
+  height: 80px;
+  border: 1px solid var(--accent);
+  opacity: 0.15;
+}
+
+/* Nav mark Art Deco styling */
+.nav-mark {
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.1);
+}
+
+/* Audio mute button */
+.nav-btn.mute-btn {
+  position: relative;
+}
+
+.nav-btn.mute-btn .mute-icon-on,
+.nav-btn.mute-btn .mute-icon-off {
+  transition: opacity 0.25s ease;
+}
+
+.nav-btn.mute-btn.muted .mute-icon-on { opacity: 0; }
+.nav-btn.mute-btn.muted .mute-icon-off { opacity: 1; }
+.nav-btn.mute-btn:not(.muted) .mute-icon-on { opacity: 1; }
+.nav-btn.mute-btn:not(.muted) .mute-icon-off { opacity: 0; }
 
 /* ======================
    RESPONSIVE

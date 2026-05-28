@@ -75,7 +75,7 @@ export function initCanvas() {
       }
 
       const alpha = p.opacity * p.depth
-      const color = isLight ? `rgba(26, 23, 20, ${alpha})` : `rgba(232, 224, 212, ${alpha})`
+      const color = isLight ? `rgba(42, 36, 32, ${alpha})` : `rgba(240, 232, 216, ${alpha})`
 
       ctx.beginPath()
       ctx.arc(p.x, p.y, p.size * p.depth, 0, Math.PI * 2)
@@ -107,7 +107,7 @@ export function initCanvas() {
         const endY = s.y + Math.sin(s.angle) * s.length
 
         const gradient = ctx.createLinearGradient(s.x, s.y, endX, endY)
-        const streakColor = isLight ? '26, 23, 20' : '201, 168, 76'
+        const streakColor = isLight ? '42, 36, 32' : '212, 168, 67'
         gradient.addColorStop(0, `rgba(${streakColor}, 0)`)
         gradient.addColorStop(0.5, `rgba(${streakColor}, ${alpha})`)
         gradient.addColorStop(1, `rgba(${streakColor}, 0)`)

@@ -8,6 +8,7 @@ import { initStory } from './animations/story.js'
 import { initReveals } from './animations/reveal.js'
 import { initCanvas, initMagneticHover } from './animations/effects.js'
 import { initAmbient } from './utils/ambient.js'
+import { initAudio } from './utils/audio.js'
 import { initNav } from './animations/nav.js'
 
 // Wait for DOM
@@ -32,4 +33,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCanvas()
   initMagneticHover()
   initAmbient()
+  initAudio()
 })
