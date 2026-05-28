@@ -76,7 +76,7 @@ export function initCanvas() {
     smoothMouse.x += (mouse.x - smoothMouse.x) * lerpFactor
     smoothMouse.y += (mouse.y - smoothMouse.y) * lerpFactor
 
-    const isLight = document.documentElement.dataset.theme === 'light'
+    const isLight = document.documentElement.dataset.theme !== 'dark'
     const goldR = isLight ? 139 : 200
     const goldG = isLight ? 105 : 168
     const goldB = isLight ? 20 : 78

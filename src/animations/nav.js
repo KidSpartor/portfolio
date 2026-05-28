@@ -48,17 +48,17 @@ export function initNav() {
 
   if (toggle) {
     const saved = localStorage.getItem('theme')
-    if (saved === 'light') {
-      root.dataset.theme = 'light'
+    if (saved === 'dark') {
+      root.dataset.theme = 'dark'
     }
 
     toggle.addEventListener('click', () => {
-      const isLight = root.dataset.theme === 'light'
-      root.dataset.theme = isLight ? '' : 'light'
-      if (isLight) {
+      const isDark = root.dataset.theme === 'dark'
+      root.dataset.theme = isDark ? '' : 'dark'
+      if (isDark) {
         localStorage.removeItem('theme')
       } else {
-        localStorage.setItem('theme', 'light')
+        localStorage.setItem('theme', 'dark')
       }
     })
   }

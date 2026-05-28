@@ -17,24 +17,18 @@
   <!-- Preloader -->
   <div class="preloader" id="preloader">
     <svg class="preloader-ornament" width="160" height="160" viewBox="0 0 160 160" fill="none" aria-hidden="true">
-      <!-- Outer ring -->
       <circle cx="80" cy="80" r="76" stroke="rgba(200,168,78,0.15)" stroke-width="1"/>
       <circle cx="80" cy="80" r="68" stroke="rgba(200,168,78,0.08)" stroke-width="1"/>
-      <!-- Radiating lines -->
       <line x1="80" y1="8" x2="80" y2="28" stroke="rgba(200,168,78,0.3)" stroke-width="1.5"/>
       <line x1="80" y1="132" x2="80" y2="152" stroke="rgba(200,168,78,0.3)" stroke-width="1.5"/>
       <line x1="8" y1="80" x2="28" y2="80" stroke="rgba(200,168,78,0.3)" stroke-width="1.5"/>
       <line x1="132" y1="80" x2="152" y2="80" stroke="rgba(200,168,78,0.3)" stroke-width="1.5"/>
-      <!-- Diagonal radiating lines -->
       <line x1="29" y1="29" x2="41" y2="41" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
       <line x1="119" y1="29" x2="131" y2="41" stroke="rgba(200,168,78,0.2)" stroke-width="1" transform="rotate(90 125 35)"/>
       <line x1="29" y1="131" x2="41" y2="119" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
       <line x1="131" y1="131" x2="119" y2="119" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-      <!-- Inner diamond -->
       <rect x="60" y="60" width="40" height="40" transform="rotate(45 80 80)" stroke="rgba(200,168,78,0.25)" stroke-width="1.5" fill="none"/>
-      <!-- Center small diamond -->
       <rect x="72" y="72" width="16" height="16" transform="rotate(45 80 80)" stroke="rgba(200,168,78,0.4)" stroke-width="1" fill="rgba(200,168,78,0.05)"/>
-      <!-- Corner Art Deco fans -->
       <path d="M4 4 L28 4 L4 28 Z" fill="rgba(200,168,78,0.06)" stroke="rgba(200,168,78,0.15)" stroke-width="0.5"/>
       <path d="M156 4 L132 4 L156 28 Z" fill="rgba(200,168,78,0.06)" stroke="rgba(200,168,78,0.15)" stroke-width="0.5"/>
       <path d="M4 156 L28 156 L4 132 Z" fill="rgba(200,168,78,0.06)" stroke="rgba(200,168,78,0.15)" stroke-width="0.5"/>
@@ -88,6 +82,7 @@
   <!-- ============================== -->
   <section class="scene scene-hero" id="hero">
     <div class="scene-bg">
+      <div class="hero-bg-image" style="background-image: url('https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1920&q=80&fit=crop')"></div>
       <div class="hero-gradient"></div>
     </div>
     <!-- Art Deco radiating sunburst SVG -->
@@ -127,7 +122,6 @@
         <div class="hero-statement deco-frame">
           <span class="statement-num">01</span>
           <span>Build interfaces that reward repeated use, not just first impressions.</span>
-          <!-- Stepped zigzag border at bottom -->
           <div class="stepped-border stepped-bottom" aria-hidden="true"></div>
         </div>
         <div class="hero-statement deco-frame">
@@ -172,20 +166,14 @@
     </div>
 
     <div class="showcase-track" id="showcaseTrack">
-      <div class="showcase-card parchment" data-card>
-        <!-- Stamp motif -->
+      <div class="showcase-card parchment card-glare card-3d" data-card>
         <svg class="card-stamp" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
           <circle cx="24" cy="24" r="20" stroke="rgba(200,168,78,0.15)" stroke-width="1.5" stroke-dasharray="3 3"/>
           <circle cx="24" cy="24" r="14" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
           <text x="24" y="28" text-anchor="middle" font-family="Cinzel,serif" font-size="10" fill="rgba(200,168,78,0.3)" font-weight="600">SYS</text>
         </svg>
-        <div class="card-visual card-visual-systems">
-          <div class="node-orbit">
-            <span class="node" style="--size:90px;--x:15%;--y:20%"></span>
-            <span class="node" style="--size:130px;--x:65%;--y:15%"></span>
-            <span class="node" style="--size:160px;--x:35%;--y:60%"></span>
-          </div>
-          <div class="card-number">01</div>
+        <div class="card-visual">
+          <img src="https://images.unsplash.com/photo-1486299267070-83823f5448dd?w=800&q=80&fit=crop" alt="London cityscape" loading="lazy">
         </div>
         <div class="card-body">
           <h3>Personal systems</h3>
@@ -198,19 +186,14 @@
         </div>
       </div>
 
-      <div class="showcase-card parchment" data-card>
+      <div class="showcase-card parchment card-glare card-3d" data-card>
         <svg class="card-stamp" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
           <circle cx="24" cy="24" r="20" stroke="rgba(200,168,78,0.15)" stroke-width="1.5" stroke-dasharray="3 3"/>
           <circle cx="24" cy="24" r="14" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
           <text x="24" y="28" text-anchor="middle" font-family="Cinzel,serif" font-size="10" fill="rgba(200,168,78,0.3)" font-weight="600">INS</text>
         </svg>
-        <div class="card-visual card-visual-rhythm">
-          <div class="rhythm-bars">
-            <span style="--i:.15"></span><span style="--i:.35"></span><span style="--i:.55"></span>
-            <span style="--i:.4"></span><span style="--i:.7"></span><span style="--i:.25"></span>
-            <span style="--i:.6"></span><span style="--i:.85"></span><span style="--i:.45"></span>
-          </div>
-          <div class="card-number">02</div>
+        <div class="card-visual">
+          <img src="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=800&q=80&fit=crop" alt="Tower Bridge" loading="lazy">
         </div>
         <div class="card-body">
           <h3>Interface instruments</h3>
@@ -223,22 +206,14 @@
         </div>
       </div>
 
-      <div class="showcase-card parchment" data-card>
+      <div class="showcase-card parchment card-glare card-3d" data-card>
         <svg class="card-stamp" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
           <circle cx="24" cy="24" r="20" stroke="rgba(200,168,78,0.15)" stroke-width="1.5" stroke-dasharray="3 3"/>
           <circle cx="24" cy="24" r="14" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
           <text x="24" y="28" text-anchor="middle" font-family="Cinzel,serif" font-size="10" fill="rgba(200,168,78,0.3)" font-weight="600">LAB</text>
         </svg>
-        <div class="card-visual card-visual-proto">
-          <div class="token-cloud">
-            <span class="token">game feel</span>
-            <span class="token">music libraries</span>
-            <span class="token">AI workflows</span>
-            <span class="token">tiny databases</span>
-            <span class="token">simulation toys</span>
-            <span class="token">reading systems</span>
-          </div>
-          <div class="card-number">03</div>
+        <div class="card-visual">
+          <img src="https://images.unsplash.com/photo-1571955516612-42e1e18ed4f8?w=800&q=80&fit=crop" alt="Big Ben Westminster" loading="lazy">
         </div>
         <div class="card-body">
           <h3>Prototype cabinet</h3>
@@ -267,27 +242,22 @@
   <!-- ACT III : STORY — THE NARRATIVE -->
   <!-- ============================== -->
   <section class="scene scene-story" id="story">
+    <div class="story-bg-image" style="background-image: url('https://images.unsplash.com/photo-1501702649640-860f43b5381c?w=1600&q=80&fit=crop')"></div>
     <div class="story-pin" id="storyPin">
       <div class="story-bg-text" aria-hidden="true">STUDIO</div>
       <!-- Full ornamental frame with 4 corner flourishes -->
       <svg class="story-frame-svg" viewBox="0 0 1000 600" fill="none" preserveAspectRatio="none" aria-hidden="true">
-        <!-- Outer border -->
         <rect x="2" y="2" width="996" height="596" stroke="rgba(200,168,78,0.12)" stroke-width="1" fill="none"/>
-        <!-- Inner border -->
         <rect x="10" y="10" width="980" height="580" stroke="rgba(200,168,78,0.08)" stroke-width="1" fill="none"/>
-        <!-- Top-left corner fan -->
         <path d="M2 50 L2 2 L50 2" stroke="rgba(200,168,78,0.5)" stroke-width="2.5" fill="none"/>
         <path d="M2 2 L18 18" stroke="rgba(200,168,78,0.35)" stroke-width="1.5"/>
         <path d="M2 30 L30 2" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-        <!-- Top-right corner fan -->
         <path d="M998 50 L998 2 L950 2" stroke="rgba(200,168,78,0.5)" stroke-width="2.5" fill="none"/>
         <path d="M998 2 L982 18" stroke="rgba(200,168,78,0.35)" stroke-width="1.5"/>
         <path d="M998 30 L970 2" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-        <!-- Bottom-left corner fan -->
         <path d="M2 550 L2 598 L50 598" stroke="rgba(200,168,78,0.5)" stroke-width="2.5" fill="none"/>
         <path d="M2 598 L18 582" stroke="rgba(200,168,78,0.35)" stroke-width="1.5"/>
         <path d="M2 570 L30 598" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-        <!-- Bottom-right corner fan -->
         <path d="M998 550 L998 598 L950 598" stroke="rgba(200,168,78,0.5)" stroke-width="2.5" fill="none"/>
         <path d="M998 598 L982 582" stroke="rgba(200,168,78,0.35)" stroke-width="1.5"/>
         <path d="M998 570 L970 598" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
@@ -308,7 +278,6 @@
               <p>A page can look beautiful in a screenshot and still be inert. The better question is what it does when someone returns.</p>
             </div>
           </div>
-          <!-- Wax seal divider between principles -->
           <div class="wax-seal-divider" aria-hidden="true">
             <span class="divider-line"></span>
             <div class="wax-seal wax-seal-sm">II</div>
@@ -348,6 +317,14 @@
     </svg>
   </div>
 
+  <!-- Parallax London Divider -->
+  <section class="parallax-image" style="background-image: url('https://images.unsplash.com/photo-1514543580686-6488d80c6875?w=1920&q=80&fit=crop')">
+    <div class="parallax-content">
+      <h2 class="section-title">London calling.</h2>
+      <p>Where tradition meets reinvention.</p>
+    </div>
+  </section>
+
   <!-- ============================== -->
   <!-- ACT IV : DESK — THE INTERESTS  -->
   <!-- ============================== -->
@@ -358,28 +335,32 @@
       <p class="section-desc">Interests, shelves, and recurring obsessions that can grow into future pages.</p>
     </div>
     <div class="desk-grid">
-      <article class="desk-card" data-reveal>
+      <article class="desk-card card-glare card-3d" data-reveal>
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=75&fit=crop" alt="" class="desk-card-img" loading="lazy">
         <div class="desk-icon emboss">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
         </div>
         <h3>Reading shelf</h3>
         <p>Interface history, systems thinking, game design, human-computer interaction, fiction that understands machines, and essays about attention.</p>
       </article>
-      <article class="desk-card" data-reveal>
+      <article class="desk-card card-glare card-3d" data-reveal>
+        <img src="https://images.unsplash.com/photo-1514543580686-6488d80c6875?w=400&q=75&fit=crop" alt="" class="desk-card-img" loading="lazy">
         <div class="desk-icon emboss">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
         </div>
         <h3>Listening desk</h3>
         <p>Music tools, metadata, album art, lyrics, and the way personal libraries become emotional infrastructure.</p>
       </article>
-      <article class="desk-card" data-reveal>
+      <article class="desk-card card-glare card-3d" data-reveal>
+        <img src="https://images.unsplash.com/photo-1520986606214-8b456906c813?w=400&q=75&fit=crop" alt="" class="desk-card-img" loading="lazy">
         <div class="desk-icon emboss">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/><path d="M17 12h.01"/><path d="M7 12h.01"/></svg>
         </div>
         <h3>Play lab</h3>
         <p>Small rule systems: cards, physics, resource loops, NPC behavior, and the satisfying moment when a mechanic starts teaching itself.</p>
       </article>
-      <article class="desk-card" data-reveal>
+      <article class="desk-card card-glare card-3d" data-reveal>
+        <img src="https://images.unsplash.com/photo-1454537468202-b7ff71d51c2e?w=400&q=75&fit=crop" alt="" class="desk-card-img" loading="lazy">
         <div class="desk-icon emboss">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
         </div>
@@ -409,21 +390,22 @@
       <p class="section-desc">Deliberately written like doors, not summaries. A personal site gets better when it has places to wander.</p>
     </div>
     <div class="notes-grid">
-      <article class="note-card" data-reveal>
+      <article class="note-card card-glare card-3d" data-reveal>
+        <img src="https://images.unsplash.com/photo-1579777697301-dd312e02c58e?w=400&q=75&fit=crop" alt="" class="note-card-img" loading="lazy">
         <div class="note-stepped-accent" aria-hidden="true"></div>
         <span class="note-num">NOTE 01</span>
         <h3>Interfaces as furniture</h3>
         <p>Some tools should be impressive once. The best ones become part of the room: sturdy, quiet, close at hand.</p>
         <span class="tag">Essay seed</span>
       </article>
-      <article class="note-card" data-reveal>
+      <article class="note-card card-glare card-3d" data-reveal>
         <div class="note-stepped-accent" aria-hidden="true"></div>
         <span class="note-num">NOTE 02</span>
         <h3>Why tiny apps matter</h3>
         <p>Small software lets you practice judgment quickly: scope, defaults, naming, failure states, and the feeling of the first click.</p>
         <span class="tag">Build log</span>
       </article>
-      <article class="note-card" data-reveal>
+      <article class="note-card card-glare card-3d" data-reveal>
         <div class="note-stepped-accent" aria-hidden="true"></div>
         <span class="note-num">NOTE 03</span>
         <h3>The useful uncanny</h3>
@@ -447,6 +429,7 @@
   <!-- ACT VI : CONTACT — THE CLOSE   -->
   <!-- ============================== -->
   <section class="scene scene-contact" id="contact">
+    <div class="contact-bg-image" style="background-image: url('https://images.unsplash.com/photo-1514543580686-6488d80c6875?w=1920&q=80&fit=crop')"></div>
     <div class="contact-frame">
       <div class="contact-main deco-frame linen">
         <span class="mono-label">Contact</span>
@@ -478,7 +461,6 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <!-- Art Deco ornamental footer divider -->
     <svg class="footer-ornament" width="100%" height="24" viewBox="0 0 1200 24" preserveAspectRatio="none" aria-hidden="true">
       <line x1="0" y1="12" x2="500" y2="12" stroke="rgba(200,168,78,0.12)" stroke-width="1"/>
       <rect x="588" y="0" width="12" height="12" transform="rotate(45 594 6)" fill="none" stroke="rgba(200,168,78,0.4)" stroke-width="1.5"/>
@@ -491,6 +473,10 @@
       <span class="mono-label">Studio — always in motion.</span>
     </div>
   </footer>
+
+  <audio id="bgm" loop preload="auto">
+    <source src="/bgm.mp3" type="audio/mpeg">
+  </audio>
 
 </body>
 </html>
