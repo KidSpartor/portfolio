@@ -517,6 +517,38 @@ img { max-width: 100%; display: block; }
 }
 
 /* ======================================
+   CUSTOM CURSOR RING (desktop accent)
+   ====================================== */
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease,
+    background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.cursor-ring.is-visible { opacity: 0.65; }
+
+.cursor-ring.is-hover {
+  width: 54px;
+  height: 54px;
+  background: rgba(200, 168, 78, 0.08);
+  opacity: 0.9;
+}
+
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .cursor-ring { display: none; }
+}
+
+/* ======================================
    VIGNETTE + LIGHT LEAK
    ====================================== */
 .vignette {
@@ -1218,14 +1250,46 @@ body::before {
    WORK / SHOWCASE — Horizontal gallery
    ====================================== */
 .scene-work {
-  padding-bottom: 0;
+  padding-bottom: var(--scene-pad);
 }
 
 .showcase-track {
   display: flex;
   gap: 40px;
-  padding-bottom: var(--scene-pad);
-  will-change: transform;
+  /* full-bleed: cancel the scene's horizontal padding so cards scroll edge to edge */
+  margin-inline: calc(-1 * clamp(24px, 4vw, 48px));
+  padding-inline: clamp(24px, 4vw, 120px);
+  padding-top: 20px;
+  padding-bottom: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  cursor: grab;
+}
+
+.showcase-track::-webkit-scrollbar { display: none; }
+
+.showcase-track.is-dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+  scroll-snap-type: none;
+}
+
+.showcase-card {
+  scroll-snap-align: start;
+}
+
+/* Controls row below the gallery — progress rail + drag hint */
+.showcase-controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 28px;
+  padding-inline: 4px;
 }
 
 /* Showcase card — parchment background, deco frame */
@@ -1437,6 +1501,58 @@ body::before {
   text-transform: uppercase;
 }
 
+/* Horizontal gallery — progress rail + drag hint */
+.showcase-rail {
+  position: relative;
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.showcase-rail-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(90deg, rgba(200, 168, 78, 0.5), var(--accent));
+  will-change: transform;
+}
+
+.showcase-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.showcase-hint.is-hidden {
+  opacity: 0;
+  transform: translateX(12px);
+}
+
+.showcase-hint-arrow {
+  display: inline-block;
+  font-size: 14px;
+  animation: hint-nudge 1.6s ease-in-out infinite;
+}
+
+@keyframes hint-nudge {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcase-hint-arrow { animation: none; }
+}
+
 /* ======================================
    STORY SCENE — Pinned Art Deco
    ====================================== */
@@ -1479,25 +1595,48 @@ body::before {
 
 .story-content {
   position: relative;
-  max-width: 800px;
+  width: min(1120px, 92vw);
   padding: 0 clamp(24px, 4vw, 48px);
   z-index: 1;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  grid-template-areas:
+    "head        principles"
+    "bio         principles";
+  align-content: center;
+  align-items: start;
+  column-gap: clamp(40px, 6vw, 88px);
+  row-gap: clamp(20px, 3vh, 36px);
 }
+
+.story-content > .story-block:nth-child(1) { grid-area: head; }
+.story-content > .story-block:nth-child(2) { grid-area: bio; align-self: start; }
+.story-content > .story-principles { grid-area: principles; align-self: center; margin-bottom: 0; }
 
 .story-block {
-  margin-bottom: 48px;
-}
-
-.story-block:last-child {
   margin-bottom: 0;
 }
 
 .bio-text {
   font-family: var(--font-display);
-  font-size: clamp(28px, 4vw, 52px);
+  font-size: clamp(24px, 2.8vw, 40px);
   font-weight: 500;
-  line-height: 1.1;
+  line-height: 1.24;
   letter-spacing: 0.01em;
+  max-width: 22ch;
+}
+
+@media (max-width: 880px) {
+  .story-content {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "head"
+      "bio"
+      "principles";
+    row-gap: clamp(24px, 4vh, 40px);
+  }
+  .story-content > .story-principles { align-self: start; }
+  .bio-text { max-width: none; font-size: clamp(24px, 5vw, 34px); }
 }
 
 .bio-text em {

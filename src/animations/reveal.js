@@ -15,11 +15,13 @@ export function initReveals(gsap, ScrollTrigger) {
         opacity: 0,
         y: 50,
         clipPath: 'inset(100% 0% 0% 0%)',
+        filter: 'blur(10px)',
       },
       {
         opacity: 1,
         y: 0,
         clipPath: 'inset(0% 0% 0% 0%)',
+        filter: 'blur(0px)',
         duration: 1.1,
         ease: 'power4.out',
         scrollTrigger: {
