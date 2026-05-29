@@ -55,7 +55,7 @@ export function initMotion(gsap, lenis) {
 
   // ── Scroll-velocity skew + grain breathing ──
   if (!reduced && lenis) {
-    const skewEls = document.querySelectorAll('.desk-grid, .notes-list, .story-principles')
+    const skewEls = document.querySelectorAll('.desk-grid, .notes-track, .story-principles, .showcase-track')
     const skewSetters = [...skewEls]
       // never skew the horizontal track (its transform is owned by ScrollTrigger)
       .filter((el) => !el.classList.contains('showcase-track'))

@@ -1,68 +1,71 @@
-// Nav + chrome — scrolled state, scroll-progress bar, anchor smooth-scroll,
-// theme toggle, and the fixed mono HUD readout (section / scroll % / time).
-export function initNav(gsap, ScrollTrigger, lenis) {
+// Navigation — scroll-aware background, active section tracking, progress bar
+export function initNav() {
   const nav = document.getElementById('nav')
-  const bar = document.getElementById('scrollProgress')
-  const hudSection = document.getElementById('hudSection')
-  const hudScroll = document.getElementById('hudScroll')
-  const hudTime = document.getElementById('hudTime')
+  const progressBar = document.getElementById('scrollProgress')
+  if (!nav) return
 
-  const sections = [...document.querySelectorAll('section[id]')]
-
-  const update = () => {
+  // Scroll-aware glass background + progress bar
+  const onScroll = () => {
     const y = window.scrollY
-    const max = document.documentElement.scrollHeight - window.innerHeight
-    const p = max > 0 ? y / max : 0
+    nav.classList.toggle('scrolled', y > 80)
 
-    if (nav) nav.classList.toggle('is-scrolled', y > 24)
-    if (bar) bar.style.transform = `scaleX(${p})`
-    if (hudScroll) hudScroll.textContent = String(Math.round(p * 100)).padStart(3, '0')
-
-    if (hudSection) {
-      const mid = y + window.innerHeight * 0.4
-      let current = sections[0]
-      for (const s of sections) {
-        if (s.offsetTop <= mid) current = s
-      }
-      if (current) hudSection.textContent = current.id.toUpperCase()
+    // Progress bar
+    if (progressBar) {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight
+      const progress = docHeight > 0 ? (y / docHeight) * 100 : 0
+      progressBar.style.width = `${Math.min(progress, 100)}%`
     }
   }
 
-  if (lenis) lenis.on('scroll', update)
-  window.addEventListener('scroll', update, { passive: true })
-  update()
+  window.addEventListener('scroll', onScroll, { passive: true })
+  onScroll()
 
-  // Anchor links → Lenis smooth scroll.
-  document.querySelectorAll('a[href^="#"]').forEach((a) => {
-    a.addEventListener('click', (e) => {
-      const id = a.getAttribute('href')
-      if (!id || id === '#') return
-      const target = document.querySelector(id)
-      if (!target) return
+  // Active section tracking via IntersectionObserver
+  const links = [...nav.querySelectorAll('.nav-links a')]
+  const sectionIds = links.map((a) => a.getAttribute('href').slice(1))
+  const sections = sectionIds
+    .map((id) => document.getElementById(id))
+    .filter(Boolean)
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return
+        const id = entry.target.id
+        links.forEach((link) => {
+          link.classList.toggle('active', link.getAttribute('href') === `#${id}`)
+        })
+      })
+    },
+    { rootMargin: '-40% 0px -50% 0px' }
+  )
+
+  sections.forEach((s) => observer.observe(s))
+
+  // Theme toggle
+  const toggle = document.getElementById('themeToggle')
+  const root = document.documentElement
+
+  if (toggle) {
+    // 1999 dark is the default; "light" (cream) is the opt-in daylight mode.
+    const saved = localStorage.getItem('theme')
+    root.dataset.theme = saved === 'light' ? '' : 'dark'
+
+    toggle.addEventListener('click', () => {
+      const isDark = root.dataset.theme === 'dark'
+      root.dataset.theme = isDark ? '' : 'dark'
+      localStorage.setItem('theme', isDark ? 'light' : 'dark')
+    })
+  }
+
+  // Smooth anchor clicks
+  links.forEach((link) => {
+    link.addEventListener('click', (e) => {
       e.preventDefault()
-      if (lenis) lenis.scrollTo(target, { offset: -10, duration: 1.1 })
-      else target.scrollIntoView({ behavior: 'smooth' })
+      const target = document.querySelector(link.getAttribute('href'))
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' })
+      }
     })
   })
-
-  // Theme toggle.
-  const themeToggle = document.getElementById('themeToggle')
-  if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-      const root = document.documentElement
-      const next = root.dataset.theme === 'light' ? 'dark' : 'light'
-      root.dataset.theme = next
-      try { localStorage.setItem('theme', next) } catch (e) { /* ignore */ }
-      ScrollTrigger.refresh()
-    })
-  }
-
-  // HUD clock.
-  if (hudTime) {
-    const tick = () => {
-      hudTime.textContent = new Date().toLocaleTimeString('en-GB', { hour12: false })
-    }
-    tick()
-    setInterval(tick, 1000)
-  }
 }
