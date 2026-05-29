@@ -27,14 +27,15 @@ export function initShowcase(gsap, ScrollTrigger, lenis) {
     if (desc) tl.fromTo(desc, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }, '-=0.4')
   }
 
-  // ── Card entrance on normal vertical scroll ──
-  cards.forEach((card) => {
+  // ── Card entrance on normal vertical scroll — staggered for a cinematic
+  //    left-to-right reveal as the gallery enters view ──
+  cards.forEach((card, i) => {
     gsap.fromTo(
       card,
       { opacity: 0, y: 70, clipPath: 'inset(12% 6% 0% 6%)', scale: 0.96 },
       {
         opacity: 1, y: 0, clipPath: 'inset(0% 0% 0% 0%)', scale: 1,
-        duration: 1.1, ease: 'power4.out',
+        duration: 1.1, ease: 'power4.out', delay: i * 0.12,
         scrollTrigger: { trigger: track, start: 'top 85%', toggleActions: 'play none none none' },
       }
     )

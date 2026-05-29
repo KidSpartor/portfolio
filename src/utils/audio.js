@@ -9,7 +9,8 @@ function createAudioElement() {
   audio.loop = true
   audio.volume = 0
   audio.muted = true
-  audio.preload = 'auto'
+  // Muted by default — don't pull the 5MB track until the user opts in.
+  audio.preload = 'none'
   document.body.appendChild(audio)
 }
 

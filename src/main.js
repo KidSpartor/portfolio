@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initPreloader(gsap.default)
 
   // Initialize all systems
-  initNav()
+  initNav(lenis)
   initHero(gsap.default, ScrollTrigger)
   initShowcase(gsap.default, ScrollTrigger, lenis)
   initStory(gsap.default, ScrollTrigger)

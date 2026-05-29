@@ -1,5 +1,5 @@
 // Navigation — scroll-aware background, active section tracking, progress bar
-export function initNav() {
+export function initNav(lenis) {
   const nav = document.getElementById('nav')
   const progressBar = document.getElementById('scrollProgress')
   if (!nav) return
@@ -58,12 +58,17 @@ export function initNav() {
     })
   }
 
-  // Smooth anchor clicks
+  // Smooth anchor clicks — route through Lenis so it matches the cinematic
+  // scroll feel instead of fighting it with native smooth-scroll.
+  const navHeight = nav.offsetHeight || 0
   links.forEach((link) => {
     link.addEventListener('click', (e) => {
       e.preventDefault()
       const target = document.querySelector(link.getAttribute('href'))
-      if (target) {
+      if (!target) return
+      if (lenis) {
+        lenis.scrollTo(target, { offset: -navHeight, duration: 1.6 })
+      } else {
         target.scrollIntoView({ behavior: 'smooth' })
       }
     })

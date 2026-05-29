@@ -55,14 +55,7 @@ export function initAmbient() {
     applyAmbient()
   }
 
-  // Try geolocation, fall back to Paris
-  if ('geolocation' in navigator) {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => tuneFromEnvironment(pos.coords.latitude, pos.coords.longitude),
-      () => tuneFromEnvironment(),
-      { enableHighAccuracy: false, timeout: 3000, maximumAge: 600000 }
-    )
-  } else {
-    tuneFromEnvironment()
-  }
+  // Tune from London weather (the site's spiritual home) without prompting for
+  // geolocation — the permission popup on first load isn't worth it.
+  tuneFromEnvironment(51.5074, -0.1278)
 }
