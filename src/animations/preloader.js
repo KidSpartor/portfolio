@@ -107,14 +107,16 @@ export async function initPreloader(gsap) {
   }
 
   // ── Stepped loading bar fill ──
+  // Race the rAF-driven tween against a wall-clock timeout so a stalled
+  // ticker (backgrounded tab, slow device) can never block site init.
   if (fill) {
-    // Animate fill with stepped easing for vintage feel
-    await gsap.to(fill, {
+    const fillTween = gsap.to(fill, {
       width: '100%',
       duration: 1.6,
       ease: 'steps(12)',
       delay: 0.3,
     })
+    await Promise.race([fillTween, new Promise((r) => setTimeout(r, 2400))])
   }
 
   // ── Sunburst spins out and fades ──
@@ -128,6 +130,13 @@ export async function initPreloader(gsap) {
 
   // ── Iris-wipe exit — circle clip-path from center ──
   // The preloader clips away as a shrinking circle centered on the T mark
+  let hidden = false
+  const hide = () => {
+    if (hidden) return
+    hidden = true
+    preloader.style.display = 'none'
+    sunburst.remove()
+  }
   gsap.fromTo(
     preloader,
     {
@@ -138,13 +147,11 @@ export async function initPreloader(gsap) {
       duration: 0.7,
       ease: 'power4.inOut',
       delay: 0.05,
-      onComplete: () => {
-        preloader.style.display = 'none'
-        sunburst.remove()
-      },
+      onComplete: hide,
     }
   )
 
-  // Small delay for the iris-wipe to complete
-  await new Promise((r) => setTimeout(r, 800))
+  // Guaranteed hide + unblock even if the iris-wipe rAF stalls.
+  await new Promise((r) => setTimeout(r, 900))
+  hide()
 }

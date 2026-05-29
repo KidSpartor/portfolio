@@ -12,7 +12,7 @@ const DICT = {
     'nav.contact': 'Contact',
 
     'hero.eyebrow': 'Studio index — 2026',
-    'hero.title1': 'Tianyi Ma',
+    'hero.title1': 'Kid Spartor',
     'hero.title2': 'keeps useful things',
     'hero.title3:html': '<em>slightly strange.</em>',
     'hero.subtitle': 'Software, systems, instruments, prototypes — and the interface details that make an idea feel alive without ever announcing the trick.',
@@ -96,7 +96,7 @@ const DICT = {
     'contact.p2.h': 'Next obvious page',
     'contact.p2.b': 'A proper notebook: short posts, prototypes with source links, and a library of interface patterns worth reusing.',
 
-    'footer.left': 'Designed and built by Tianyi Ma.',
+    'footer.left': 'Designed and built by Kid Spartor.',
     'footer.right': 'Studio — always in motion.',
   },
 
@@ -108,7 +108,7 @@ const DICT = {
     'nav.contact': '联络',
 
     'hero.eyebrow': '工作室索引 — 2026',
-    'hero.title1': '马天翼',
+    'hero.title1': 'Kid Spartor',
     'hero.title2': '把有用之物',
     'hero.title3:html': '<em>留得稍稍古怪。</em>',
     'hero.subtitle': '软件、系统、器物、原型——以及那些让一个想法显得鲜活、却又不点破机关的界面细节。',
@@ -192,7 +192,7 @@ const DICT = {
     'contact.p2.h': '下一个显然的页面',
     'contact.p2.b': '一本像样的笔记：短文、附带源码链接的原型，以及一座值得复用的界面范式库。',
 
-    'footer.left': '由马天翼设计并构建。',
+    'footer.left': '由 Kid Spartor 设计并构建。',
     'footer.right': '工作室 — 永远在运转。',
   },
 }
