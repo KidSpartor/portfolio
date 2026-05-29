@@ -2,71 +2,51 @@
 <html lang="en" data-theme="dark">
 <head>
   <script>
-    // Pre-paint theme: 1999 dark is default; honor saved "light" preference. Avoids FOUC.
+    // Pre-paint theme to avoid FOUC. Dark is default; honor saved "light".
     (function () {
       try {
         var t = localStorage.getItem('theme');
-        document.documentElement.dataset.theme = t === 'light' ? '' : 'dark';
+        document.documentElement.dataset.theme = t === 'light' ? 'light' : 'dark';
       } catch (e) { document.documentElement.dataset.theme = 'dark'; }
     })();
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Tianyi Ma — builder of interfaces that reward repeated use. Software, systems, taste.">
-  <meta name="theme-color" content="#0A0E1A">
-  <title>Tianyi Ma | Studio</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%236B1D2A'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-family='Georgia,serif' font-size='34' font-weight='700' fill='%23D4AF37'%3ET%3C/text%3E%3C/svg%3E">
+  <meta name="description" content="Kid Spartor — builder of software, systems, and interfaces that reward repeated use.">
+  <meta name="theme-color" content="#0A0A0B">
+  <title>Kid Spartor — Builder</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230A0A0B'/%3E%3Ccircle cx='32' cy='32' r='11' fill='%23C8FF3D'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,600;0,6..96,700;0,6..96,800;0,6..96,900;1,6..96,400;1,6..96,500;1,6..96,700&family=Cinzel:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Cormorant+SC:wght@300;400;500;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <script type="module" src="/src/main.js"></script>
 </head>
 <body>
 
   <!-- Preloader -->
   <div class="preloader" id="preloader">
-    <svg class="preloader-ornament" width="160" height="160" viewBox="0 0 160 160" fill="none" aria-hidden="true">
-      <circle cx="80" cy="80" r="76" stroke="rgba(200,168,78,0.15)" stroke-width="1"/>
-      <circle cx="80" cy="80" r="68" stroke="rgba(200,168,78,0.08)" stroke-width="1"/>
-      <line x1="80" y1="8" x2="80" y2="28" stroke="rgba(200,168,78,0.3)" stroke-width="1.5"/>
-      <line x1="80" y1="132" x2="80" y2="152" stroke="rgba(200,168,78,0.3)" stroke-width="1.5"/>
-      <line x1="8" y1="80" x2="28" y2="80" stroke="rgba(200,168,78,0.3)" stroke-width="1.5"/>
-      <line x1="132" y1="80" x2="152" y2="80" stroke="rgba(200,168,78,0.3)" stroke-width="1.5"/>
-      <line x1="29" y1="29" x2="41" y2="41" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-      <line x1="119" y1="29" x2="131" y2="41" stroke="rgba(200,168,78,0.2)" stroke-width="1" transform="rotate(90 125 35)"/>
-      <line x1="29" y1="131" x2="41" y2="119" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-      <line x1="131" y1="131" x2="119" y2="119" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-      <rect x="60" y="60" width="40" height="40" transform="rotate(45 80 80)" stroke="rgba(200,168,78,0.25)" stroke-width="1.5" fill="none"/>
-      <rect x="72" y="72" width="16" height="16" transform="rotate(45 80 80)" stroke="rgba(200,168,78,0.4)" stroke-width="1" fill="rgba(200,168,78,0.05)"/>
-      <path d="M4 4 L28 4 L4 28 Z" fill="rgba(200,168,78,0.06)" stroke="rgba(200,168,78,0.15)" stroke-width="0.5"/>
-      <path d="M156 4 L132 4 L156 28 Z" fill="rgba(200,168,78,0.06)" stroke="rgba(200,168,78,0.15)" stroke-width="0.5"/>
-      <path d="M4 156 L28 156 L4 132 Z" fill="rgba(200,168,78,0.06)" stroke="rgba(200,168,78,0.15)" stroke-width="0.5"/>
-      <path d="M156 156 L132 156 L156 132 Z" fill="rgba(200,168,78,0.06)" stroke="rgba(200,168,78,0.15)" stroke-width="0.5"/>
-    </svg>
-    <div class="preloader-mark">T</div>
-    <div class="preloader-bar"><div class="preloader-fill"></div></div>
+    <div class="preloader-mark">KS</div>
+    <div class="preloader-bar"><div class="preloader-fill" id="preloaderFill"></div></div>
+    <div class="preloader-pct" id="preloaderPct">000</div>
   </div>
 
-  <!-- Film grain overlay -->
-  <div class="grain" aria-hidden="true"></div>
-
-  <!-- Vignette overlay -->
-  <div class="vignette" aria-hidden="true"></div>
-
-  <!-- Letterbox bars -->
-  <div class="letterbox letterbox-top" aria-hidden="true"></div>
-  <div class="letterbox letterbox-bottom" aria-hidden="true"></div>
-
-  <!-- Ambient canvas -->
-  <canvas id="ambientCanvas" aria-hidden="true"></canvas>
+  <!-- Reactive dot-grid field -->
+  <canvas id="dotfield" aria-hidden="true"></canvas>
 
   <!-- Scroll progress bar -->
   <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
+  <!-- Fixed mono system readout (developer HUD) -->
+  <aside class="hud" aria-hidden="true">
+    <span class="hud-row"><span class="hud-k">SECT</span><span id="hudSection">HERO</span></span>
+    <span class="hud-row"><span class="hud-k">SCRL</span><span id="hudScroll">000</span></span>
+    <span class="hud-row"><span class="hud-k">TIME</span><span id="hudTime">--:--:--</span></span>
+  </aside>
+
   <!-- Navigation -->
   <nav class="nav" id="nav" aria-label="Primary navigation">
-    <a class="nav-brand" href="#hero">
-      <span class="nav-mark">T</span>
+    <a class="nav-brand" href="#hero" data-magnetic>
+      <span class="nav-mark">KS</span>
     </a>
     <div class="nav-links">
       <a href="#work" data-i18n="nav.work">Work</a>
@@ -76,180 +56,122 @@
       <a href="#contact" data-i18n="nav.contact">Contact</a>
     </div>
     <div class="nav-actions">
-      <button class="nav-btn lang-btn" id="langToggle" type="button" aria-label="Switch language">
+      <button class="nav-btn lang-btn" id="langToggle" type="button" aria-label="Switch language" data-magnetic>
         <span class="lang-label">中</span>
       </button>
-      <button class="nav-btn mute-btn" id="muteToggle" type="button" aria-label="Toggle sound">
-        <span class="mute-icon-on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg></span>
-        <span class="mute-icon-off"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></span>
-      </button>
-      <button class="nav-btn" id="themeToggle" type="button" aria-label="Toggle theme">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <button class="nav-btn theme-btn" id="themeToggle" type="button" aria-label="Toggle theme" data-magnetic>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
     </div>
   </nav>
 
   <!-- ============================== -->
-  <!-- ACT I : HERO — THE OPENING    -->
+  <!-- HERO                           -->
   <!-- ============================== -->
-  <section class="scene scene-hero" id="hero">
-    <div class="scene-bg">
-      <div class="hero-bg-image" style="background-image: url('https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1920&q=80&fit=crop')"></div>
-      <div class="hero-gradient"></div>
-    </div>
-    <!-- Art Deco radiating sunburst SVG -->
-    <svg class="hero-sunburst" viewBox="0 0 800 800" fill="none" aria-hidden="true">
-      <g opacity="0.06">
-        <line x1="400" y1="0" x2="400" y2="800" stroke="#C8A84E" stroke-width="0.5"/>
-        <line x1="0" y1="400" x2="800" y2="400" stroke="#C8A84E" stroke-width="0.5"/>
-        <line x1="56" y1="56" x2="744" y2="744" stroke="#C8A84E" stroke-width="0.5"/>
-        <line x1="744" y1="56" x2="56" y2="744" stroke="#C8A84E" stroke-width="0.5"/>
-        <line x1="400" y1="0" x2="200" y2="800" stroke="#C8A84E" stroke-width="0.3"/>
-        <line x1="400" y1="0" x2="600" y2="800" stroke="#C8A84E" stroke-width="0.3"/>
-        <line x1="0" y1="400" x2="800" y2="200" stroke="#C8A84E" stroke-width="0.3"/>
-        <line x1="0" y1="400" x2="800" y2="600" stroke="#C8A84E" stroke-width="0.3"/>
-        <line x1="56" y1="56" x2="400" y2="800" stroke="#C8A84E" stroke-width="0.3"/>
-        <line x1="744" y1="56" x2="400" y2="800" stroke="#C8A84E" stroke-width="0.3"/>
-        <line x1="56" y1="744" x2="400" y2="0" stroke="#C8A84E" stroke-width="0.3"/>
-        <line x1="744" y1="744" x2="400" y2="0" stroke="#C8A84E" stroke-width="0.3"/>
-        <circle cx="400" cy="400" r="300" stroke="#C8A84E" stroke-width="0.5"/>
-        <circle cx="400" cy="400" r="200" stroke="#C8A84E" stroke-width="0.3"/>
-        <circle cx="400" cy="400" r="100" stroke="#C8A84E" stroke-width="0.5"/>
-      </g>
-    </svg>
-    <div class="scene-content hero-content">
+  <section class="section section-hero" id="hero">
+    <div class="hero-inner">
       <div class="hero-eyebrow">
         <span class="pulse-dot"></span>
-        <span class="mono-label" data-i18n="hero.eyebrow">Studio index — 2026</span>
+        <span class="mono-label" data-i18n="hero.eyebrow">Kid Spartor — software · systems · interfaces</span>
       </div>
       <h1 class="hero-title" data-split>
-        <span class="hero-title-line" data-i18n="hero.title1">Tianyi Ma</span>
-        <span class="hero-title-line" data-i18n="hero.title2">keeps useful things</span>
-        <span class="hero-title-line" data-i18n="hero.title3"><em>slightly strange.</em></span>
+        <span class="line" data-i18n="hero.title1">Useful things,</span>
+        <span class="line" data-i18n="hero.title2">kept slightly strange.</span>
       </h1>
-      <p class="hero-subtitle" data-i18n="hero.subtitle">Software, systems, instruments, prototypes, and the kind of interface details that make an idea feel alive without announcing the trick.</p>
-      <div class="hero-statements">
-        <div class="hero-statement deco-frame">
-          <span class="statement-num">01</span>
-          <span data-i18n="hero.s1">Build interfaces that reward repeated use, not just first impressions.</span>
-          <div class="stepped-border stepped-bottom" aria-hidden="true"></div>
-        </div>
-        <div class="hero-statement deco-frame">
-          <span class="statement-num">02</span>
-          <span data-i18n="hero.s2">Turn rough ideas into working objects before they become too precious.</span>
-          <div class="stepped-border stepped-bottom" aria-hidden="true"></div>
-        </div>
-        <div class="hero-statement deco-frame">
-          <span class="statement-num">03</span>
-          <span data-i18n="hero.s3">Let the system show its intelligence through behavior, restraint, and rhythm.</span>
-          <div class="stepped-border stepped-bottom" aria-hidden="true"></div>
-        </div>
-      </div>
-      <div class="hero-scroll-cue">
-        <span class="mono-label" data-i18n="hero.scroll">Scroll to explore</span>
-        <div class="scroll-line"></div>
-      </div>
-    </div>
-    <div class="hero-counter">
-      <span class="mono-label">001</span>
+      <p class="hero-subtitle" data-i18n="hero.subtitle">Software, systems, instruments, prototypes — and the interface details that make an idea feel alive without ever announcing the trick.</p>
+      <ol class="hero-principles">
+        <li><span class="idx mono-label">01</span><span data-i18n="hero.s1">Build interfaces that reward repeated use, not just the first impression.</span></li>
+        <li><span class="idx mono-label">02</span><span data-i18n="hero.s2">Turn rough ideas into working objects before they become too precious to touch.</span></li>
+        <li><span class="idx mono-label">03</span><span data-i18n="hero.s3">Let the system show its intelligence through behaviour, restraint, and rhythm.</span></li>
+      </ol>
+      <a class="hero-scroll-cue" href="#work">
+        <span class="mono-label" data-i18n="hero.scroll">Scroll to enter</span>
+        <span class="scroll-line"></span>
+      </a>
     </div>
   </section>
 
-  <!-- Section divider ornament -->
-  <div class="section-ornament" aria-hidden="true">
-    <svg width="240" height="32" viewBox="0 0 240 32" fill="none">
-      <line x1="0" y1="16" x2="90" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-      <rect x="108" y="4" width="12" height="12" transform="rotate(45 114 10)" fill="none" stroke="rgba(200,168,78,0.5)" stroke-width="1.5"/>
-      <rect x="116" y="12" width="8" height="8" transform="rotate(45 120 16)" fill="rgba(200,168,78,0.15)" stroke="rgba(200,168,78,0.3)" stroke-width="0.5"/>
-      <line x1="150" y1="16" x2="240" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-    </svg>
-  </div>
-
   <!-- ============================== -->
-  <!-- ACT II : WORK — THE SHOWCASE   -->
+  <!-- WORK                           -->
   <!-- ============================== -->
-  <section class="scene scene-work" id="work">
-    <div class="scene-header">
-      <span class="mono-label" data-i18n="work.label">Selected directions</span>
-      <h2 class="section-title gold-foil" data-split data-i18n="work.title">A portfolio can be a cabinet, not a trophy shelf.</h2>
-      <p class="section-desc" data-i18n="work.desc">Four things I actually built and shipped: an interactive course, a full-stack card table, a desktop player, and a little game about gravity.</p>
+  <section class="section section-work" id="work">
+    <div class="section-head">
+      <span class="mono-label" data-i18n="work.label">[ 01 ] Selected work</span>
+      <h2 class="section-title" data-split data-i18n="work.title">A portfolio is a cabinet, not a trophy shelf.</h2>
+      <p class="section-desc" data-i18n="work.desc">Four things I actually built and shipped: an interactive course, a full-stack card table, a desktop player, and a small game about gravity.</p>
     </div>
 
     <div class="showcase-track" id="showcaseTrack">
-      <a href="dl-zero-to-unet/html/" class="showcase-card parchment card-glare card-3d" data-card style="text-decoration:none;color:inherit;">
-        <svg class="card-stamp" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-          <circle cx="24" cy="24" r="20" stroke="rgba(200,168,78,0.15)" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <circle cx="24" cy="24" r="14" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-          <text x="24" y="28" text-anchor="middle" font-family="Cinzel,serif" font-size="10" fill="rgba(200,168,78,0.3)" font-weight="600">DL</text>
-        </svg>
+      <a href="dl-zero-to-unet/html/" class="showcase-card" data-card>
         <div class="card-visual">
-          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80&fit=crop" alt="Neural network visualization" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&q=80&fit=crop" alt="Neural network visualization" loading="lazy">
+          <span class="card-index mono-label">01</span>
         </div>
         <div class="card-body">
-          <h3 data-i18n="work.c1.title">从零到 UNet</h3>
+          <div class="card-meta mono-label">
+            <span data-i18n="work.c1.t1">Deep Learning</span>
+            <span class="card-cta" data-i18n="work.open">Open →</span>
+          </div>
+          <h3 data-i18n="work.c1.title">Zero to UNet</h3>
           <p data-i18n="work.c1.body">A browser-native deep learning course — from a single perceptron to UNet segmentation. 11 chapters of Canvas-driven demos: gradient-descent heatmaps, sliding convolutions, live skip connections. Zero dependencies, progress saved locally.</p>
           <div class="tag-row">
-            <span class="tag" data-i18n="work.c1.t1">Deep Learning</span>
             <span class="tag" data-i18n="work.c1.t2">Canvas / KaTeX</span>
             <span class="tag" data-i18n="work.c1.t3">Interactive course</span>
           </div>
         </div>
       </a>
 
-      <a href="https://texas-poker-five.vercel.app" target="_blank" rel="noopener" class="showcase-card parchment card-glare card-3d" data-card style="text-decoration:none;color:inherit;">
-        <svg class="card-stamp" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-          <circle cx="24" cy="24" r="20" stroke="rgba(200,168,78,0.15)" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <circle cx="24" cy="24" r="14" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-          <text x="24" y="28" text-anchor="middle" font-family="Cinzel,serif" font-size="10" fill="rgba(200,168,78,0.3)" font-weight="600">TXH</text>
-        </svg>
+      <a href="https://texas-poker-five.vercel.app" target="_blank" rel="noopener" class="showcase-card" data-card>
         <div class="card-visual">
-          <img src="https://images.unsplash.com/photo-1541278107931-e006523892df?w=800&q=80&fit=crop" alt="Poker chips on green felt" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1541278107931-e006523892df?w=900&q=80&fit=crop" alt="Poker chips on green felt" loading="lazy">
+          <span class="card-index mono-label">02</span>
         </div>
         <div class="card-body">
+          <div class="card-meta mono-label">
+            <span data-i18n="work.c2.t1">Full-stack</span>
+            <span class="card-cta" data-i18n="work.live">Live →</span>
+          </div>
           <h3 data-i18n="work.c2.title">Texas Hold'em</h3>
           <p data-i18n="work.c2.body">A full-stack Texas Hold'em table built as a monorepo: shared game engine, a web client, and a React Native mobile build. Deployed live on Vercel, with an Android .apk on the side.</p>
           <div class="tag-row">
-            <span class="tag" data-i18n="work.c2.t1">Full-stack</span>
             <span class="tag" data-i18n="work.c2.t2">React Native</span>
             <span class="tag" data-i18n="work.c2.t3">Live demo</span>
           </div>
         </div>
       </a>
 
-      <a href="https://github.com/KidSpartor/Music_Player" target="_blank" rel="noopener" class="showcase-card parchment card-glare card-3d" data-card style="text-decoration:none;color:inherit;">
-        <svg class="card-stamp" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-          <circle cx="24" cy="24" r="20" stroke="rgba(200,168,78,0.15)" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <circle cx="24" cy="24" r="14" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-          <text x="24" y="28" text-anchor="middle" font-family="Cinzel,serif" font-size="10" fill="rgba(200,168,78,0.3)" font-weight="600">MUS</text>
-        </svg>
+      <a href="https://github.com/KidSpartor/Music_Player" target="_blank" rel="noopener" class="showcase-card" data-card>
         <div class="card-visual">
-          <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80&fit=crop" alt="Vinyl record player" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=900&q=80&fit=crop" alt="Vinyl record player" loading="lazy">
+          <span class="card-index mono-label">03</span>
         </div>
         <div class="card-body">
+          <div class="card-meta mono-label">
+            <span data-i18n="work.c3.t1">Electron</span>
+            <span class="card-cta" data-i18n="work.code">Code →</span>
+          </div>
           <h3 data-i18n="work.c3.title">Music Player</h3>
           <p data-i18n="work.c3.body">A desktop music player that reads cover art and embedded lyrics straight from local files. Library view, immersive now-playing screen, and a compact mini-player — packaged for macOS.</p>
           <div class="tag-row">
-            <span class="tag" data-i18n="work.c3.t1">Electron</span>
             <span class="tag" data-i18n="work.c3.t2">React / Vite</span>
             <span class="tag" data-i18n="work.c3.t3">Desktop app</span>
           </div>
         </div>
       </a>
 
-      <a href="https://github.com/KidSpartor/starship-game" target="_blank" rel="noopener" class="showcase-card parchment card-glare card-3d" data-card style="text-decoration:none;color:inherit;">
-        <svg class="card-stamp" width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-          <circle cx="24" cy="24" r="20" stroke="rgba(200,168,78,0.15)" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <circle cx="24" cy="24" r="14" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-          <text x="24" y="28" text-anchor="middle" font-family="Cinzel,serif" font-size="10" fill="rgba(200,168,78,0.3)" font-weight="600">VOY</text>
-        </svg>
+      <a href="https://github.com/KidSpartor/starship-game" target="_blank" rel="noopener" class="showcase-card" data-card>
         <div class="card-visual">
-          <img src="https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800&q=80&fit=crop" alt="Starfield in deep space" loading="lazy">
+          <img src="https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=900&q=80&fit=crop" alt="Starfield in deep space" loading="lazy">
+          <span class="card-index mono-label">04</span>
         </div>
         <div class="card-body">
+          <div class="card-meta mono-label">
+            <span data-i18n="work.c4.t1">Python / Pygame</span>
+            <span class="card-cta" data-i18n="work.code">Code →</span>
+          </div>
           <h3 data-i18n="work.c4.title">Starship Odyssey</h3>
           <p data-i18n="work.c4.body">A physics puzzle game where you steer a ship by tractor beam — hauling cargo past storms and black holes across 10 procedurally generated levels, each reproducible from a seed.</p>
           <div class="tag-row">
-            <span class="tag" data-i18n="work.c4.t1">Python / Pygame</span>
             <span class="tag" data-i18n="work.c4.t2">Procedural</span>
             <span class="tag" data-i18n="work.c4.t3">Physics game</span>
           </div>
@@ -258,231 +180,126 @@
     </div>
   </section>
 
-  <!-- Section divider ornament -->
-  <div class="section-ornament" aria-hidden="true">
-    <svg width="240" height="32" viewBox="0 0 240 32" fill="none">
-      <line x1="0" y1="16" x2="90" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-      <rect x="108" y="4" width="12" height="12" transform="rotate(45 114 10)" fill="none" stroke="rgba(200,168,78,0.5)" stroke-width="1.5"/>
-      <rect x="116" y="12" width="8" height="8" transform="rotate(45 120 16)" fill="rgba(200,168,78,0.15)" stroke="rgba(200,168,78,0.3)" stroke-width="0.5"/>
-      <line x1="150" y1="16" x2="240" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-    </svg>
-  </div>
-
   <!-- ============================== -->
-  <!-- ACT III : STORY — THE NARRATIVE -->
+  <!-- STORY                          -->
   <!-- ============================== -->
-  <section class="scene scene-story" id="story">
-    <div class="story-bg-image" style="background-image: url('https://images.unsplash.com/photo-1501702649640-860f43b5381c?w=1600&q=80&fit=crop')"></div>
+  <section class="section section-story" id="story">
     <div class="story-pin" id="storyPin">
-      <div class="story-bg-text" aria-hidden="true">STUDIO</div>
-      <!-- Full ornamental frame with 4 corner flourishes -->
-      <svg class="story-frame-svg" viewBox="0 0 1000 600" fill="none" preserveAspectRatio="none" aria-hidden="true">
-        <rect x="2" y="2" width="996" height="596" stroke="rgba(200,168,78,0.12)" stroke-width="1" fill="none"/>
-        <rect x="10" y="10" width="980" height="580" stroke="rgba(200,168,78,0.08)" stroke-width="1" fill="none"/>
-        <path d="M2 50 L2 2 L50 2" stroke="rgba(200,168,78,0.5)" stroke-width="2.5" fill="none"/>
-        <path d="M2 2 L18 18" stroke="rgba(200,168,78,0.35)" stroke-width="1.5"/>
-        <path d="M2 30 L30 2" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-        <path d="M998 50 L998 2 L950 2" stroke="rgba(200,168,78,0.5)" stroke-width="2.5" fill="none"/>
-        <path d="M998 2 L982 18" stroke="rgba(200,168,78,0.35)" stroke-width="1.5"/>
-        <path d="M998 30 L970 2" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-        <path d="M2 550 L2 598 L50 598" stroke="rgba(200,168,78,0.5)" stroke-width="2.5" fill="none"/>
-        <path d="M2 598 L18 582" stroke="rgba(200,168,78,0.35)" stroke-width="1.5"/>
-        <path d="M2 570 L30 598" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-        <path d="M998 550 L998 598 L950 598" stroke="rgba(200,168,78,0.5)" stroke-width="2.5" fill="none"/>
-        <path d="M998 598 L982 582" stroke="rgba(200,168,78,0.35)" stroke-width="1.5"/>
-        <path d="M998 570 L970 598" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-      </svg>
-      <div class="story-content">
-        <div class="story-block" data-story>
-          <span class="mono-label" data-i18n="story.label">About</span>
-          <h2 class="section-title gold-foil" data-i18n="story.title">Taste is a technical constraint.</h2>
-        </div>
-        <div class="story-block" data-story>
-          <p class="bio-text" data-i18n="story.bio">I like building things that feel <em>inhabited</em>: clear enough to use, specific enough to belong to someone, and weird enough to keep thinking about.</p>
-        </div>
-        <div class="story-block story-principles" data-story>
-          <div class="principle">
-            <span class="principle-num">01</span>
-            <div>
-              <strong data-i18n="story.p1.h">Start with behavior.</strong>
-              <p data-i18n="story.p1.b">A page can look beautiful in a screenshot and still be inert. The better question is what it does when someone returns.</p>
-            </div>
-          </div>
-          <div class="wax-seal-divider" aria-hidden="true">
-            <span class="divider-line"></span>
-            <div class="wax-seal wax-seal-sm">II</div>
-            <span class="divider-line"></span>
-          </div>
-          <div class="principle">
-            <span class="principle-num">02</span>
-            <div>
-              <strong data-i18n="story.p2.h">Make the invisible legible.</strong>
-              <p data-i18n="story.p2.b">State, rhythm, constraints, and affordances should be felt through the interface before they need to be explained.</p>
-            </div>
-          </div>
-          <div class="wax-seal-divider" aria-hidden="true">
-            <span class="divider-line"></span>
-            <div class="wax-seal wax-seal-sm">III</div>
-            <span class="divider-line"></span>
-          </div>
-          <div class="principle">
-            <span class="principle-num">03</span>
-            <div>
-              <strong data-i18n="story.p3.h">Keep the edge human.</strong>
-              <p data-i18n="story.p3.b">Even technical work benefits from texture: good names, calm defaults, forgiving controls, and a little wit.</p>
-            </div>
-          </div>
-        </div>
+      <span class="mono-label" data-i18n="story.label">[ 02 ] About</span>
+      <h2 class="story-statement" data-i18n="story.bio:html" data-words>I like building things that feel <em>inhabited</em>: clear enough to use, specific enough to belong to someone, and strange enough to keep thinking about.</h2>
+    </div>
+    <div class="story-principles">
+      <div class="principle" data-reveal>
+        <span class="principle-num mono-label">01</span>
+        <strong data-i18n="story.p1.h">Start with behaviour.</strong>
+        <p data-i18n="story.p1.b">A page can look beautiful in a screenshot and still be inert. The better question is what it does when someone comes back.</p>
+      </div>
+      <div class="principle" data-reveal>
+        <span class="principle-num mono-label">02</span>
+        <strong data-i18n="story.p2.h">Make the invisible legible.</strong>
+        <p data-i18n="story.p2.b">State, rhythm, constraints, and affordances should be felt through the interface before anyone needs them explained.</p>
+      </div>
+      <div class="principle" data-reveal>
+        <span class="principle-num mono-label">03</span>
+        <strong data-i18n="story.p3.h">Keep the edge human.</strong>
+        <p data-i18n="story.p3.b">Even technical work benefits from texture: good names, calm defaults, forgiving controls, and a little wit.</p>
       </div>
     </div>
   </section>
 
-  <!-- Section divider ornament -->
-  <div class="section-ornament" aria-hidden="true">
-    <svg width="240" height="32" viewBox="0 0 240 32" fill="none">
-      <line x1="0" y1="16" x2="90" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-      <rect x="108" y="4" width="12" height="12" transform="rotate(45 114 10)" fill="none" stroke="rgba(200,168,78,0.5)" stroke-width="1.5"/>
-      <rect x="116" y="12" width="8" height="8" transform="rotate(45 120 16)" fill="rgba(200,168,78,0.15)" stroke="rgba(200,168,78,0.3)" stroke-width="0.5"/>
-      <line x1="150" y1="16" x2="240" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-    </svg>
-  </div>
-
-  <!-- Parallax London Divider -->
-  <section class="parallax-image" style="background-image: url('https://images.unsplash.com/photo-1514543580686-6488d80c6875?w=1920&q=80&fit=crop')">
-    <div class="parallax-content">
-      <h2 class="section-title" data-i18n="parallax.title">London calling.</h2>
-      <p data-i18n="parallax.sub">Where tradition meets reinvention.</p>
-    </div>
-  </section>
-
   <!-- ============================== -->
-  <!-- ACT IV : DESK — THE INTERESTS  -->
+  <!-- DESK                           -->
   <!-- ============================== -->
-  <section class="scene scene-desk" id="desk">
-    <div class="scene-header">
-      <span class="mono-label" data-i18n="desk.label">Desk</span>
-      <h2 class="section-title gold-foil" data-split data-i18n="desk.title">Things worth keeping open.</h2>
-      <p class="section-desc" data-i18n="desk.desc">Interests, shelves, and recurring obsessions that can grow into future pages.</p>
+  <section class="section section-desk" id="desk">
+    <div class="section-head">
+      <span class="mono-label" data-i18n="desk.label">[ 03 ] Desk</span>
+      <h2 class="section-title" data-split data-i18n="desk.title">Things worth keeping open.</h2>
+      <p class="section-desc" data-i18n="desk.desc">Interests, shelves, and recurring obsessions — the kind that quietly grow into future pages.</p>
     </div>
     <div class="desk-grid">
-      <article class="desk-card card-glare card-3d" data-reveal>
-        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=75&fit=crop" alt="" class="desk-card-img" loading="lazy">
-        <div class="desk-icon emboss">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
-        </div>
+      <article class="desk-card" data-reveal>
+        <span class="desk-num mono-label">D—01</span>
         <h3 data-i18n="desk.d1.h">Reading shelf</h3>
-        <p data-i18n="desk.d1.b">Interface history, systems thinking, game design, human-computer interaction, fiction that understands machines, and essays about attention.</p>
+        <p data-i18n="desk.d1.b">Interface history, systems thinking, game design, human–computer interaction, fiction that understands machines, and essays about attention.</p>
       </article>
-      <article class="desk-card card-glare card-3d" data-reveal>
-        <img src="https://images.unsplash.com/photo-1514543580686-6488d80c6875?w=400&q=75&fit=crop" alt="" class="desk-card-img" loading="lazy">
-        <div class="desk-icon emboss">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        </div>
+      <article class="desk-card" data-reveal>
+        <span class="desk-num mono-label">D—02</span>
         <h3 data-i18n="desk.d2.h">Listening desk</h3>
-        <p data-i18n="desk.d2.b">Music tools, metadata, album art, lyrics, and the way personal libraries become emotional infrastructure.</p>
+        <p data-i18n="desk.d2.b">Music tools, metadata, album art, lyrics — and the way a personal library quietly becomes emotional infrastructure.</p>
       </article>
-      <article class="desk-card card-glare card-3d" data-reveal>
-        <img src="https://images.unsplash.com/photo-1520986606214-8b456906c813?w=400&q=75&fit=crop" alt="" class="desk-card-img" loading="lazy">
-        <div class="desk-icon emboss">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/><path d="M17 12h.01"/><path d="M7 12h.01"/></svg>
-        </div>
+      <article class="desk-card" data-reveal>
+        <span class="desk-num mono-label">D—03</span>
         <h3 data-i18n="desk.d3.h">Play lab</h3>
-        <p data-i18n="desk.d3.b">Small rule systems: cards, physics, resource loops, NPC behavior, and the satisfying moment when a mechanic starts teaching itself.</p>
+        <p data-i18n="desk.d3.b">Small rule systems: cards, physics, resource loops, NPC behaviour, and the moment a mechanic starts teaching itself.</p>
       </article>
-      <article class="desk-card card-glare card-3d" data-reveal>
-        <img src="https://images.unsplash.com/photo-1454537468202-b7ff71d51c2e?w=400&q=75&fit=crop" alt="" class="desk-card-img" loading="lazy">
-        <div class="desk-icon emboss">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-        </div>
+      <article class="desk-card" data-reveal>
+        <span class="desk-num mono-label">D—04</span>
         <h3 data-i18n="desk.d4.h">Tool room</h3>
-        <p data-i18n="desk.d4.b">Scripts, personal dashboards, prompts, deployment notes, and tiny utilities that remove friction from everyday work.</p>
+        <p data-i18n="desk.d4.b">Scripts, personal dashboards, prompts, deployment notes, and tiny utilities that remove friction from ordinary work.</p>
       </article>
     </div>
   </section>
 
-  <!-- Section divider ornament -->
-  <div class="section-ornament" aria-hidden="true">
-    <svg width="240" height="32" viewBox="0 0 240 32" fill="none">
-      <line x1="0" y1="16" x2="90" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-      <rect x="108" y="4" width="12" height="12" transform="rotate(45 114 10)" fill="none" stroke="rgba(200,168,78,0.5)" stroke-width="1.5"/>
-      <rect x="116" y="12" width="8" height="8" transform="rotate(45 120 16)" fill="rgba(200,168,78,0.15)" stroke="rgba(200,168,78,0.3)" stroke-width="0.5"/>
-      <line x1="150" y1="16" x2="240" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-    </svg>
-  </div>
-
   <!-- ============================== -->
-  <!-- ACT V : NOTES — THE WRITING    -->
+  <!-- NOTES                          -->
   <!-- ============================== -->
-  <section class="scene scene-notes" id="notes">
-    <div class="scene-header">
-      <span class="mono-label" data-i18n="notes.label">Notes</span>
-      <h2 class="section-title gold-foil" data-split data-i18n="notes.title">Drafts for future pages.</h2>
-      <p class="section-desc" data-i18n="notes.desc">Deliberately written like doors, not summaries. A personal site gets better when it has places to wander.</p>
+  <section class="section section-notes" id="notes">
+    <div class="section-head">
+      <span class="mono-label" data-i18n="notes.label">[ 04 ] Notes</span>
+      <h2 class="section-title" data-split data-i18n="notes.title">Drafts for future pages.</h2>
+      <p class="section-desc" data-i18n="notes.desc">Written like doors, not summaries. A personal site gets better the moment it has places to wander.</p>
     </div>
-    <div class="notes-grid">
-      <article class="note-card card-glare card-3d" data-reveal>
-        <img src="https://images.unsplash.com/photo-1579777697301-dd312e02c58e?w=400&q=75&fit=crop" alt="" class="note-card-img" loading="lazy">
-        <div class="note-stepped-accent" aria-hidden="true"></div>
-        <span class="note-num" data-i18n="notes.n1.num">NOTE 01</span>
+    <div class="notes-list">
+      <article class="note-card" data-reveal>
+        <span class="note-num mono-label" data-i18n="notes.n1.num">Note 01</span>
         <h3 data-i18n="notes.n1.h">Interfaces as furniture</h3>
-        <p data-i18n="notes.n1.b">Some tools should be impressive once. The best ones become part of the room: sturdy, quiet, close at hand.</p>
+        <p data-i18n="notes.n1.b">Some tools should impress once. The best ones become part of the room: sturdy, quiet, always within reach.</p>
         <span class="tag" data-i18n="notes.n1.tag">Essay seed</span>
       </article>
-      <article class="note-card card-glare card-3d" data-reveal>
-        <div class="note-stepped-accent" aria-hidden="true"></div>
-        <span class="note-num" data-i18n="notes.n2.num">NOTE 02</span>
+      <article class="note-card" data-reveal>
+        <span class="note-num mono-label" data-i18n="notes.n2.num">Note 02</span>
         <h3 data-i18n="notes.n2.h">Why tiny apps matter</h3>
-        <p data-i18n="notes.n2.b">Small software lets you practice judgment quickly: scope, defaults, naming, failure states, and the feeling of the first click.</p>
+        <p data-i18n="notes.n2.b">Small software lets you practise judgement quickly: scope, defaults, naming, failure states, and the feel of the first click.</p>
         <span class="tag" data-i18n="notes.n2.tag">Build log</span>
       </article>
-      <article class="note-card card-glare card-3d" data-reveal>
-        <div class="note-stepped-accent" aria-hidden="true"></div>
-        <span class="note-num" data-i18n="notes.n3.num">NOTE 03</span>
+      <article class="note-card" data-reveal>
+        <span class="note-num mono-label" data-i18n="notes.n3.num">Note 03</span>
         <h3 data-i18n="notes.n3.h">The useful uncanny</h3>
-        <p data-i18n="notes.n3.b">There is a sweet spot between utility and strangeness where people remember what they used and want to touch it again.</p>
+        <p data-i18n="notes.n3.b">There is a sweet spot between utility and strangeness where people remember what they used — and reach for it again.</p>
         <span class="tag" data-i18n="notes.n3.tag">Design note</span>
       </article>
     </div>
   </section>
 
-  <!-- Section divider ornament -->
-  <div class="section-ornament" aria-hidden="true">
-    <svg width="240" height="32" viewBox="0 0 240 32" fill="none">
-      <line x1="0" y1="16" x2="90" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-      <rect x="108" y="4" width="12" height="12" transform="rotate(45 114 10)" fill="none" stroke="rgba(200,168,78,0.5)" stroke-width="1.5"/>
-      <rect x="116" y="12" width="8" height="8" transform="rotate(45 120 16)" fill="rgba(200,168,78,0.15)" stroke="rgba(200,168,78,0.3)" stroke-width="0.5"/>
-      <line x1="150" y1="16" x2="240" y2="16" stroke="rgba(200,168,78,0.2)" stroke-width="1"/>
-    </svg>
-  </div>
-
   <!-- ============================== -->
-  <!-- ACT VI : CONTACT — THE CLOSE   -->
+  <!-- CONTACT                        -->
   <!-- ============================== -->
-  <section class="scene scene-contact" id="contact">
-    <div class="contact-bg-image" style="background-image: url('https://images.unsplash.com/photo-1514543580686-6488d80c6875?w=1920&q=80&fit=crop')"></div>
-    <div class="contact-frame">
-      <div class="contact-main deco-frame linen">
-        <span class="mono-label" data-i18n="contact.label">Contact</span>
-        <h2 class="section-title gold-foil" data-i18n="contact.title">Bring a rough idea.<br>I like rough ideas.</h2>
-        <p class="contact-desc" data-i18n="contact.desc">For prototypes, experiments, collaboration, or a stronger version of this site, start with the fastest available channel.</p>
-        <div class="contact-actions">
-          <a class="contact-link" href="mailto:KidSpartor@users.noreply.github.com">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-            <span data-i18n="contact.email">Email</span>
-          </a>
-          <a class="contact-link" href="https://github.com/KidSpartor" target="_blank" rel="noreferrer">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
-            <span data-i18n="contact.github">GitHub</span>
-          </a>
-        </div>
+  <section class="section section-contact" id="contact">
+    <div class="contact-head">
+      <span class="mono-label"><span class="pulse-dot"></span><span data-i18n="contact.status">Available for new work</span></span>
+      <h2 class="contact-title" data-split data-i18n="contact.title">Bring a rough idea. I like rough ideas.</h2>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-actions">
+        <a class="contact-link" href="mailto:KidSpartor@users.noreply.github.com" data-magnetic>
+          <span class="mono-label" data-i18n="contact.email">Email</span>
+          <span class="contact-val">KidSpartor</span>
+          <span class="contact-arrow">→</span>
+        </a>
+        <a class="contact-link" href="https://github.com/KidSpartor" target="_blank" rel="noreferrer" data-magnetic>
+          <span class="mono-label" data-i18n="contact.github">GitHub</span>
+          <span class="contact-val">@KidSpartor</span>
+          <span class="contact-arrow">→</span>
+        </a>
       </div>
       <div class="contact-side">
+        <p class="contact-desc" data-i18n="contact.desc">For prototypes, experiments, collaboration, or a stronger version of this site — start with the fastest channel.</p>
         <div class="contact-panel" data-reveal>
-          <h3 data-i18n="contact.p1.h">Format</h3>
-          <p data-i18n="contact.p1.b">Static, fast, deployable, and intentionally easy to migrate into Astro or Next.js when the writing archive becomes real.</p>
+          <strong data-i18n="contact.p1.h">Format</strong>
+          <p data-i18n="contact.p1.b">Static, fast, deployable, and deliberately easy to migrate into Astro or Next.js once the writing archive becomes real.</p>
         </div>
         <div class="contact-panel" data-reveal>
-          <h3 data-i18n="contact.p2.h">Next obvious page</h3>
+          <strong data-i18n="contact.p2.h">Next obvious page</strong>
           <p data-i18n="contact.p2.b">A proper notebook: short posts, prototypes with source links, and a library of interface patterns worth reusing.</p>
         </div>
       </div>
@@ -491,22 +308,9 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <svg class="footer-ornament" width="100%" height="24" viewBox="0 0 1200 24" preserveAspectRatio="none" aria-hidden="true">
-      <line x1="0" y1="12" x2="500" y2="12" stroke="rgba(200,168,78,0.12)" stroke-width="1"/>
-      <rect x="588" y="0" width="12" height="12" transform="rotate(45 594 6)" fill="none" stroke="rgba(200,168,78,0.4)" stroke-width="1.5"/>
-      <rect x="592" y="4" width="4" height="4" transform="rotate(45 594 6)" fill="rgba(200,168,78,0.15)"/>
-      <rect x="600" y="0" width="12" height="12" transform="rotate(45 606 6)" fill="none" stroke="rgba(200,168,78,0.25)" stroke-width="1"/>
-      <line x1="700" y1="12" x2="1200" y2="12" stroke="rgba(200,168,78,0.12)" stroke-width="1"/>
-    </svg>
-    <div class="footer-content">
-      <span data-i18n="footer.left">Designed and built for Tianyi Ma.</span>
-      <span class="mono-label" data-i18n="footer.right">Studio — always in motion.</span>
-    </div>
+    <span data-i18n="footer.left">Designed and built by Kid Spartor.</span>
+    <span class="mono-label" data-i18n="footer.right">Always in motion — 2026</span>
   </footer>
-
-  <audio id="bgm" loop preload="auto">
-    <source src="/bgm.mp3" type="audio/mpeg">
-  </audio>
 
 </body>
 </html>

@@ -11,18 +11,21 @@ const DICT = {
     'nav.notes': 'Notes',
     'nav.contact': 'Contact',
 
-    'hero.eyebrow': 'Studio index — 2026',
-    'hero.title1': 'Tianyi Ma',
-    'hero.title2': 'keeps useful things',
-    'hero.title3:html': '<em>slightly strange.</em>',
+    'hero.eyebrow': 'Kid Spartor — software · systems · interfaces',
+    'hero.title1': 'Useful things,',
+    'hero.title2': 'kept slightly strange.',
     'hero.subtitle': 'Software, systems, instruments, prototypes — and the interface details that make an idea feel alive without ever announcing the trick.',
     'hero.s1': 'Build interfaces that reward repeated use, not just the first impression.',
     'hero.s2': 'Turn rough ideas into working objects before they become too precious to touch.',
     'hero.s3': 'Let the system show its intelligence through behaviour, restraint, and rhythm.',
     'hero.scroll': 'Scroll to enter',
+    'hero.coords': '51.5074°N / 0.1278°W',
 
-    'work.label': 'Selected directions',
-    'work.title': 'A portfolio can be a cabinet, not a trophy shelf.',
+    'work.label': '[ 01 ] Selected work',
+    'work.title': 'A portfolio is a cabinet, not a trophy shelf.',
+    'work.open': 'Open →',
+    'work.live': 'Live →',
+    'work.code': 'Code →',
     'work.desc': 'Four things I actually built and shipped: an interactive course, a full-stack card table, a desktop player, and a little game about gravity.',
     'work.c1.title': 'Zero to UNet',
     'work.c1.body': 'A browser-native deep learning course — from a single perceptron to UNet segmentation. 11 chapters of Canvas-driven demos: gradient-descent heatmaps, sliding convolutions, live skip connections. Zero dependencies, progress saved locally.',
@@ -45,8 +48,7 @@ const DICT = {
     'work.c4.t2': 'Procedural',
     'work.c4.t3': 'Physics game',
 
-    'story.label': 'About',
-    'story.title': 'Taste is a technical constraint.',
+    'story.label': '[ 02 ] About',
     'story.bio:html': 'I like building things that feel <em>inhabited</em>: clear enough to use, specific enough to belong to someone, and strange enough to keep thinking about.',
     'story.p1.h': 'Start with behaviour.',
     'story.p1.b': 'A page can look beautiful in a screenshot and still be inert. The better question is what it does when someone comes back.',
@@ -55,10 +57,7 @@ const DICT = {
     'story.p3.h': 'Keep the edge human.',
     'story.p3.b': 'Even technical work benefits from texture: good names, calm defaults, forgiving controls, and a little wit.',
 
-    'parallax.title': 'London calling.',
-    'parallax.sub': 'Where tradition keeps reinventing itself.',
-
-    'desk.label': 'Desk',
+    'desk.label': '[ 03 ] Desk',
     'desk.title': 'Things worth keeping open.',
     'desk.desc': 'Interests, shelves, and recurring obsessions — the kind that quietly grow into future pages.',
     'desk.d1.h': 'Reading shelf',
@@ -70,7 +69,7 @@ const DICT = {
     'desk.d4.h': 'Tool room',
     'desk.d4.b': 'Scripts, personal dashboards, prompts, deployment notes, and tiny utilities that remove friction from ordinary work.',
 
-    'notes.label': 'Notes',
+    'notes.label': '[ 04 ] Notes',
     'notes.title': 'Drafts for future pages.',
     'notes.desc': 'Written like doors, not summaries. A personal site gets better the moment it has places to wander.',
     'notes.n1.num': 'Note 01',
@@ -87,7 +86,8 @@ const DICT = {
     'notes.n3.tag': 'Design note',
 
     'contact.label': 'Contact',
-    'contact.title:html': 'Bring a rough idea.<br>I like rough ideas.',
+    'contact.status': 'Available for new work',
+    'contact.title': 'Bring a rough idea. I like rough ideas.',
     'contact.desc': 'For prototypes, experiments, collaboration, or a stronger version of this site — start with the fastest channel.',
     'contact.email': 'Email',
     'contact.github': 'GitHub',
@@ -96,8 +96,8 @@ const DICT = {
     'contact.p2.h': 'Next obvious page',
     'contact.p2.b': 'A proper notebook: short posts, prototypes with source links, and a library of interface patterns worth reusing.',
 
-    'footer.left': 'Designed and built by Tianyi Ma.',
-    'footer.right': 'Studio — always in motion.',
+    'footer.left': 'Designed and built by Kid Spartor.',
+    'footer.right': 'Always in motion — 2026',
   },
 
   zh: {
@@ -107,18 +107,21 @@ const DICT = {
     'nav.notes': '札记',
     'nav.contact': '联络',
 
-    'hero.eyebrow': '工作室索引 — 2026',
-    'hero.title1': '马天翼',
-    'hero.title2': '把有用之物',
-    'hero.title3:html': '<em>留得稍稍古怪。</em>',
+    'hero.eyebrow': 'Kid Spartor — 软件 · 系统 · 界面',
+    'hero.title1': '有用之物，',
+    'hero.title2': '留得稍稍古怪。',
     'hero.subtitle': '软件、系统、器物、原型——以及那些让一个想法显得鲜活、却又不点破机关的界面细节。',
     'hero.s1': '做能经得起反复使用的界面，而不只是第一眼的惊艳。',
     'hero.s2': '趁粗糙的念头还没变得过于珍贵，先把它做成能用的东西。',
     'hero.s3': '让系统的聪明，藏在行为、克制与节奏里显露出来。',
     'hero.scroll': '向下，入场',
+    'hero.coords': '51.5074°N / 0.1278°W',
 
-    'work.label': '若干方向',
-    'work.title': '作品集可以是一只陈列柜，而非奖杯架。',
+    'work.label': '[ 01 ] 精选作品',
+    'work.title': '作品集是一只陈列柜，而非奖杯架。',
+    'work.open': '打开 →',
+    'work.live': '在线 →',
+    'work.code': '源码 →',
     'work.desc': '四件真正做出来、也跑得起来的东西：一门交互课程、一张全栈牌桌、一个桌面播放器，还有一个关于引力的小游戏。',
     'work.c1.title': '从零到 UNet',
     'work.c1.body': '一门纯浏览器里的深度学习课程——从单个感知机，一路到 UNet 图像分割。十一章全是 Canvas 驱动的交互演示：梯度下降热力图、滑动卷积、实时跳跃连接。零依赖，进度自动存在本地。',
@@ -141,8 +144,7 @@ const DICT = {
     'work.c4.t2': '程序生成',
     'work.c4.t3': '物理游戏',
 
-    'story.label': '关于',
-    'story.title': '品味，是一项技术约束。',
+    'story.label': '[ 02 ] 关于',
     'story.bio:html': '我喜欢做有<em>人住过</em>气息的东西：清楚到能用，具体到像属于某个人，又古怪到让人念念不忘。',
     'story.p1.h': '从行为出发。',
     'story.p1.b': '一个页面可以在截图里很美，却毫无生气。更值得问的是：当有人再次回来，它会做什么。',
@@ -151,10 +153,7 @@ const DICT = {
     'story.p3.h': '让边缘保有人味。',
     'story.p3.b': '再技术的工作也受益于质感：好的命名、克制的默认值、宽容的控件，和一点点机智。',
 
-    'parallax.title': '伦敦在召唤。',
-    'parallax.sub': '传统在此处不断重塑自身。',
-
-    'desk.label': '案头',
+    'desk.label': '[ 03 ] 案头',
     'desk.title': '值得一直摊开着的东西。',
     'desk.desc': '兴趣、书架，与反复出现的执念——那种会悄悄长成未来页面的东西。',
     'desk.d1.h': '阅读架',
@@ -166,7 +165,7 @@ const DICT = {
     'desk.d4.h': '工具间',
     'desk.d4.b': '脚本、个人仪表盘、提示词、部署笔记，以及那些替日常工作除去摩擦的小工具。',
 
-    'notes.label': '札记',
+    'notes.label': '[ 04 ] 札记',
     'notes.title': '写给未来页面的草稿。',
     'notes.desc': '它们写得像门，而非摘要。一个个人站点，从拥有可以游荡的去处那一刻起，才真正变好。',
     'notes.n1.num': '札记 01',
@@ -183,7 +182,8 @@ const DICT = {
     'notes.n3.tag': '设计笔记',
 
     'contact.label': '联络',
-    'contact.title:html': '带一个粗糙的想法来。<br>我喜欢粗糙的想法。',
+    'contact.status': '正在接洽新合作',
+    'contact.title': '带一个粗糙的想法来。我喜欢粗糙的想法。',
     'contact.desc': '原型、实验、合作，或是想要一个更强的版本的本站——从最快的渠道开始。',
     'contact.email': '邮件',
     'contact.github': 'GitHub',
@@ -192,8 +192,8 @@ const DICT = {
     'contact.p2.h': '下一个显然的页面',
     'contact.p2.b': '一本像样的笔记：短文、附带源码链接的原型，以及一座值得复用的界面范式库。',
 
-    'footer.left': '由马天翼设计并构建。',
-    'footer.right': '工作室 — 永远在运转。',
+    'footer.left': '由 Kid Spartor 设计并构建。',
+    'footer.right': '永远在运转 — 2026',
   },
 }
 
