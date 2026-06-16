@@ -51,7 +51,7 @@ export function initFog() {
   let heroRect = canvas.getBoundingClientRect() // cached; refreshed on scroll/resize
 
   const FOG_MAX = 0.66 // milky tint opacity (the blur layer carries the rest)
-  const HEAL = 0.011 // per-frame mask decay → how fast the glass re-mists
+  const HEAL = 0.03 // per-frame mask decay → how fast the glass re-mists
   const BRUSH_MIN = 50 // css px
   const BRUSH_MAX = 158
   const MASK_SCALE = 0.2 // frost-mask resolution relative to viewport
@@ -257,12 +257,22 @@ export function initFog() {
   }
 
   let running = false
+  let healTick = 0
   function frame(time) {
     if (!running) return
+    // Heal: fade the clear mask so the glass mists back over. A gentle per-frame
+    // multiplicative fade looks smooth but, because of 8-bit alpha rounding, it
+    // STALLS around ~17% (alpha × HEAL rounds to 0) — leaving permanent ghost
+    // trails from every wipe and rivulet. A periodic stronger pass crushes that
+    // residual so wiped areas fully re-fog.
     cbx.setTransform(1, 0, 0, 1, 0, 0)
     cbx.globalCompositeOperation = 'destination-out'
     cbx.fillStyle = `rgba(0,0,0,${HEAL})`
     cbx.fillRect(0, 0, W, H)
+    if (++healTick % 18 === 0) {
+      cbx.fillStyle = 'rgba(0,0,0,0.12)'
+      cbx.fillRect(0, 0, W, H)
+    }
     cbx.globalCompositeOperation = 'source-over'
 
     wipe()
