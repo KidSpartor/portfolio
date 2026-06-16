@@ -40,6 +40,7 @@ export function initFog() {
   let W = 0, H = 0 // device px
   let cssW = 0, cssH = 0 // css px
   let mW = 0, mH = 0 // mask px (≈ quarter res)
+  let titleLens = null // soft permanent clearing over the headline (legibility)
 
   const FOG_MAX = 0.66 // milky tint opacity (the blur layer carries the rest)
   const HEAL = 0.011 // per-frame mask decay → how fast the glass re-mists
@@ -127,6 +128,44 @@ export function initFog() {
     return t
   }
 
+  // Keep the headline a readable ghost: a soft clearing re-applied fresh each
+  // frame (no accumulation) over the title, in whatever target context.
+  function measureTitleLens() {
+    const title = hero.querySelector('.hero-title')
+    if (!title) {
+      titleLens = null
+      return
+    }
+    const tr = title.getBoundingClientRect()
+    const hr = hero.getBoundingClientRect()
+    titleLens = {
+      x: tr.left - hr.left + tr.width / 2,
+      y: tr.top - hr.top + tr.height / 2,
+      rx: Math.max(60, tr.width * 0.62),
+      ry: Math.max(40, tr.height * 0.85),
+    }
+  }
+
+  function applyLens(c, scale, strength) {
+    if (!titleLens) return
+    const rx = titleLens.rx * scale
+    const ry = titleLens.ry * scale
+    if (rx <= 0) return
+    c.save()
+    c.globalCompositeOperation = 'destination-out'
+    c.translate(titleLens.x * scale, titleLens.y * scale)
+    c.scale(1, ry / rx)
+    const g = c.createRadialGradient(0, 0, 0, 0, 0, rx)
+    g.addColorStop(0, `rgba(0,0,0,${strength})`)
+    g.addColorStop(0.68, `rgba(0,0,0,${strength * 0.5})`)
+    g.addColorStop(1, 'rgba(0,0,0,0)')
+    c.fillStyle = g
+    c.beginPath()
+    c.arc(0, 0, rx, 0, Math.PI * 2)
+    c.fill()
+    c.restore()
+  }
+
   function stampClear(xCss, yCss, radCss, strength) {
     const x = xCss * dpr
     const y = yCss * dpr
@@ -166,6 +205,7 @@ export function initFog() {
     stampClear(cssW * 0.42, cssH * 0.5, 260, 0.94)
     stampClear(cssW * 0.52, cssH * 0.54, 235, 0.9)
     stampClear(cssW * 0.63, cssH * 0.5, 215, 0.84)
+    measureTitleLens()
   }
 
   // ── Pointer tracking (window-level; layers are pointer-events:none) ──
@@ -245,6 +285,7 @@ export function initFog() {
     mctx.globalCompositeOperation = 'destination-out'
     mctx.drawImage(clearBuf, 0, 0, mW, mH)
     mctx.globalCompositeOperation = 'source-over'
+    applyLens(mctx, MASK_SCALE, 0.5)
     const url = maskCanvas.toDataURL()
     frost.style.webkitMaskImage = `url(${url})`
     frost.style.maskImage = `url(${url})`
@@ -275,6 +316,7 @@ export function initFog() {
     ctx.globalCompositeOperation = 'destination-out'
     ctx.drawImage(clearBuf, 0, 0)
     ctx.globalCompositeOperation = 'source-over'
+    applyLens(ctx, dpr, 0.46)
 
     updateFrostMask()
     raf = requestAnimationFrame(frame)
@@ -292,6 +334,9 @@ export function initFog() {
   }
 
   resize()
+  // Re-measure the headline once fonts/i18n have settled the layout
+  setTimeout(measureTitleLens, 700)
+  setTimeout(measureTitleLens, 1600)
   window.addEventListener('resize', resize)
 
   const themeBtn = document.getElementById('themeToggle')
