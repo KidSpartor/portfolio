@@ -1,71 +1,130 @@
-// Hero fog — 重返未来1999 · London rain-on-glass / condensation
-// A milky condensation layer veils the hero. Moving the pointer "wipes" it
-// clear to reveal the content behind; when the pointer rests, the fog heals
-// back and the glass mists over again. Occasional rivulets trickle down for
-// the rain-on-glass feel. Desktop / fine-pointer only, reduced-motion aware,
-// and purely additive — it never touches the scene layouts.
+// Hero fog — 重返未来1999 · London rain-on-glass / frosted condensation
+// ─────────────────────────────────────────────────────────────────────────
+// Two stacked layers create real misted glass:
+//   • #heroFrost — a backdrop-filter blur layer, masked live by the wipe, so
+//     fogged areas genuinely blur + dim the content behind while wiped areas
+//     stay sharp.
+//   • #heroFog  — a canvas carrying the condensation colour: a multi-octave
+//     procedural texture (steam gradient + cloud octaves + vignette + droplet
+//     grain), two seeds crossfading so the mist breathes, plus rivulets that
+//     trickle down and beads that cling to a fresh wipe.
+// The pointer "wipes" both clear; resting lets the glass mist back over.
+// Desktop / fine-pointer only, reduced-motion + touch skip it. Purely additive.
 
 export function initFog() {
   const canvas = document.getElementById('heroFog')
+  const frost = document.getElementById('heroFrost')
   const hero = document.querySelector('.scene-hero')
   if (!canvas || !hero) return
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const fine = window.matchMedia('(pointer: fine)').matches
-  // Coarse-pointer (touch) devices can't hover to wipe — leaving the hero
-  // permanently misted would just hide the title, so we skip the effect there.
   if (reduced || !fine) {
     canvas.style.display = 'none'
+    if (frost) frost.style.display = 'none'
     return
   }
 
   const ctx = canvas.getContext('2d')
   const dpr = Math.min(window.devicePixelRatio || 1, 2)
 
-  // Offscreen layers: a static cloudy texture, and a "wiped area" mask that
-  // heals (fades back to fogged) a little every frame.
-  const fogTex = document.createElement('canvas')
-  const ftx = fogTex.getContext('2d')
-  const clearBuf = document.createElement('canvas')
+  // Offscreen layers
+  let fogA = null // procedural condensation texture, seed A
+  let fogB = null // … seed B (crossfaded with A so the mist breathes)
+  const clearBuf = document.createElement('canvas') // wiped-area mask, heals over time
   const cbx = clearBuf.getContext('2d')
+  // Low-res mask that drives the frost backdrop-blur (cheap to serialise)
+  const maskCanvas = document.createElement('canvas')
+  const mctx = maskCanvas.getContext('2d')
 
   let W = 0, H = 0 // device px
   let cssW = 0, cssH = 0 // css px
+  let mW = 0, mH = 0 // mask px (≈ quarter res)
 
-  const FOG_MAX = 0.8 // idle fog opacity — strong veil, title stays a ghost
-  const HEAL = 0.012 // per-frame mask decay → how fast the glass re-mists
-  const BRUSH_MIN = 48 // css px
-  const BRUSH_MAX = 150
+  const FOG_MAX = 0.66 // milky tint opacity (the blur layer carries the rest)
+  const HEAL = 0.011 // per-frame mask decay → how fast the glass re-mists
+  const BRUSH_MIN = 50 // css px
+  const BRUSH_MAX = 158
+  const MASK_SCALE = 0.26 // frost-mask resolution relative to viewport
 
   function fogTint() {
     const dark = document.documentElement.dataset.theme === 'dark'
     return dark
-      ? { r: 196, g: 210, b: 226 } // cool night mist
-      : { r: 236, g: 232, b: 224 } // warm pale haze
+      ? { r: 198, g: 212, b: 228 } // cool night mist
+      : { r: 238, g: 233, b: 224 } // warm pale haze
   }
 
-  function buildTexture() {
-    ftx.setTransform(1, 0, 0, 1, 0, 0)
-    ftx.clearRect(0, 0, W, H)
+  // ── Build one procedural condensation texture ──
+  function makeFogTexture() {
+    const t = document.createElement('canvas')
+    t.width = W
+    t.height = H
+    const x = t.getContext('2d')
     const { r, g, b } = fogTint()
-    // Base milky wash
-    ftx.fillStyle = `rgba(${r},${g},${b},0.82)`
-    ftx.fillRect(0, 0, W, H)
-    // Soft cloud puffs for organic density variation
-    const puffs = Math.round((cssW * cssH) / 8500)
-    for (let i = 0; i < puffs; i++) {
-      const x = Math.random() * W
-      const y = Math.random() * H
-      const rad = (40 + Math.random() * 170) * dpr
-      const a = 0.04 + Math.random() * 0.14
-      const grad = ftx.createRadialGradient(x, y, 0, x, y, rad)
-      grad.addColorStop(0, `rgba(${r},${g},${b},${a})`)
-      grad.addColorStop(1, `rgba(${r},${g},${b},0)`)
-      ftx.fillStyle = grad
-      ftx.beginPath()
-      ftx.arc(x, y, rad, 0, Math.PI * 2)
-      ftx.fill()
+
+    // Steam gradient — denser toward the top, like condensation rising
+    const vg = x.createLinearGradient(0, 0, 0, H)
+    vg.addColorStop(0, `rgba(${r},${g},${b},0.94)`)
+    vg.addColorStop(0.55, `rgba(${r},${g},${b},0.82)`)
+    vg.addColorStop(1, `rgba(${r},${g},${b},0.88)`)
+    x.fillStyle = vg
+    x.fillRect(0, 0, W, H)
+
+    // Cloud octaves — large faint billows down to small wisps, some additive,
+    // some subtractive, for organic fbm-like density.
+    const area = cssW * cssH
+    const octaves = [
+      { count: area / 70000, rad: 230, a: 0.13 },
+      { count: area / 24000, rad: 120, a: 0.1 },
+      { count: area / 9000, rad: 58, a: 0.07 },
+    ]
+    for (const o of octaves) {
+      const n = Math.max(2, Math.round(o.count))
+      for (let i = 0; i < n; i++) {
+        const cx = Math.random() * W
+        const cy = Math.random() * H
+        const rad = o.rad * (0.5 + Math.random()) * dpr
+        const a = o.a * (0.5 + Math.random())
+        const grad = x.createRadialGradient(cx, cy, 0, cx, cy, rad)
+        if (Math.random() < 0.58) {
+          grad.addColorStop(0, `rgba(${r},${g},${b},${a})`)
+          grad.addColorStop(1, `rgba(${r},${g},${b},0)`)
+          x.globalCompositeOperation = 'source-over'
+        } else {
+          // thin spots — let a little content peek through
+          grad.addColorStop(0, `rgba(0,0,0,${a * 0.9})`)
+          grad.addColorStop(1, 'rgba(0,0,0,0)')
+          x.globalCompositeOperation = 'destination-out'
+        }
+        x.fillStyle = grad
+        x.beginPath()
+        x.arc(cx, cy, rad, 0, Math.PI * 2)
+        x.fill()
+      }
     }
+    x.globalCompositeOperation = 'source-over'
+
+    // Vignette — thicken the mist toward the edges so it frames the content
+    const vr = Math.max(W, H) * 0.78
+    const rg = x.createRadialGradient(W / 2, H * 0.44, vr * 0.22, W / 2, H * 0.44, vr)
+    rg.addColorStop(0, 'rgba(0,0,0,0)')
+    rg.addColorStop(1, `rgba(${r},${g},${b},0.28)`)
+    x.fillStyle = rg
+    x.fillRect(0, 0, W, H)
+
+    // Fine condensation grain — micro-beads scattered across the glass
+    const beads = Math.round(area / 1100)
+    for (let i = 0; i < beads; i++) {
+      const bx = Math.random() * W
+      const by = Math.random() * H
+      const br = (0.5 + Math.random() * 1.4) * dpr
+      const lift = Math.random() < 0.5 ? 14 : -10
+      x.fillStyle = `rgba(${r + lift},${g + lift},${b + lift},${0.03 + Math.random() * 0.07})`
+      x.beginPath()
+      x.arc(bx, by, br, 0, Math.PI * 2)
+      x.fill()
+    }
+    return t
   }
 
   function stampClear(xCss, yCss, radCss, strength) {
@@ -88,26 +147,31 @@ export function initFog() {
     cssH = hero.clientHeight
     W = Math.max(1, Math.floor(cssW * dpr))
     H = Math.max(1, Math.floor(cssH * dpr))
-    for (const c of [canvas, fogTex, clearBuf]) {
-      c.width = W
-      c.height = H
-    }
+    canvas.width = W
+    canvas.height = H
+    clearBuf.width = W
+    clearBuf.height = H
     canvas.style.width = cssW + 'px'
     canvas.style.height = cssH + 'px'
-    buildTexture()
+    mW = maskCanvas.width = Math.max(1, Math.round(cssW * MASK_SCALE))
+    mH = maskCanvas.height = Math.max(1, Math.round(cssH * MASK_SCALE))
+
+    fogA = makeFogTexture()
+    fogB = makeFogTexture()
+
     // Initial reveal — clear a soft swath through the centre so the title
     // greets the visitor, then it heals over ~3s and invites them to wipe.
     cbx.setTransform(1, 0, 0, 1, 0, 0)
     cbx.clearRect(0, 0, W, H)
-    stampClear(cssW * 0.42, cssH * 0.5, 250, 0.92)
-    stampClear(cssW * 0.52, cssH * 0.54, 230, 0.88)
-    stampClear(cssW * 0.62, cssH * 0.5, 210, 0.82)
+    stampClear(cssW * 0.42, cssH * 0.5, 260, 0.94)
+    stampClear(cssW * 0.52, cssH * 0.54, 235, 0.9)
+    stampClear(cssW * 0.63, cssH * 0.5, 215, 0.84)
   }
 
-  // ── Pointer tracking (window-level; canvas is pointer-events:none) ──
-  let px = -1, py = -1 // latest pointer, css px relative to hero
-  let prevX = -1, prevY = -1 // pointer at previous frame
-  let speed = 0 // px / frame, smoothed
+  // ── Pointer tracking (window-level; layers are pointer-events:none) ──
+  let px = -1, py = -1
+  let prevX = -1, prevY = -1
+  let speed = 0
 
   window.addEventListener(
     'pointermove',
@@ -119,6 +183,12 @@ export function initFog() {
     { passive: true }
   )
 
+  // Rivulets / clinging beads — meander down leaving a healing trail
+  const drips = []
+  function spawnDrip(x, y, r, v) {
+    if (drips.length < 18) drips.push({ x, y, v, r, wob: 0, seed: Math.random() * 6.28 })
+  }
+
   function wipe() {
     if (px < 0) return
     if (prevX < 0) {
@@ -129,37 +199,58 @@ export function initFog() {
     const dx = px - prevX
     const dy = py - prevY
     const dist = Math.hypot(dx, dy)
-    // Smooth the speed so the brush size doesn't jitter
     speed += (dist - speed) * 0.3
     if (dist > 0.5) {
       const rad = Math.min(BRUSH_MAX, BRUSH_MIN + speed * 1.8)
-      const strength = Math.min(0.92, 0.2 + speed * 0.045)
-      // Interpolate along the stroke so fast moves don't leave gaps
+      const strength = Math.min(0.94, 0.22 + speed * 0.045)
       const steps = Math.min(28, Math.ceil(dist / (rad * 0.4)) || 1)
       for (let i = 1; i <= steps; i++) {
         stampClear(prevX + dx * (i / steps), prevY + dy * (i / steps), rad, strength)
+      }
+      // A brisk wipe flings a couple of beads off the trailing edge
+      if (speed > 7 && Math.random() < 0.5) {
+        spawnDrip(prevX + (Math.random() - 0.5) * rad, prevY + rad * 0.3, 4 + Math.random() * 5, 0.6 + Math.random() * 1.2)
       }
     }
     prevX = px
     prevY = py
   }
 
-  // ── Rain rivulets — occasional drops that trickle down leaving a trail ──
-  const drips = []
   function updateDrips() {
-    if (Math.random() < 0.014 && drips.length < 5) {
-      drips.push({ x: Math.random() * cssW, y: -12, v: 1.4 + Math.random() * 2.4, r: 6 + Math.random() * 7 })
+    if (Math.random() < 0.01 && drips.length < 18) {
+      spawnDrip(Math.random() * cssW, -12, 4 + Math.random() * 5, 1.3 + Math.random() * 2.2)
     }
     for (let i = drips.length - 1; i >= 0; i--) {
       const d = drips[i]
       d.y += d.v
-      d.v += 0.06
+      d.v += 0.05
+      // meander like real water finding its path down the glass
+      d.wob += 0.08
+      d.x += Math.sin(d.wob + d.seed) * 0.9
       stampClear(d.x, d.y, d.r, 0.5)
       if (d.y > cssH + 24) drips.splice(i, 1)
     }
   }
 
-  function frame() {
+  // Update the frost backdrop-blur mask: white where fogged, holes where wiped
+  let maskTick = 0
+  function updateFrostMask() {
+    if (!frost) return
+    maskTick++
+    if (maskTick % 3 !== 0) return // ~20fps is plenty for a soft mask
+    mctx.setTransform(1, 0, 0, 1, 0, 0)
+    mctx.globalCompositeOperation = 'source-over'
+    mctx.fillStyle = '#fff'
+    mctx.fillRect(0, 0, mW, mH)
+    mctx.globalCompositeOperation = 'destination-out'
+    mctx.drawImage(clearBuf, 0, 0, mW, mH)
+    mctx.globalCompositeOperation = 'source-over'
+    const url = maskCanvas.toDataURL()
+    frost.style.webkitMaskImage = `url(${url})`
+    frost.style.maskImage = `url(${url})`
+  }
+
+  function frame(time) {
     // Heal: fade the clear mask → the glass mists back over
     cbx.setTransform(1, 0, 0, 1, 0, 0)
     cbx.globalCompositeOperation = 'destination-out'
@@ -170,17 +261,22 @@ export function initFog() {
     wipe()
     updateDrips()
 
-    // Compose: fog texture at max alpha, then punch out the cleared areas
+    // Compose milky tint: crossfade two textures (breathing) then punch holes
+    const breath = FOG_MAX * (1 + 0.04 * Math.sin(time * 0.0006))
+    const mix = 0.5 + 0.5 * Math.sin(time * 0.00035)
     ctx.setTransform(1, 0, 0, 1, 0, 0)
     ctx.globalCompositeOperation = 'source-over'
     ctx.clearRect(0, 0, W, H)
-    ctx.globalAlpha = FOG_MAX
-    ctx.drawImage(fogTex, 0, 0)
+    ctx.globalAlpha = breath * (1 - mix)
+    ctx.drawImage(fogA, 0, 0)
+    ctx.globalAlpha = breath * mix
+    ctx.drawImage(fogB, 0, 0)
     ctx.globalAlpha = 1
     ctx.globalCompositeOperation = 'destination-out'
     ctx.drawImage(clearBuf, 0, 0)
     ctx.globalCompositeOperation = 'source-over'
 
+    updateFrostMask()
     raf = requestAnimationFrame(frame)
   }
 
@@ -198,12 +294,17 @@ export function initFog() {
   resize()
   window.addEventListener('resize', resize)
 
-  // Rebuild the tint when the theme toggles (after the attribute flips)
   const themeBtn = document.getElementById('themeToggle')
-  if (themeBtn) themeBtn.addEventListener('click', () => setTimeout(buildTexture, 0))
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () =>
+      setTimeout(() => {
+        fogA = makeFogTexture()
+        fogB = makeFogTexture()
+      }, 0)
+    )
+  }
 
-  // Only animate while the hero is on screen — no point burning a rAF when
-  // the visitor has scrolled past it.
+  // Only animate while the hero is on screen
   const io = new IntersectionObserver(
     (entries) => {
       for (const en of entries) en.isIntersecting ? start() : stop()

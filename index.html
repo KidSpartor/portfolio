@@ -96,6 +96,8 @@
     <div class="scene-bg">
       <div class="hero-bg-image" style="background-image: url('https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1920&q=80&fit=crop')"></div>
       <div class="hero-gradient"></div>
+      <!-- Out-of-focus city lights — a rainy London night seen through the glass -->
+      <div class="hero-lights" aria-hidden="true"></div>
     </div>
     <!-- Art Deco radiating sunburst SVG -->
     <svg class="hero-sunburst" viewBox="0 0 800 800" fill="none" aria-hidden="true">
@@ -153,7 +155,8 @@
     <div class="hero-counter">
       <span class="mono-label">001</span>
     </div>
-    <!-- London condensation / rain-on-glass fog (wipe to reveal) -->
+    <!-- London condensation / rain-on-glass — frosted glass + wipe to reveal -->
+    <div class="hero-frost" id="heroFrost" aria-hidden="true"></div>
     <canvas class="hero-fog" id="heroFog" aria-hidden="true"></canvas>
   </section>
 
