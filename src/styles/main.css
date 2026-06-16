@@ -1098,6 +1098,20 @@ body::before {
   z-index: 3;
 }
 
+/* London condensation — milky fog that wipes clear under the pointer */
+.hero-fog {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  /* faint blur softens the condensation edge so it reads like steamed glass */
+  filter: blur(0.4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-fog { display: none; }
+}
+
 .hero-eyebrow {
   display: flex;
   align-items: center;
