@@ -166,13 +166,14 @@ export function initFog() {
     fogA = makeFogTexture()
     fogB = makeFogTexture()
 
-    // Initial reveal — clear a soft swath so the lit window greets the visitor,
-    // then it heals over ~3s and invites them to wipe.
+    // Gentle initial hint — a soft, even clearing low on the glass that heals
+    // within a couple of seconds into uniform mist, teasing the lit city behind
+    // and inviting a wipe. (The copy sits above the glass, so no reveal needed
+    // for legibility.)
     cbx.setTransform(1, 0, 0, 1, 0, 0)
     cbx.clearRect(0, 0, W, H)
-    stampClear(cssW * 0.42, cssH * 0.55, 260, 0.94)
-    stampClear(cssW * 0.54, cssH * 0.6, 235, 0.9)
-    stampClear(cssW * 0.66, cssH * 0.55, 215, 0.84)
+    stampClear(cssW * 0.5, cssH * 0.62, 320, 0.5)
+    stampClear(cssW * 0.7, cssH * 0.58, 220, 0.4)
     refreshRect()
   }
 
