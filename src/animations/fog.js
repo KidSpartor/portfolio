@@ -1,16 +1,19 @@
 // Hero fog — 重返未来1999 · London rain-on-glass / frosted condensation
 // ─────────────────────────────────────────────────────────────────────────
-// The glass sits BEHIND the hero copy: the editorial type stays crisp on top
-// while the misted window blurs the background + bokeh when fogged and
-// sharpens where the pointer wipes. Two layers:
-//   • #heroFrost — a backdrop-filter blur layer (z2), masked live by the wipe,
-//     so fogged areas blur + dim the background while wiped areas stay sharp.
-//   • #heroFog  — a canvas (z2) carrying the condensation colour: a procedural
-//     texture (steam gradient + cloud octaves + vignette + droplet grain), two
-//     seeds crossfading so the mist breathes, minus a healing "clear" mask.
-//   • .hero-lights — out-of-focus warm bokeh behind the glass; wiping reveals
-//     a glowing rainy London night.
-// Desktop / fine-pointer only; reduced-motion + touch skip it. Purely additive.
+// Modelled on real misted glass: the condensation sits OVER the hero (you wipe
+// it to reveal the content + the lit city behind). Grounded in the physics —
+// micro-droplets scatter light, so fogged areas blur + dim + desaturate and
+// bright lights bloom; wiping shoves the droplets aside leaving a clear wet
+// streak; only a FEW heavy droplets ever run down (most just cling). Layers:
+//   • #heroFrost — backdrop-filter blur (z4) masked live by the wipe, so fogged
+//     areas blur the content/lights and wiped areas read sharp.
+//   • #heroFog  — canvas (z5) condensation colour: steam gradient + cloud
+//     octaves + edge-denser vignette + droplet grain, two seeds crossfading so
+//     the mist breathes, minus a healing "clear" mask the pointer wipes.
+//   • .hero-lights — out-of-focus warm bokeh behind the glass; wiping reveals a
+//     glowing rainy London night blooming through the mist.
+// A soft "breath lens" keeps the headline a legible ghost. Desktop / fine-
+// pointer only; reduced-motion + touch skip it. Purely additive.
 
 export function initFog() {
   const canvas = document.getElementById('heroFog')
@@ -49,6 +52,7 @@ export function initFog() {
   let cssW = 0, cssH = 0 // css px
   let mW = 0, mH = 0 // mask px
   let heroRect = canvas.getBoundingClientRect() // cached; refreshed on scroll/resize
+  let titleLens = null // soft permanent clearing over the headline (legibility)
 
   const FOG_MAX = 0.66 // milky tint opacity (the blur layer carries the rest)
   const HEAL = 0.03 // per-frame mask decay → how fast the glass re-mists
@@ -130,6 +134,44 @@ export function initFog() {
     return t
   }
 
+  // Keep the headline a readable ghost: a soft clearing re-applied fresh each
+  // frame (no accumulation) over the title, in whatever target context.
+  function measureTitleLens() {
+    const title = hero.querySelector('.hero-title')
+    if (!title) {
+      titleLens = null
+      return
+    }
+    const tr = title.getBoundingClientRect()
+    const hr = hero.getBoundingClientRect()
+    titleLens = {
+      x: tr.left - hr.left + tr.width / 2,
+      y: tr.top - hr.top + tr.height / 2,
+      rx: Math.max(60, tr.width * 0.62),
+      ry: Math.max(40, tr.height * 0.85),
+    }
+  }
+
+  function applyLens(c, scale, strength) {
+    if (!titleLens) return
+    const rx = titleLens.rx * scale
+    const ry = titleLens.ry * scale
+    if (rx <= 0) return
+    c.save()
+    c.globalCompositeOperation = 'destination-out'
+    c.translate(titleLens.x * scale, titleLens.y * scale)
+    c.scale(1, ry / rx)
+    const g = c.createRadialGradient(0, 0, 0, 0, 0, rx)
+    g.addColorStop(0, `rgba(0,0,0,${strength})`)
+    g.addColorStop(0.68, `rgba(0,0,0,${strength * 0.5})`)
+    g.addColorStop(1, 'rgba(0,0,0,0)')
+    c.fillStyle = g
+    c.beginPath()
+    c.arc(0, 0, rx, 0, Math.PI * 2)
+    c.fill()
+    c.restore()
+  }
+
   function stampClear(xCss, yCss, radCss, strength) {
     const x = xCss * dpr
     const y = yCss * dpr
@@ -166,14 +208,15 @@ export function initFog() {
     fogA = makeFogTexture()
     fogB = makeFogTexture()
 
-    // Gentle initial hint — a soft, even clearing low on the glass that heals
-    // within a couple of seconds into uniform mist, teasing the lit city behind
-    // and inviting a wipe. (The copy sits above the glass, so no reveal needed
-    // for legibility.)
+    // Initial reveal — clear the content column on load so the hero greets the
+    // visitor in the clear, then mists over within a couple of seconds and
+    // invites them to wipe. The title lens keeps the brand legible thereafter.
     cbx.setTransform(1, 0, 0, 1, 0, 0)
     cbx.clearRect(0, 0, W, H)
-    stampClear(cssW * 0.5, cssH * 0.62, 320, 0.5)
-    stampClear(cssW * 0.7, cssH * 0.58, 220, 0.4)
+    stampClear(cssW * 0.3, cssH * 0.42, 400, 0.92)
+    stampClear(cssW * 0.42, cssH * 0.66, 360, 0.86)
+    stampClear(cssW * 0.62, cssH * 0.52, 300, 0.8)
+    measureTitleLens()
     refreshRect()
   }
 
@@ -194,7 +237,7 @@ export function initFog() {
   // Rivulets / clinging beads — meander down leaving a healing trail
   const drips = []
   function spawnDrip(x, y, r, v) {
-    if (drips.length < 18) drips.push({ x, y, v, r, wob: 0, seed: Math.random() * 6.28 })
+    if (drips.length < 8) drips.push({ x, y, v, r, wob: 0, seed: Math.random() * 6.28 })
   }
 
   function wipe() {
@@ -215,8 +258,10 @@ export function initFog() {
       for (let i = 1; i <= steps; i++) {
         stampClear(prevX + dx * (i / steps), prevY + dy * (i / steps), rad, strength)
       }
-      if (speed > 7 && Math.random() < 0.5) {
-        spawnDrip(prevX + (Math.random() - 0.5) * rad, prevY + rad * 0.3, 4 + Math.random() * 5, 0.6 + Math.random() * 1.2)
+      // Real wiping doesn't spray droplets — at most, moisture occasionally
+      // gathers at the bottom of a heavy stroke and runs as a single rivulet.
+      if (dy > 2 && speed > 10 && Math.random() < 0.04) {
+        spawnDrip(px, py + rad * 0.4, 4 + Math.random() * 4, 0.5 + Math.random())
       }
     }
     prevX = px
@@ -224,7 +269,8 @@ export function initFog() {
   }
 
   function updateDrips() {
-    if (Math.random() < 0.01 && drips.length < 18) {
+    // Most condensation just clings; only the occasional heavy drop runs down.
+    if (Math.random() < 0.0025 && drips.length < 6) {
       spawnDrip(Math.random() * cssW, -12, 4 + Math.random() * 5, 1.3 + Math.random() * 2.2)
     }
     for (let i = drips.length - 1; i >= 0; i--) {
@@ -251,6 +297,7 @@ export function initFog() {
     mctx.globalCompositeOperation = 'destination-out'
     mctx.drawImage(clearBuf, 0, 0, mW, mH)
     mctx.globalCompositeOperation = 'source-over'
+    applyLens(mctx, MASK_SCALE, 0.5)
     const url = maskCanvas.toDataURL()
     frost.style.webkitMaskImage = `url(${url})`
     frost.style.maskImage = `url(${url})`
@@ -291,6 +338,7 @@ export function initFog() {
     ctx.globalCompositeOperation = 'destination-out'
     ctx.drawImage(clearBuf, 0, 0)
     ctx.globalCompositeOperation = 'source-over'
+    applyLens(ctx, dpr, 0.46)
 
     updateFrostMask()
     raf = requestAnimationFrame(frame)
@@ -312,6 +360,9 @@ export function initFog() {
   }
 
   resize()
+  // Re-measure the headline once fonts/i18n have settled the layout
+  setTimeout(measureTitleLens, 700)
+  setTimeout(measureTitleLens, 1600)
   window.addEventListener('scroll', refreshRect, { passive: true })
 
   // Debounced resize — avoid re-allocating two full textures on every drag tick

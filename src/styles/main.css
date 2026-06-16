@@ -1162,13 +1162,13 @@ body::before {
    Two stacked layers: a backdrop-blur "frost" masked live by the wipe (foggy
    areas blur + dim the content behind; wiped areas stay sharp), and a milky
    canvas on top carrying the condensation colour, grain and rivulets. */
-/* Both glass layers sit BELOW .hero-content (z3): the editorial type stays
-   crisp on top while the misted window — bokeh + background — blurs when
-   fogged and sharpens where wiped. */
+/* The glass sits OVER the hero — you wipe it to reveal the content + the lit
+   city behind. A soft "breath lens" (set from JS) keeps the headline a legible
+   ghost so the brand never fully disappears. */
 .hero-frost {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 4;
   pointer-events: none;
   -webkit-backdrop-filter: blur(9px) saturate(1.08) brightness(0.94);
   backdrop-filter: blur(9px) saturate(1.08) brightness(0.94);
@@ -1182,7 +1182,7 @@ body::before {
 .hero-fog {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 5;
   pointer-events: none;
   /* faint blur softens the condensation edge so it reads like steamed glass */
   filter: blur(0.5px);
