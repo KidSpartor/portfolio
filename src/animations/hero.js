@@ -173,6 +173,8 @@ export function initHero(gsap, ScrollTrigger) {
             span.style.opacity = '0'
             span.style.transform = 'rotateX(-15deg)'
             span.style.transformOrigin = 'bottom center'
+            span.style.willChange = 'transform, opacity'
+            span.style.backfaceVisibility = 'hidden'
             if (isEm) {
               span.style.color = 'var(--accent)'
               span.style.fontStyle = 'italic'
@@ -204,6 +206,7 @@ export function initHero(gsap, ScrollTrigger) {
       stagger: 0.025,
       ease: 'power4.out',
       delay: 0.4 + lineIndex * 0.2,
+      onComplete: () => charSpans.forEach((s) => (s.style.willChange = 'auto')),
     })
   })
 
