@@ -1086,6 +1086,23 @@ body::before {
   animation: heroLightsTwinkle 7.5s ease-in-out infinite;
 }
 
+/* Depth of field: a few sharp foreground pinpoints over the soft far glows */
+.hero-lights::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  filter: blur(1.5px);
+  background:
+    radial-gradient(circle 9px at 28% 68%, rgba(255, 244, 220, 0.92), transparent 60%),
+    radial-gradient(circle 7px at 58% 75%, rgba(244, 208, 120, 0.86), transparent 58%),
+    radial-gradient(circle 6px at 72% 66%, rgba(255, 240, 210, 0.82), transparent 58%),
+    radial-gradient(circle 8px at 44% 81%, rgba(224, 176, 92, 0.82), transparent 60%),
+    radial-gradient(circle 6px at 86% 72%, rgba(255, 246, 224, 0.86), transparent 56%),
+    radial-gradient(circle 5px at 18% 76%, rgba(244, 208, 120, 0.8), transparent 56%);
+  animation: heroLightsTwinkle 5.5s ease-in-out infinite reverse;
+}
+
 /* Opacity-only twinkle — cheap, no per-frame filter recompute */
 @keyframes heroLightsTwinkle {
   0%, 100% { opacity: 0.84; }
