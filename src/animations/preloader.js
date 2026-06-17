@@ -6,6 +6,14 @@ export async function initPreloader(gsap) {
   const preloader = document.getElementById('preloader')
   if (!preloader) return
 
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const alreadySeen = sessionStorage.getItem('preloaderSeen') === '1'
+  if (reduced || alreadySeen) {
+    preloader.style.display = 'none'
+    return
+  }
+  sessionStorage.setItem('preloaderSeen', '1')
+
   const mark = preloader.querySelector('.preloader-mark')
   const fill = preloader.querySelector('.preloader-fill')
   const bar = preloader.querySelector('.preloader-bar')
@@ -68,20 +76,20 @@ export async function initPreloader(gsap) {
   gsap.fromTo(
     sunburst,
     { rotation: 0, opacity: 0, scale: 0.6 },
-    {
-      rotation: 45,
-      opacity: 1,
-      scale: 1,
-      duration: 1.2,
-      ease: 'power3.out',
-    }
+      {
+        rotation: 45,
+        opacity: 1,
+        scale: 1,
+        duration: 0.55,
+        ease: 'power3.out',
+      }
   )
 
   // ── Corner ornaments fade in ──
   gsap.to(preloader.querySelectorAll('[class^="preloader-corner"]'), {
     opacity: 1,
     stagger: 0.06,
-    duration: 0.5,
+    duration: 0.28,
     ease: 'power3.out',
     delay: 0.1,
   })
@@ -99,7 +107,7 @@ export async function initPreloader(gsap) {
         opacity: 1,
         clipPath: 'inset(0% 0% 0% 0%)',
         scale: 1,
-        duration: 0.8,
+        duration: 0.45,
         ease: 'power4.out',
         delay: 0.15,
       }
@@ -112,11 +120,11 @@ export async function initPreloader(gsap) {
   if (fill) {
     const fillTween = gsap.to(fill, {
       width: '100%',
-      duration: 1.6,
+      duration: 0.65,
       ease: 'steps(12)',
-      delay: 0.3,
+      delay: 0.15,
     })
-    await Promise.race([fillTween, new Promise((r) => setTimeout(r, 2400))])
+    await Promise.race([fillTween, new Promise((r) => setTimeout(r, 950))])
   }
 
   // ── Sunburst spins out and fades ──
@@ -124,7 +132,7 @@ export async function initPreloader(gsap) {
     rotation: 180,
     scale: 1.5,
     opacity: 0,
-    duration: 0.5,
+    duration: 0.32,
     ease: 'power3.in',
   })
 
@@ -144,7 +152,7 @@ export async function initPreloader(gsap) {
     },
     {
       clipPath: 'circle(0% at 50% 50%)',
-      duration: 0.7,
+      duration: 0.42,
       ease: 'power4.inOut',
       delay: 0.05,
       onComplete: hide,
@@ -152,6 +160,6 @@ export async function initPreloader(gsap) {
   )
 
   // Guaranteed hide + unblock even if the iris-wipe rAF stalls.
-  await new Promise((r) => setTimeout(r, 900))
+  await new Promise((r) => setTimeout(r, 560))
   hide()
 }

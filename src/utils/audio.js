@@ -5,7 +5,7 @@ let audio = null
 let isMuted = true
 
 function createAudioElement() {
-  audio = new Audio('/bgm.mp3')
+  audio = new Audio(`${import.meta.env.BASE_URL}bgm.mp3`)
   audio.loop = true
   audio.volume = 0
   audio.muted = true
