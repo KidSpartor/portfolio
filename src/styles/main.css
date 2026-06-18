@@ -1159,9 +1159,8 @@ body::before {
   z-index: 3;
 }
 
-/* London condensation — restrained frosted glass.
-   No pointer wiping. The frost layer softly blurs the outside view, while the
-   canvas adds stable condensation texture, rare slow rivulets, and glass sheen. */
+/* London condensation — rain and mist attached to the window.
+   Pointer movement clears the glass layer only; condensation slowly returns. */
 /* Room model: the copy lives INSIDE the room (always crisp, on top), the rain
    and fog cling to the WINDOW (these layers), and the background photo is the
    view OUTSIDE — behind the glass. So the glass sits below .hero-content (z3)
@@ -1171,11 +1170,15 @@ body::before {
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  -webkit-backdrop-filter: blur(5px) saturate(1.04) brightness(0.98);
-  backdrop-filter: blur(5px) saturate(1.04) brightness(0.98);
+  -webkit-backdrop-filter: blur(9px) saturate(1.06) brightness(0.96);
+  backdrop-filter: blur(9px) saturate(1.06) brightness(0.96);
   background:
-    linear-gradient(180deg, rgba(210, 222, 232, 0.06), rgba(210, 222, 232, 0.02)),
-    radial-gradient(ellipse at 52% 42%, rgba(255, 255, 255, 0.035), transparent 56%);
+    linear-gradient(180deg, rgba(210, 222, 232, 0.08), rgba(210, 222, 232, 0.025)),
+    radial-gradient(ellipse at 52% 42%, rgba(255, 255, 255, 0.05), transparent 58%);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 .hero-fog {
@@ -1187,7 +1190,7 @@ body::before {
 }
 
 /* Where backdrop-filter isn't reliable (older Safari/Firefox), drop the frost
-   layer — the canvas fog alone still reads as misted glass everywhere. */
+   layer — the canvas fog/mask still reads as misted glass everywhere. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .hero-frost { display: none; }
 }
