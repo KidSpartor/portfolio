@@ -26,8 +26,9 @@ export function initFog() {
 
   const MASK_SCALE = 0.18
   const FOG_ALPHA = 0.74
-  const HEAL_ALPHA = 0.006
-  const HEAL_DEEP_ALPHA = 0.045
+  const HEAL_ALPHA = 0.01
+  const HEAL_DEEP_ALPHA = 0.12
+  const RESIDUE_CUTOFF = 10
   const BRUSH_MIN = 30
   const BRUSH_MAX = 84
   const DROP_MAX_DESKTOP = 4
@@ -220,11 +221,25 @@ export function initFog() {
     clearCtx.globalCompositeOperation = 'destination-out'
     clearCtx.fillStyle = `rgba(0,0,0,${HEAL_ALPHA})`
     clearCtx.fillRect(0, 0, W, H)
-    if (tick % 45 === 0) {
+    if (tick % 50 === 0) {
       clearCtx.fillStyle = `rgba(0,0,0,${HEAL_DEEP_ALPHA})`
       clearCtx.fillRect(0, 0, W, H)
     }
     clearCtx.globalCompositeOperation = 'source-over'
+  }
+
+  function clearFaintResidue() {
+    if (tick % 150 !== 0) return
+    const image = clearCtx.getImageData(0, 0, W, H)
+    const data = image.data
+    let changed = false
+    for (let i = 3; i < data.length; i += 4) {
+      if (data[i] > 0 && data[i] < RESIDUE_CUTOFF) {
+        data[i] = 0
+        changed = true
+      }
+    }
+    if (changed) clearCtx.putImageData(image, 0, 0)
   }
 
   function updateFrostMask() {
@@ -238,27 +253,6 @@ export function initFog() {
     const url = frostMask.toDataURL('image/png')
     frost.style.webkitMaskImage = `url(${url})`
     frost.style.maskImage = `url(${url})`
-  }
-
-  function drawDropHeads() {
-    for (const d of drops) {
-      const x = d.x * dpr
-      const y = d.y * dpr
-      const r = d.r * dpr
-      const ring = ctx.createRadialGradient(x, y, r * 0.18, x, y, r * 1.15)
-      ring.addColorStop(0, 'rgba(255,255,255,0)')
-      ring.addColorStop(0.62, 'rgba(255,255,255,0.08)')
-      ring.addColorStop(0.88, 'rgba(255,255,255,0.32)')
-      ring.addColorStop(1, 'rgba(255,255,255,0)')
-      ctx.fillStyle = ring
-      ctx.beginPath()
-      ctx.arc(x, y, r * 1.15, 0, Math.PI * 2)
-      ctx.fill()
-      ctx.fillStyle = 'rgba(255,255,255,0.54)'
-      ctx.beginPath()
-      ctx.arc(x - r * 0.3, y - r * 0.34, Math.max(0.8, r * 0.16), 0, Math.PI * 2)
-      ctx.fill()
-    }
   }
 
   function drawClearedGlassSheen() {
@@ -295,6 +289,7 @@ export function initFog() {
     if (!running) return
     tick++
     healClearMask()
+    clearFaintResidue()
     wipeByPointer()
     updateDrops(time)
 
@@ -309,7 +304,6 @@ export function initFog() {
 
     drawClearedGlassSheen()
     drawRainThreads(time)
-    drawDropHeads()
     updateFrostMask()
     raf = requestAnimationFrame(frame)
   }
