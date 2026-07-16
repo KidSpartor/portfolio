@@ -13,11 +13,14 @@ import { initNav } from './animations/nav.js'
 import { initMotion } from './animations/motion.js'
 import { initFog } from './animations/fog.js'
 import { initI18n } from './utils/i18n.js'
+import { initGithubSignal } from './utils/github.js'
+import { renderIcons } from './utils/icons.js'
 
 // Wait for DOM
 document.addEventListener('DOMContentLoaded', async () => {
   // Apply language BEFORE any text-splitting animation reads the hero title.
   initI18n()
+  renderIcons()
 
   // Register GSAP plugins
   const gsap = await import('gsap')
@@ -33,8 +36,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Initialize all systems
   initNav(lenis)
-  initHero(gsap.default, ScrollTrigger)
-  initShowcase(gsap.default, ScrollTrigger, lenis)
+  initHero(gsap.default, ScrollTrigger, SplitText)
+  initShowcase(gsap.default, ScrollTrigger)
   initStory(gsap.default, ScrollTrigger)
   initReveals(gsap.default, ScrollTrigger)
   initCanvas()
@@ -43,4 +46,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   initFog()
   initAmbient()
   initAudio()
+  initGithubSignal()
 })

@@ -215,7 +215,7 @@ export function initCanvas() {
 
 // Magnetic hover — tracks mouse position on cards for radial glow effect
 export function initMagneticHover() {
-  const cards = document.querySelectorAll('.showcase-card, .desk-card, .note-card')
+  const cards = document.querySelectorAll('.showcase-card, .desk-card, .repo-card')
 
   cards.forEach((card) => {
     card.style.position = 'relative'

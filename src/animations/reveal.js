@@ -5,6 +5,19 @@
 // note numbers fade from left, desk icons scale in with back.out(2).
 
 export function initReveals(gsap, ScrollTrigger) {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (reduced) {
+    gsap.set(document.querySelectorAll('[data-reveal], .scene-header, .contact-main, .contact-panel, .desk-icon'), {
+      opacity: 1,
+      x: 0,
+      y: 0,
+      scale: 1,
+      filter: 'none',
+      clipPath: 'none',
+    })
+    return
+  }
+
   // ── [data-reveal] elements — clip-path from bottom with Y translation ──
   const revealElements = document.querySelectorAll('[data-reveal]')
 
@@ -34,7 +47,8 @@ export function initReveals(gsap, ScrollTrigger) {
   })
 
   // ── Section headers — cinematic timeline reveal ──
-  const headers = document.querySelectorAll('.scene-header')
+  const headers = [...document.querySelectorAll('.scene-header')]
+    .filter((header) => !header.closest('.scene-work'))
   headers.forEach((header) => {
     const label = header.querySelector('.mono-label')
     const title = header.querySelector('.section-title')
