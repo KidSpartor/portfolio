@@ -7,7 +7,7 @@ export function initHero(gsap, ScrollTrigger, SplitText) {
   const eyebrow = hero.querySelector('.hero-eyebrow')
   const titleLines = [...hero.querySelectorAll('.hero-title-line')]
   const subtitle = hero.querySelector('.hero-subtitle')
-  const statements = [...hero.querySelectorAll('.hero-statement')]
+  const statements = [...hero.querySelectorAll('.hero-mode')]
   const scrollCue = hero.querySelector('.hero-scroll-cue')
   const heroContent = hero.querySelector('.hero-content')
   const counter = hero.querySelector('.hero-counter')

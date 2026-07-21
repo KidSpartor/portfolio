@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
   BookOpen,
@@ -20,6 +21,7 @@ import {
 
 const icons = {
   ArrowLeft,
+  ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
   BookOpen,

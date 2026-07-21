@@ -1,8 +1,7 @@
-// Hero window — London rain and mist on glass.
-// Room model: the copy is inside the room and remains crisp above this layer.
-// The background photograph is outside the window. This canvas and the frost
-// layer are the glass: pointer movement clears condensation, then it slowly
-// returns; occasional raindrops pull narrow clear trails down the pane.
+// Condensation on the hero window.
+// Two clearing masks create the required three material states:
+// fresh wipe -> softer memory -> fully fogged glass. Both masks decay and are
+// force-cleared after inactivity, so no residue can remain indefinitely.
 
 export function initFog() {
   const canvas = document.getElementById('heroFog')
@@ -13,33 +12,34 @@ export function initFog() {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (reduced) {
     canvas.style.display = 'none'
-    if (frost) frost.style.display = 'none'
+    hero.classList.add('fog-static')
     return
   }
 
   const ctx = canvas.getContext('2d')
-  const dpr = Math.min(window.devicePixelRatio || 1, 2)
-  const clearBuf = document.createElement('canvas')
-  const clearCtx = clearBuf.getContext('2d')
+  const freshBuffer = document.createElement('canvas')
+  const freshCtx = freshBuffer.getContext('2d')
+  const memoryBuffer = document.createElement('canvas')
+  const memoryCtx = memoryBuffer.getContext('2d')
   const frostMask = document.createElement('canvas')
   const maskCtx = frostMask.getContext('2d')
+  const dpr = Math.min(window.devicePixelRatio || 1, 1.75)
 
-  const MASK_SCALE = 0.18
-  const FOG_ALPHA = 0.74
-  const HEAL_ALPHA = 0.01
-  const HEAL_DEEP_ALPHA = 0.12
-  const RESIDUE_CUTOFF = 10
-  const BRUSH_MIN = 30
-  const BRUSH_MAX = 84
-  const DROP_MAX_DESKTOP = 4
-  const DROP_MAX_MOBILE = 3
+  const MASK_SCALE = 0.2
+  const BRUSH_MIN = 34
+  const BRUSH_MAX = 94
+  const FULL_RECOVERY_MS = 12500
+  const hasBackdropMask =
+    !!frost &&
+    !!(window.CSS && CSS.supports) &&
+    (CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)'))
 
-  let W = 0
-  let H = 0
-  let cssW = 0
-  let cssH = 0
-  let maskW = 0
-  let maskH = 0
+  let W = 1
+  let H = 1
+  let cssW = 1
+  let cssH = 1
+  let maskW = 1
+  let maskH = 1
   let baseMist = null
   let heroRect = hero.getBoundingClientRect()
   let pointer = { x: -1, y: -1, px: -1, py: -1, speed: 0 }
@@ -47,73 +47,68 @@ export function initFog() {
   let raf = 0
   let running = false
   let tick = 0
-
-  const hasBackdropMask =
-    !!frost &&
-    !!(window.CSS && CSS.supports) &&
-    (CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)'))
+  let lastMarkAt = 0
+  let masksClear = true
+  let environment = { humidity: 0.68, rain: 0.16, wind: 0.24, density: 0.62 }
 
   if (frost && !hasBackdropMask) frost.style.display = 'none'
 
   function tint() {
     const dark = document.documentElement.dataset.theme === 'dark'
     return dark
-      ? { r: 194, g: 207, b: 221 }
-      : { r: 236, g: 231, b: 222 }
+      ? { r: 176, g: 194, b: 211 }
+      : { r: 235, g: 232, b: 225 }
+  }
+
+  function seeded(index) {
+    const value = Math.sin(index * 91.731 + cssW * 0.013 + cssH * 0.017) * 43758.5453
+    return value - Math.floor(value)
   }
 
   function makeBaseMist() {
-    const c = document.createElement('canvas')
-    c.width = W
-    c.height = H
-    const x = c.getContext('2d')
+    const mist = document.createElement('canvas')
+    mist.width = W
+    mist.height = H
+    const mistCtx = mist.getContext('2d')
     const { r, g, b } = tint()
     const area = cssW * cssH
 
-    const wash = x.createLinearGradient(0, 0, 0, H)
-    wash.addColorStop(0, `rgba(${r},${g},${b},0.92)`)
-    wash.addColorStop(0.46, `rgba(${r},${g},${b},0.76)`)
-    wash.addColorStop(1, `rgba(${r},${g},${b},0.84)`)
-    x.fillStyle = wash
-    x.fillRect(0, 0, W, H)
+    const wash = mistCtx.createLinearGradient(0, 0, W, H)
+    wash.addColorStop(0, `rgba(${r + 8},${g + 8},${b + 8},0.9)`)
+    wash.addColorStop(0.48, `rgba(${r},${g},${b},0.72)`)
+    wash.addColorStop(1, `rgba(${r - 12},${g - 8},${b - 4},0.84)`)
+    mistCtx.fillStyle = wash
+    mistCtx.fillRect(0, 0, W, H)
 
-    const patches = Math.max(10, Math.round(area / 72000))
+    const patches = Math.max(12, Math.round(area / 64000))
     for (let i = 0; i < patches; i++) {
-      const cx = Math.random() * W
-      const cy = Math.random() * H
-      const rad = (110 + Math.random() * 320) * dpr
-      const g1 = x.createRadialGradient(cx, cy, 0, cx, cy, rad)
-      const light = Math.random() < 0.62
-      if (light) {
-        g1.addColorStop(0, `rgba(${r + 10},${g + 10},${b + 10},${0.045 + Math.random() * 0.05})`)
-      } else {
-        g1.addColorStop(0, `rgba(${Math.max(0, r - 42)},${Math.max(0, g - 34)},${Math.max(0, b - 24)},0.035)`)
-      }
-      g1.addColorStop(1, `rgba(${r},${g},${b},0)`)
-      x.fillStyle = g1
-      x.beginPath()
-      x.arc(cx, cy, rad, 0, Math.PI * 2)
-      x.fill()
+      const cx = seeded(i * 4 + 1) * W
+      const cy = seeded(i * 4 + 2) * H
+      const radius = (120 + seeded(i * 4 + 3) * 300) * dpr
+      const patch = mistCtx.createRadialGradient(cx, cy, 0, cx, cy, radius)
+      const light = seeded(i * 4 + 4) > 0.36
+      patch.addColorStop(0, light
+        ? `rgba(255,255,255,${0.035 + seeded(i + 80) * 0.055})`
+        : `rgba(58,72,88,${0.025 + seeded(i + 120) * 0.035})`)
+      patch.addColorStop(1, 'rgba(255,255,255,0)')
+      mistCtx.fillStyle = patch
+      mistCtx.beginPath()
+      mistCtx.arc(cx, cy, radius, 0, Math.PI * 2)
+      mistCtx.fill()
     }
 
-    const beads = Math.round(area / 1400)
+    const beads = Math.round(area / 2600)
     for (let i = 0; i < beads; i++) {
-      const bx = Math.random() * W
-      const by = Math.random() * H
-      const br = (0.35 + Math.random() * 1.1) * dpr
-      x.fillStyle = `rgba(255,255,255,${0.025 + Math.random() * 0.055})`
-      x.beginPath()
-      x.arc(bx, by, br, 0, Math.PI * 2)
-      x.fill()
+      const bx = seeded(i * 3 + 401) * W
+      const by = seeded(i * 3 + 402) * H
+      const br = (0.28 + seeded(i * 3 + 403) * 0.9) * dpr
+      mistCtx.fillStyle = `rgba(255,255,255,${0.018 + seeded(i + 700) * 0.04})`
+      mistCtx.beginPath()
+      mistCtx.arc(bx, by, br, 0, Math.PI * 2)
+      mistCtx.fill()
     }
 
-    const edge = x.createRadialGradient(W / 2, H * 0.48, Math.min(W, H) * 0.24, W / 2, H * 0.48, Math.max(W, H) * 0.72)
-    edge.addColorStop(0, 'rgba(0,0,0,0)')
-    edge.addColorStop(1, `rgba(${r},${g},${b},0.28)`)
-    x.fillStyle = edge
-    x.fillRect(0, 0, W, H)
-
-    return c
+    return mist
   }
 
   function refreshRect() {
@@ -121,36 +116,43 @@ export function initFog() {
   }
 
   function resize() {
-    cssW = hero.clientWidth
-    cssH = hero.clientHeight
+    cssW = Math.max(1, hero.clientWidth)
+    cssH = Math.max(1, hero.clientHeight)
     W = canvas.width = Math.max(1, Math.floor(cssW * dpr))
     H = canvas.height = Math.max(1, Math.floor(cssH * dpr))
-    clearBuf.width = W
-    clearBuf.height = H
+    freshBuffer.width = memoryBuffer.width = W
+    freshBuffer.height = memoryBuffer.height = H
     maskW = frostMask.width = Math.max(1, Math.round(cssW * MASK_SCALE))
     maskH = frostMask.height = Math.max(1, Math.round(cssH * MASK_SCALE))
     canvas.style.width = `${cssW}px`
     canvas.style.height = `${cssH}px`
     baseMist = makeBaseMist()
     drops = []
-    clearCtx.clearRect(0, 0, W, H)
+    masksClear = true
     refreshRect()
   }
 
-  function stampClear(xCss, yCss, radiusCss, strength = 0.75) {
+  function stamp(context, xCss, yCss, radiusCss, strength) {
     const x = xCss * dpr
     const y = yCss * dpr
-    const r = Math.max(1, radiusCss * dpr)
-    const g = clearCtx.createRadialGradient(x, y, 0, x, y, r)
-    g.addColorStop(0, `rgba(255,255,255,${strength})`)
-    g.addColorStop(0.32, `rgba(255,255,255,${strength * 0.42})`)
-    g.addColorStop(0.7, `rgba(255,255,255,${strength * 0.12})`)
-    g.addColorStop(1, 'rgba(255,255,255,0)')
-    clearCtx.globalCompositeOperation = 'source-over'
-    clearCtx.fillStyle = g
-    clearCtx.beginPath()
-    clearCtx.arc(x, y, r, 0, Math.PI * 2)
-    clearCtx.fill()
+    const radius = Math.max(1, radiusCss * dpr)
+    const gradient = context.createRadialGradient(x, y, 0, x, y, radius)
+    gradient.addColorStop(0, `rgba(255,255,255,${strength})`)
+    gradient.addColorStop(0.34, `rgba(255,255,255,${strength * 0.58})`)
+    gradient.addColorStop(0.72, `rgba(255,255,255,${strength * 0.16})`)
+    gradient.addColorStop(1, 'rgba(255,255,255,0)')
+    context.globalCompositeOperation = 'source-over'
+    context.fillStyle = gradient
+    context.beginPath()
+    context.arc(x, y, radius, 0, Math.PI * 2)
+    context.fill()
+  }
+
+  function markGlass(x, y, radius, strength = 1) {
+    stamp(memoryCtx, x, y, radius, 0.68 * strength)
+    stamp(freshCtx, x, y, radius * 0.78, 0.9 * strength)
+    lastMarkAt = performance.now()
+    masksClear = false
   }
 
   function movePointer(event) {
@@ -158,28 +160,32 @@ export function initFog() {
     pointer.y = event.clientY - heroRect.top
   }
 
-  window.addEventListener('pointermove', movePointer, { passive: true })
+  hero.addEventListener('pointermove', movePointer, { passive: true })
+  hero.addEventListener('pointerleave', () => {
+    pointer.x = pointer.y = pointer.px = pointer.py = -1
+    pointer.speed = 0
+  })
 
   function wipeByPointer() {
     if (pointer.x < 0 || pointer.y < 0 || pointer.x > cssW || pointer.y > cssH) return
     if (pointer.px < 0) {
       pointer.px = pointer.x
       pointer.py = pointer.y
-      stampClear(pointer.x, pointer.y, 38, 0.34)
+      markGlass(pointer.x, pointer.y, 38, 0.58)
       return
     }
 
     const dx = pointer.x - pointer.px
     const dy = pointer.y - pointer.py
-    const dist = Math.hypot(dx, dy)
-    pointer.speed += (dist - pointer.speed) * 0.28
-    if (dist > 0.35) {
-      const radius = Math.min(BRUSH_MAX, BRUSH_MIN + pointer.speed * 0.92)
-      const strength = Math.min(0.62, 0.24 + pointer.speed * 0.026)
-      const steps = Math.min(24, Math.max(1, Math.ceil(dist / Math.max(14, radius * 0.26))))
+    const distance = Math.hypot(dx, dy)
+    pointer.speed += (distance - pointer.speed) * 0.24
+    if (distance > 0.55) {
+      const radius = Math.min(BRUSH_MAX, BRUSH_MIN + pointer.speed * 0.88)
+      const strength = Math.min(1, 0.56 + pointer.speed * 0.024)
+      const steps = Math.min(20, Math.max(1, Math.ceil(distance / Math.max(16, radius * 0.3))))
       for (let i = 1; i <= steps; i++) {
-        const t = i / steps
-        stampClear(pointer.px + dx * t, pointer.py + dy * t, radius, strength)
+        const progress = i / steps
+        markGlass(pointer.px + dx * progress, pointer.py + dy * progress, radius, strength)
       }
     }
 
@@ -188,144 +194,124 @@ export function initFog() {
   }
 
   function maybeSpawnDrop(time) {
-    const maxDrops = cssW < 700 ? DROP_MAX_MOBILE : DROP_MAX_DESKTOP
+    const maxDrops = cssW < 700 ? 1 : 2
     if (drops.length >= maxDrops) return
-    const chance = cssW < 700 ? 0.0026 : 0.0038
+    const chance = 0.00022 + environment.rain * 0.0016
     if (Math.random() > chance) return
     drops.push({
-      x: Math.random() * cssW,
-      y: -24 - Math.random() * 80,
-      r: 2.6 + Math.random() * 3.8,
-      vy: 0.45 + Math.random() * 0.82,
+      x: cssW * (0.08 + Math.random() * 0.84),
+      y: -40 - Math.random() * 100,
+      previousY: -40,
+      radius: 2.2 + Math.random() * 2.8,
+      velocity: 0.42 + Math.random() * 0.62 + environment.rain * 0.24,
       wobble: Math.random() * Math.PI * 2,
       born: time,
-      wait: Math.random() * 1200,
+      wait: 500 + Math.random() * 1800,
     })
   }
 
   function updateDrops(time) {
     maybeSpawnDrop(time)
     for (let i = drops.length - 1; i >= 0; i--) {
-      const d = drops[i]
-      if (time - d.born < d.wait) continue
-      d.vy += 0.006
-      d.y += d.vy
-      d.wobble += 0.018
-      d.x += Math.sin(d.wobble) * 0.18
-      stampClear(d.x, d.y, d.r * 0.86, 0.42)
-      if (d.y > cssH + 60) drops.splice(i, 1)
-    }
-  }
+      const drop = drops[i]
+      if (time - drop.born < drop.wait) continue
+      drop.previousY = drop.y
+      drop.velocity += 0.004 + environment.rain * 0.003
+      drop.y += drop.velocity
+      drop.wobble += 0.015 + environment.wind * 0.012
+      drop.x += Math.sin(drop.wobble) * (0.08 + environment.wind * 0.16)
 
-  function healClearMask() {
-    clearCtx.globalCompositeOperation = 'destination-out'
-    clearCtx.fillStyle = `rgba(0,0,0,${HEAL_ALPHA})`
-    clearCtx.fillRect(0, 0, W, H)
-    if (tick % 50 === 0) {
-      clearCtx.fillStyle = `rgba(0,0,0,${HEAL_DEEP_ALPHA})`
-      clearCtx.fillRect(0, 0, W, H)
-    }
-    clearCtx.globalCompositeOperation = 'source-over'
-  }
-
-  function clearFaintResidue() {
-    if (tick % 150 !== 0) return
-    const image = clearCtx.getImageData(0, 0, W, H)
-    const data = image.data
-    let changed = false
-    for (let i = 3; i < data.length; i += 4) {
-      if (data[i] > 0 && data[i] < RESIDUE_CUTOFF) {
-        data[i] = 0
-        changed = true
+      const distance = Math.max(1, drop.y - drop.previousY)
+      const steps = Math.ceil(distance / 2)
+      for (let step = 0; step <= steps; step++) {
+        const y = drop.previousY + distance * (step / Math.max(steps, 1))
+        stamp(memoryCtx, drop.x, y, drop.radius * 0.86, 0.34)
+        stamp(freshCtx, drop.x, y, drop.radius * 0.55, 0.54)
       }
+      lastMarkAt = performance.now()
+      masksClear = false
+      if (drop.y > cssH + 50) drops.splice(i, 1)
     }
-    if (changed) clearCtx.putImageData(image, 0, 0)
+  }
+
+  function fadeMask(context, alpha) {
+    context.globalCompositeOperation = 'destination-out'
+    context.fillStyle = `rgba(0,0,0,${alpha})`
+    context.fillRect(0, 0, W, H)
+    context.globalCompositeOperation = 'source-over'
+  }
+
+  function healMasks(time) {
+    if (masksClear) return
+    fadeMask(freshCtx, 0.02)
+    fadeMask(memoryCtx, 0.0028)
+    if (tick % 120 === 0) fadeMask(memoryCtx, 0.032)
+
+    if (time - lastMarkAt > FULL_RECOVERY_MS && drops.length === 0) {
+      freshCtx.clearRect(0, 0, W, H)
+      memoryCtx.clearRect(0, 0, W, H)
+      masksClear = true
+    }
   }
 
   function updateFrostMask() {
     if (!hasBackdropMask || tick % 4 !== 0) return
     maskCtx.globalCompositeOperation = 'source-over'
+    maskCtx.globalAlpha = 1
     maskCtx.fillStyle = '#fff'
     maskCtx.fillRect(0, 0, maskW, maskH)
     maskCtx.globalCompositeOperation = 'destination-out'
-    maskCtx.drawImage(clearBuf, 0, 0, maskW, maskH)
+    maskCtx.globalAlpha = 0.72
+    maskCtx.drawImage(memoryBuffer, 0, 0, maskW, maskH)
+    maskCtx.globalAlpha = 1
+    maskCtx.drawImage(freshBuffer, 0, 0, maskW, maskH)
     maskCtx.globalCompositeOperation = 'source-over'
+    maskCtx.globalAlpha = 1
     const url = frostMask.toDataURL('image/png')
     frost.style.webkitMaskImage = `url(${url})`
     frost.style.maskImage = `url(${url})`
   }
 
-  function drawClearedGlassSheen() {
-    ctx.save()
-    ctx.globalCompositeOperation = 'screen'
-    ctx.globalAlpha = 0.18
-    ctx.filter = `blur(${1.4 * dpr}px)`
-    ctx.drawImage(clearBuf, 0, 0)
-    ctx.filter = 'none'
-    ctx.globalAlpha = 1
-    ctx.restore()
-  }
-
-  function drawRainThreads(time) {
-    const { r, g, b } = tint()
-    ctx.save()
-    ctx.globalCompositeOperation = 'screen'
-    ctx.lineWidth = Math.max(0.45, dpr * 0.55)
-    const count = cssW < 700 ? 8 : 16
-    for (let i = 0; i < count; i++) {
-      const seed = i * 83.17
-      const x = ((seed * 17 + time * 0.012) % (cssW + 240) - 120) * dpr
-      const y = ((seed * 31 + time * 0.028) % (cssH + 180) - 90) * dpr
-      ctx.strokeStyle = `rgba(${r + 18},${g + 18},${b + 18},0.045)`
-      ctx.beginPath()
-      ctx.moveTo(x, y)
-      ctx.lineTo(x - 7 * dpr, y + 34 * dpr)
-      ctx.stroke()
-    }
-    ctx.restore()
-  }
-
   function frame(time = 0) {
     if (!running) return
     tick++
-    healClearMask()
-    clearFaintResidue()
     wipeByPointer()
     updateDrops(time)
+    healMasks(time)
 
     ctx.clearRect(0, 0, W, H)
     ctx.globalCompositeOperation = 'source-over'
-    ctx.globalAlpha = FOG_ALPHA * (0.97 + 0.03 * Math.sin(time * 0.0005))
+    ctx.globalAlpha = 0.25 + environment.density * 0.17
     ctx.drawImage(baseMist, 0, 0)
     ctx.globalAlpha = 1
-    ctx.globalCompositeOperation = 'destination-out'
-    ctx.drawImage(clearBuf, 0, 0)
-    ctx.globalCompositeOperation = 'source-over'
 
-    drawClearedGlassSheen()
-    drawRainThreads(time)
+    ctx.globalCompositeOperation = 'destination-out'
+    ctx.globalAlpha = 0.76
+    ctx.drawImage(memoryBuffer, 0, 0)
+    ctx.globalAlpha = 1
+    ctx.drawImage(freshBuffer, 0, 0)
+    ctx.globalCompositeOperation = 'source-over'
+    ctx.globalAlpha = 1
+
     updateFrostMask()
     raf = requestAnimationFrame(frame)
   }
 
-  const start = () => {
+  function start() {
     if (running) return
     running = true
     raf = requestAnimationFrame(frame)
   }
 
-  const stop = () => {
+  function stop() {
     running = false
     if (raf) cancelAnimationFrame(raf)
     raf = 0
   }
 
-  resize()
-  window.addEventListener('scroll', refreshRect, { passive: true })
-  let resizeTimer = 0
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer)
-    resizeTimer = setTimeout(resize, 150)
+  window.addEventListener('ambientchange', (event) => {
+    environment = { ...environment, ...(event.detail || {}) }
+    baseMist = makeBaseMist()
   })
 
   const themeObserver = new MutationObserver(() => {
@@ -333,11 +319,15 @@ export function initFog() {
   })
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
 
-  const io = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) entry.isIntersecting ? start() : stop()
-    },
-    { threshold: 0.04 }
-  )
-  io.observe(hero)
+  const resizeObserver = new ResizeObserver(resize)
+  resizeObserver.observe(hero)
+  window.addEventListener('scroll', refreshRect, { passive: true })
+
+  const intersectionObserver = new IntersectionObserver((entries) => {
+    entries[0]?.isIntersecting ? start() : stop()
+  }, { threshold: 0.03 })
+  intersectionObserver.observe(hero)
+
+  resize()
+  start()
 }

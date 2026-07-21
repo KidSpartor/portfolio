@@ -1,6 +1,6 @@
 // Motion enrichment — 重返未来1999
-// Premium interaction layer: magnetic controls, a trailing gold cursor ring,
-// scroll-velocity skew on content blocks, and film grain that breathes with
+// Premium interaction layer: magnetic controls, scroll-velocity skew on
+// content blocks, and film grain that breathes with
 // scroll speed. All effects are desktop-only / reduced-motion aware and purely
 // additive — they never touch the ScrollTrigger-driven scene layouts.
 
@@ -24,32 +24,6 @@ export function initMotion(gsap, lenis) {
         xTo(0)
         yTo(0)
       })
-    })
-  }
-
-  // ── Trailing gold cursor ring (accent, not a replacement) ──
-  if (fine && !reduced) {
-    const ring = document.createElement('div')
-    ring.className = 'cursor-ring'
-    document.body.appendChild(ring)
-    gsap.set(ring, { xPercent: -50, yPercent: -50 })
-    const rx = gsap.quickTo(ring, 'x', { duration: 0.28, ease: 'power3' })
-    const ry = gsap.quickTo(ring, 'y', { duration: 0.28, ease: 'power3' })
-
-    window.addEventListener(
-      'mousemove',
-      (e) => {
-        rx(e.clientX)
-        ry(e.clientY)
-        ring.classList.add('is-visible')
-      },
-      { passive: true }
-    )
-    document.addEventListener('mouseleave', () => ring.classList.remove('is-visible'))
-
-    document.querySelectorAll('a, button, .showcase-card, [data-magnetic]').forEach((el) => {
-      el.addEventListener('mouseenter', () => ring.classList.add('is-hover'))
-      el.addEventListener('mouseleave', () => ring.classList.remove('is-hover'))
     })
   }
 
