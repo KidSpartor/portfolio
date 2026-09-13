@@ -1,7 +1,4 @@
-// Condensation on the hero window.
-// Two clearing masks create the required three material states:
-// fresh wipe -> softer memory -> fully fogged glass. Both masks decay and are
-// force-cleared after inactivity, so no residue can remain indefinitely.
+import { FogField } from './fog-field.js'
 
 export function initFog() {
   const canvas = document.getElementById('heroFog')
@@ -9,49 +6,43 @@ export function initFog() {
   const hero = document.querySelector('.scene-hero')
   if (!canvas || !hero) return
 
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (reduced) {
-    canvas.style.display = 'none'
-    hero.classList.add('fog-static')
-    return
-  }
-
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)')
   const ctx = canvas.getContext('2d')
-  const freshBuffer = document.createElement('canvas')
-  const freshCtx = freshBuffer.getContext('2d')
-  const memoryBuffer = document.createElement('canvas')
-  const memoryCtx = memoryBuffer.getContext('2d')
+  const glassMask = document.createElement('canvas')
+  const maskCtx = glassMask.getContext('2d')
   const frostMask = document.createElement('canvas')
-  const maskCtx = frostMask.getContext('2d')
-  const dpr = Math.min(window.devicePixelRatio || 1, 1.75)
+  const frostCtx = frostMask.getContext('2d')
+  if (!ctx || !maskCtx || !frostCtx) return
+  canvas.glassMask = glassMask
 
-  const MASK_SCALE = 0.2
-  const BRUSH_MIN = 34
-  const BRUSH_MAX = 94
-  const FULL_RECOVERY_MS = 12500
-  const hasBackdropMask =
-    !!frost &&
-    !!(window.CSS && CSS.supports) &&
+  const hasBackdropMask = !!frost &&
     (CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)'))
+  if (frost && !hasBackdropMask) frost.style.display = 'none'
 
   let W = 1
   let H = 1
   let cssW = 1
   let cssH = 1
-  let maskW = 1
-  let maskH = 1
-  let baseMist = null
+  let dpr = 1
+  let maskScale = 1
+  let field
+  let pixels
+  let baseMist
   let heroRect = hero.getBoundingClientRect()
-  let pointer = { x: -1, y: -1, px: -1, py: -1, speed: 0 }
+  let pointer = null
+  let capturedPointer = null
   let drops = []
   let raf = 0
-  let running = false
-  let tick = 0
-  let lastMarkAt = 0
-  let masksClear = true
+  let visible = true
+  let previousTime = 0
+  let lastPaint = 0
+  let lastFrostPaint = 0
+  let activeMarks = false
+  let maskDirty = true
+  let mistDirty = true
+  let frostDirty = true
+  let hadGlassRenderer = false
   let environment = { humidity: 0.68, rain: 0.16, wind: 0.24, density: 0.62 }
-
-  if (frost && !hasBackdropMask) frost.style.display = 'none'
 
   function tint() {
     const dark = document.documentElement.dataset.theme === 'dark'
@@ -111,223 +102,258 @@ export function initFog() {
     return mist
   }
 
+  function resetPointer() {
+    pointer = null
+  }
+
   function refreshRect() {
     heroRect = hero.getBoundingClientRect()
+    resetPointer()
+  }
+
+  function publishMask() {
+    window.dispatchEvent(new CustomEvent('glassmaskchange', { detail: { canvas: glassMask } }))
   }
 
   function resize() {
-    cssW = Math.max(1, hero.clientWidth)
-    cssH = Math.max(1, hero.clientHeight)
+    const width = Math.max(1, hero.clientWidth)
+    const height = Math.max(1, hero.clientHeight)
+    const ratio = Math.min(window.devicePixelRatio || 1, width < 700 ? 1.25 : 1.5)
+    if (field && width === cssW && height === cssH && ratio === dpr) return
+    cssW = width
+    cssH = height
+    dpr = ratio
     W = canvas.width = Math.max(1, Math.floor(cssW * dpr))
     H = canvas.height = Math.max(1, Math.floor(cssH * dpr))
-    freshBuffer.width = memoryBuffer.width = W
-    freshBuffer.height = memoryBuffer.height = H
-    maskW = frostMask.width = Math.max(1, Math.round(cssW * MASK_SCALE))
-    maskH = frostMask.height = Math.max(1, Math.round(cssH * MASK_SCALE))
+    maskScale = Math.min(0.4, 512 / Math.max(cssW, cssH))
+    glassMask.width = frostMask.width = Math.max(1, Math.ceil(cssW * maskScale))
+    glassMask.height = frostMask.height = Math.max(1, Math.ceil(cssH * maskScale))
+    field = new FogField(glassMask.width, glassMask.height)
+    pixels = maskCtx.createImageData(glassMask.width, glassMask.height)
+    field.render(performance.now(), pixels.data)
+    maskCtx.putImageData(pixels, 0, 0)
     canvas.style.width = `${cssW}px`
     canvas.style.height = `${cssH}px`
     baseMist = makeBaseMist()
     drops = []
-    masksClear = true
+    activeMarks = false
+    maskDirty = mistDirty = frostDirty = true
     refreshRect()
+    publishMask()
   }
 
-  function stamp(context, xCss, yCss, radiusCss, strength) {
-    const x = xCss * dpr
-    const y = yCss * dpr
-    const radius = Math.max(1, radiusCss * dpr)
-    const gradient = context.createRadialGradient(x, y, 0, x, y, radius)
-    gradient.addColorStop(0, `rgba(255,255,255,${strength})`)
-    gradient.addColorStop(0.34, `rgba(255,255,255,${strength * 0.58})`)
-    gradient.addColorStop(0.72, `rgba(255,255,255,${strength * 0.16})`)
-    gradient.addColorStop(1, 'rgba(255,255,255,0)')
-    context.globalCompositeOperation = 'source-over'
-    context.fillStyle = gradient
-    context.beginPath()
-    context.arc(x, y, radius, 0, Math.PI * 2)
-    context.fill()
+  function markGlass(x0, y0, x1, y1, radius, strength, time) {
+    field.stampSegment(x0 * maskScale, y0 * maskScale, x1 * maskScale, y1 * maskScale,
+      radius * maskScale, strength, time)
+    maskDirty = true
+    activeMarks = true
   }
 
-  function markGlass(x, y, radius, strength = 1) {
-    stamp(memoryCtx, x, y, radius, 0.68 * strength)
-    stamp(freshCtx, x, y, radius * 0.78, 0.9 * strength)
-    lastMarkAt = performance.now()
-    masksClear = false
+  // Copy and controls retain native selection/click behavior. A drag that starts
+  // on the glass owns only that gesture; touch always retains native scrolling.
+  function isProtectedSurface(event) {
+    const target = document.elementFromPoint(event.clientX, event.clientY)
+    if (!target || !hero.contains(target)) return true
+    if (target.closest('a, button, input, textarea, select, [contenteditable], .hero-practice, .hero-eyebrow, .hero-scroll-cue')) return true
+    const copy = target.closest('h1, h2, h3, p')
+    if (!copy) return false
+    // A heading's block box includes empty glass to the right of its text.
+    // Protect the text itself rather than turning that empty area into selection.
+    const walker = document.createTreeWalker(copy, NodeFilter.SHOW_TEXT)
+    const range = document.createRange()
+    while (walker.nextNode()) {
+      range.selectNodeContents(walker.currentNode)
+      for (const rect of range.getClientRects()) {
+        if (event.clientX >= rect.left && event.clientX <= rect.right &&
+            event.clientY >= rect.top && event.clientY <= rect.bottom) return true
+      }
+    }
+    return false
+  }
+
+  function canWipe(event) {
+    if (reduced.matches || event.pointerType === 'touch') return false
+    if (event.buttons && capturedPointer !== event.pointerId) return false
+    return !isProtectedSurface(event)
   }
 
   function movePointer(event) {
-    pointer.x = event.clientX - heroRect.left
-    pointer.y = event.clientY - heroRect.top
+    if (!canWipe(event)) {
+      resetPointer()
+      return
+    }
+    const time = performance.now()
+    const x = event.clientX - heroRect.left
+    const y = event.clientY - heroRect.top
+    if (x < 0 || y < 0 || x > cssW || y > cssH) {
+      resetPointer()
+      return
+    }
+    if (!pointer || time - pointer.time > 250) {
+      markGlass(x, y, x, y, 28, 0.98, time)
+      pointer = { x, y, time, speed: 0 }
+      return
+    }
+    const distance = Math.hypot(x - pointer.x, y - pointer.y)
+    if (distance < 0.6) return
+    const seconds = Math.max(0.004, (time - pointer.time) / 1000)
+    const speed = pointer.speed + (Math.min(1800, distance / seconds) - pointer.speed) * (1 - Math.exp(-seconds / 0.06))
+    const radius = 28 + Math.min(1, speed / 1400) * 16
+    markGlass(pointer.x, pointer.y, x, y, radius, 0.98, time)
+    pointer = { x, y, time, speed }
   }
 
   hero.addEventListener('pointermove', movePointer, { passive: true })
-  hero.addEventListener('pointerleave', () => {
-    pointer.x = pointer.y = pointer.px = pointer.py = -1
-    pointer.speed = 0
+  hero.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0 || event.pointerType === 'touch' || reduced.matches) return
+    // Check the surface before claiming the pressed pointer.
+    if (isProtectedSurface(event)) return
+    capturedPointer = event.pointerId
+    hero.setPointerCapture(event.pointerId)
+    event.preventDefault()
+    resetPointer()
+    movePointer(event)
   })
 
-  function wipeByPointer() {
-    if (pointer.x < 0 || pointer.y < 0 || pointer.x > cssW || pointer.y > cssH) return
-    if (pointer.px < 0) {
-      pointer.px = pointer.x
-      pointer.py = pointer.y
-      markGlass(pointer.x, pointer.y, 38, 0.58)
-      return
-    }
-
-    const dx = pointer.x - pointer.px
-    const dy = pointer.y - pointer.py
-    const distance = Math.hypot(dx, dy)
-    pointer.speed += (distance - pointer.speed) * 0.24
-    if (distance > 0.55) {
-      const radius = Math.min(BRUSH_MAX, BRUSH_MIN + pointer.speed * 0.88)
-      const strength = Math.min(1, 0.56 + pointer.speed * 0.024)
-      const steps = Math.min(20, Math.max(1, Math.ceil(distance / Math.max(16, radius * 0.3))))
-      for (let i = 1; i <= steps; i++) {
-        const progress = i / steps
-        markGlass(pointer.px + dx * progress, pointer.py + dy * progress, radius, strength)
-      }
-    }
-
-    pointer.px = pointer.x
-    pointer.py = pointer.y
+  function releasePointer() {
+    if (capturedPointer !== null && hero.hasPointerCapture(capturedPointer)) hero.releasePointerCapture(capturedPointer)
+    capturedPointer = null
+    resetPointer()
   }
+  hero.addEventListener('pointerup', releasePointer)
+  hero.addEventListener('pointercancel', releasePointer)
+  hero.addEventListener('lostpointercapture', () => {
+    capturedPointer = null
+    resetPointer()
+  })
+  hero.addEventListener('pointerleave', resetPointer)
 
-  function maybeSpawnDrop(time) {
+  function updateDrops(time, dt) {
     const maxDrops = cssW < 700 ? 1 : 2
-    if (drops.length >= maxDrops) return
-    const chance = 0.00022 + environment.rain * 0.0016
-    if (Math.random() > chance) return
-    drops.push({
-      x: cssW * (0.08 + Math.random() * 0.84),
-      y: -40 - Math.random() * 100,
-      previousY: -40,
-      radius: 2.2 + Math.random() * 2.8,
-      velocity: 0.42 + Math.random() * 0.62 + environment.rain * 0.24,
-      wobble: Math.random() * Math.PI * 2,
-      born: time,
-      wait: 500 + Math.random() * 1800,
-    })
-  }
-
-  function updateDrops(time) {
-    maybeSpawnDrop(time)
-    for (let i = drops.length - 1; i >= 0; i--) {
-      const drop = drops[i]
-      if (time - drop.born < drop.wait) continue
-      drop.previousY = drop.y
-      drop.velocity += 0.004 + environment.rain * 0.003
-      drop.y += drop.velocity
-      drop.wobble += 0.015 + environment.wind * 0.012
-      drop.x += Math.sin(drop.wobble) * (0.08 + environment.wind * 0.16)
-
-      const distance = Math.max(1, drop.y - drop.previousY)
-      const steps = Math.ceil(distance / 2)
-      for (let step = 0; step <= steps; step++) {
-        const y = drop.previousY + distance * (step / Math.max(steps, 1))
-        stamp(memoryCtx, drop.x, y, drop.radius * 0.86, 0.34)
-        stamp(freshCtx, drop.x, y, drop.radius * 0.55, 0.54)
-      }
-      lastMarkAt = performance.now()
-      masksClear = false
-      if (drop.y > cssH + 50) drops.splice(i, 1)
+    const perFrameChance = 0.00022 + environment.rain * 0.0016
+    const chance = 1 - Math.pow(1 - perFrameChance, dt * 60)
+    if (drops.length < maxDrops && Math.random() < chance) {
+      drops.push({
+        x: cssW * (0.08 + Math.random() * 0.84),
+        y: -40 - Math.random() * 100,
+        radius: 2.2 + Math.random() * 2.8,
+        velocity: (0.42 + Math.random() * 0.62 + environment.rain * 0.24) * 60,
+        wobble: Math.random() * Math.PI * 2,
+        startsAt: time + 500 + Math.random() * 1800,
+      })
+    }
+    for (let index = drops.length - 1; index >= 0; index--) {
+      const drop = drops[index]
+      if (time < drop.startsAt) continue
+      const x = drop.x
+      const y = drop.y
+      const acceleration = (0.004 + environment.rain * 0.003) * 3600
+      drop.y += drop.velocity * dt + 0.5 * acceleration * dt * dt
+      drop.velocity += acceleration * dt
+      drop.wobble += (0.015 + environment.wind * 0.012) * dt * 60
+      drop.x += Math.sin(drop.wobble) * (0.08 + environment.wind * 0.16) * dt * 60
+      markGlass(x, y, drop.x, drop.y, drop.radius * 0.86, 0.64, time)
+      if (drop.y > cssH + 50) drops.splice(index, 1)
     }
   }
 
-  function fadeMask(context, alpha) {
-    context.globalCompositeOperation = 'destination-out'
-    context.fillStyle = `rgba(0,0,0,${alpha})`
-    context.fillRect(0, 0, W, H)
-    context.globalCompositeOperation = 'source-over'
-  }
-
-  function healMasks(time) {
-    if (masksClear) return
-    fadeMask(freshCtx, 0.02)
-    fadeMask(memoryCtx, 0.0028)
-    if (tick % 120 === 0) fadeMask(memoryCtx, 0.032)
-
-    if (time - lastMarkAt > FULL_RECOVERY_MS && drops.length === 0) {
-      freshCtx.clearRect(0, 0, W, H)
-      memoryCtx.clearRect(0, 0, W, H)
-      masksClear = true
-    }
-  }
-
-  function updateFrostMask() {
-    if (!hasBackdropMask || tick % 4 !== 0) return
-    maskCtx.globalCompositeOperation = 'source-over'
-    maskCtx.globalAlpha = 1
-    maskCtx.fillStyle = '#fff'
-    maskCtx.fillRect(0, 0, maskW, maskH)
-    maskCtx.globalCompositeOperation = 'destination-out'
-    maskCtx.globalAlpha = 0.72
-    maskCtx.drawImage(memoryBuffer, 0, 0, maskW, maskH)
-    maskCtx.globalAlpha = 1
-    maskCtx.drawImage(freshBuffer, 0, 0, maskW, maskH)
-    maskCtx.globalCompositeOperation = 'source-over'
-    maskCtx.globalAlpha = 1
+  function updateFrostMask(time, force = false) {
+    const glassReady = hero.classList.contains('window-glass-ready')
+    if (hadGlassRenderer && !glassReady) frostDirty = true
+    hadGlassRenderer = glassReady
+    if (!hasBackdropMask || glassReady || !frostDirty) return
+    if (!force && activeMarks && time - lastFrostPaint < 80) return
+    // Only the non-WebGL fallback serializes a mask, and only while it changes.
+    frostCtx.globalCompositeOperation = 'source-over'
+    frostCtx.fillStyle = '#fff'
+    frostCtx.fillRect(0, 0, frostMask.width, frostMask.height)
+    frostCtx.globalCompositeOperation = 'destination-out'
+    frostCtx.drawImage(glassMask, 0, 0)
     const url = frostMask.toDataURL('image/png')
-    frost.style.webkitMaskImage = `url(${url})`
-    frost.style.maskImage = `url(${url})`
+    frost.style.webkitMaskImage = frost.style.maskImage = `url(${url})`
+    frostDirty = false
+    lastFrostPaint = time
   }
 
-  function frame(time = 0) {
-    if (!running) return
-    tick++
-    wipeByPointer()
-    updateDrops(time)
-    healMasks(time)
+  function paint(time) {
+    if (maskDirty || (activeMarks && time - lastPaint >= 1000 / 30)) {
+      activeMarks = field.render(time, pixels.data)
+      maskCtx.putImageData(pixels, 0, 0)
+      publishMask()
+      maskDirty = false
+      mistDirty = frostDirty = true
+      lastPaint = time
+    }
+    if (mistDirty) {
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.clearRect(0, 0, W, H)
+      ctx.globalAlpha = 0.30 + environment.density * 0.20
+      ctx.drawImage(baseMist, 0, 0)
+      ctx.globalAlpha = 1
+      ctx.globalCompositeOperation = 'destination-out'
+      ctx.drawImage(glassMask, 0, 0, W, H)
+      ctx.globalCompositeOperation = 'source-over'
+      mistDirty = false
+    }
+    updateFrostMask(time)
+  }
 
-    ctx.clearRect(0, 0, W, H)
-    ctx.globalCompositeOperation = 'source-over'
-    ctx.globalAlpha = 0.25 + environment.density * 0.17
-    ctx.drawImage(baseMist, 0, 0)
-    ctx.globalAlpha = 1
-
-    ctx.globalCompositeOperation = 'destination-out'
-    ctx.globalAlpha = 0.76
-    ctx.drawImage(memoryBuffer, 0, 0)
-    ctx.globalAlpha = 1
-    ctx.drawImage(freshBuffer, 0, 0)
-    ctx.globalCompositeOperation = 'source-over'
-    ctx.globalAlpha = 1
-
-    updateFrostMask()
+  function frame(time) {
+    raf = 0
+    if (!visible || document.hidden || reduced.matches) return
+    const dt = previousTime ? Math.min(0.05, (time - previousTime) / 1000) : 0
+    previousTime = time
+    updateDrops(time, dt)
+    paint(time)
     raf = requestAnimationFrame(frame)
   }
 
   function start() {
-    if (running) return
-    running = true
-    raf = requestAnimationFrame(frame)
+    if (!raf && visible && !document.hidden && !reduced.matches) {
+      previousTime = 0
+      raf = requestAnimationFrame(frame)
+    }
   }
 
   function stop() {
-    running = false
-    if (raf) cancelAnimationFrame(raf)
+    cancelAnimationFrame(raf)
     raf = 0
+    previousTime = 0
+    releasePointer()
+  }
+
+  function applyMotionPreference() {
+    canvas.style.display = reduced.matches ? 'none' : ''
+    hero.classList.toggle('fog-static', reduced.matches)
+    if (reduced.matches) {
+      stop()
+      field.reset()
+      drops = []
+      maskDirty = true
+      paint(performance.now())
+    } else start()
   }
 
   window.addEventListener('ambientchange', (event) => {
     environment = { ...environment, ...(event.detail || {}) }
     baseMist = makeBaseMist()
+    mistDirty = true
   })
-
-  const themeObserver = new MutationObserver(() => {
+  new MutationObserver(() => {
     baseMist = makeBaseMist()
-  })
-  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
-
-  const resizeObserver = new ResizeObserver(resize)
-  resizeObserver.observe(hero)
+    mistDirty = true
+  }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+  new ResizeObserver(resize).observe(hero)
   window.addEventListener('scroll', refreshRect, { passive: true })
-
-  const intersectionObserver = new IntersectionObserver((entries) => {
-    entries[0]?.isIntersecting ? start() : stop()
-  }, { threshold: 0.03 })
-  intersectionObserver.observe(hero)
+  window.addEventListener('resize', resize, { passive: true })
+  new IntersectionObserver((entries) => {
+    visible = entries[0]?.isIntersecting ?? false
+    visible ? start() : stop()
+  }, { threshold: 0.03 }).observe(hero)
+  document.addEventListener('visibilitychange', () => document.hidden ? stop() : start())
+  reduced.addEventListener('change', applyMotionPreference)
 
   resize()
-  start()
+  paint(performance.now())
+  applyMotionPreference()
 }

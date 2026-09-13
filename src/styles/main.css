@@ -2986,6 +2986,7 @@ body::before {
   object-fit: cover;
   z-index: 0;
   opacity: 1;
+  object-position: 50% 50%;
   filter: none;
   animation: none;
   transform: none;
@@ -3061,12 +3062,31 @@ body::before {
 .hero-frost {
   display: block;
   background: rgba(196, 210, 220, 0.035);
-  -webkit-backdrop-filter: blur(5px) saturate(0.94) brightness(0.98);
-  backdrop-filter: blur(5px) saturate(0.94) brightness(0.98);
+  -webkit-backdrop-filter: blur(6.5px) saturate(0.94) brightness(0.98);
+  backdrop-filter: blur(6.5px) saturate(0.94) brightness(0.98);
 }
 
 .hero-fog {
   filter: none;
+}
+
+/* The glass shader and the fog wash share one clearing mask. */
+.scene-hero.window-glass-ready > .hero-frost {
+  display: none;
+}
+
+.window-glass-ready .hero-room-shade {
+  filter: blur(5px);
+}
+
+.window-scene-static .hero-bg-image {
+  opacity: 1;
+  transition: none;
+}
+
+.window-scene-static .hero-window-scene {
+  opacity: 0;
+  transition: none;
 }
 
 .hero-content {
@@ -3297,6 +3317,10 @@ body::before {
   .scene-hero {
     min-height: 90dvh;
     padding: 90px 20px 56px;
+  }
+
+  .hero-bg-image {
+    object-position: 70% 50%;
   }
 
   .hero-room-shade {
